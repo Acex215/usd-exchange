@@ -150,7 +150,7 @@ env_vars = [
     [ "USD_FLAVOR", "${usd_flavor}" ],  # We pass the USD flavor token to environment so it can be queried in tests.
 ]
 
-## \todo: move this to `repo.python_executable` when all tools support it
+# note: move this to `repo.python_executable` when all tools support it
 [repo_test.python_executable]
 packman_file_path = "deps/target-deps.packman.xml"
 packman_package_name = "python"
@@ -185,3 +185,50 @@ enabled = true
 usd_flavor = "${usd_flavor}"
 usd_ver = "${usd_ver}"
 python_ver = "${python_ver}"
+
+[repo_docs]
+enabled = true
+project = "${conf:repo.name}"
+name = "OpenUSD Exchange SDK"
+copyright_start = 2022
+config = "release"
+enable_dark_theme_switcher = true
+sphinx_conf_py_extra = "autodoc_member_order = 'bysource'"
+sphinx_exclude_patterns = [
+    "CHANGELOG.md",
+    "CITATION.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "LICENSE.md",
+    "SECURITY.md",
+    "_install",
+    ".gitlab",
+    ".github",
+]
+use_fast_doxygen_conversion = true
+only_preprocessor_enabled = true
+api_root_page = {docname = "api", title = "OpenUSD Exchange C++ API", toc_docnames = "*"}
+doxygen_input = [
+    "include/usdex/core",
+]
+doxygen_predefined = [
+    "__cplusplus",
+    "USDEX_IMPORT",
+    "USDEX_WITH_PYTHON",
+]
+api_title = "OpenUSD Exchange C++ API"
+api_output_directory = "api"
+library_paths = [
+    "$root/_build/$platform/$config/lib",
+]
+python_paths = [
+    "$root/_build/$platform/$config/python",
+]
+# controls the runtime python executable
+# note: remove this when repo_docs supports the generic `repo.python_executable` settings
+python_path = "$root/_build/target-deps/python/python${exe_ext}"
+
+[repo_docs.editions.s3web]
+protocol = "s3"
+bucket_name = "omniverse-docs"
+bucket_dir = "${project}/${version}"
