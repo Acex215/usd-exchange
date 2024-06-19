@@ -64,13 +64,13 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
 
     # respect flavor variations if they are provided
     if not packageName or (usd_flavor and usd_ver and python_ver):
-        pyFlavor = "nopy" if python_ver == "0" else f"py{python_ver}"
-        packageName = f"usd-exchange.usd-{usd_flavor}-{usd_ver}.{pyFlavor}.{tokens['platform']}.{buildConfig}"  # note: needs adjusting
+        packageName = f"usd-exchange_{usd_flavor}_{usd_ver}_py_{python_ver}"
 
     linkPath = f"{targetDepsDir}/usd-exchange/{buildConfig}"
-    print(f"Download and Link usd-exchange {packageVersion} to {linkPath}")
+    fullPackageVersion = f"{packageVersion}.{tokens['platform']}.{buildConfig}"
+    print(f"Download and Link usd-exchange {fullPackageVersion} to {linkPath}")
     try:
-        result = packmanapi.install(name=packageName, package_version=packageVersion, remotes=["cloudfront"], link_path=linkPath)
+        result = packmanapi.install(name=packageName, package_version=fullPackageVersion, remotes=["cloudfront"], link_path=linkPath)
         return list(result.values())[0]
     except packmanapi.PackmanErrorFileNotFound:
         raise omni.repo.man.exceptions.ConfigurationError(f"Unable to download {packageName}, version {packageVersion}")

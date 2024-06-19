@@ -124,7 +124,7 @@ stubgen_exclude = [
 default_config = "release"
 default_suite = "all"
 test_root = "$root/_build/$platform/$config"
-archive_pattern = "$root/_build/packages/usd-exchange.usd-${usd_flavor}-${usd_ver}.py${python_ver}.${platform}.${config}*.7z"  # note: revisit
+archive_pattern = "$root/_build/packages/usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}*$platform.$config.7z"
 archive_post_unpack_cmds = [
     [
         "$root/repo${shell_ext}",
@@ -232,3 +232,33 @@ python_path = "$root/_build/target-deps/python/python${exe_ext}"
 protocol = "s3"
 bucket_name = "omniverse-docs"
 bucket_dir = "${project}/${version}"
+
+[repo_package]
+
+[repo_package.packages.usdex]
+omniverse_flow_version_scheme = true
+archive_name = "usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}"
+warn_if_not_exist = true
+package_per_config = true
+remove_pycache = true
+files = [
+    ["_build/$platform/$config/bin", "bin"],
+    ["_build/$platform/$config/include", "include"],
+    ["_build/$platform/$config/lib/${lib_prefix}usdex_*", "lib"],
+    ["_build/$platform/$config/python/usdex", "python/usdex"],
+    ["_build/$platform/$config/dev", "dev"],
+    ["_build/PACKAGE-LICENSES/**", "PACKAGE-LICENSES"],
+    ["PACKAGE-DEPS.yaml", "PACKAGE-DEPS.yaml"],
+]
+files_exclude = [
+    ["**.pdb"],
+    ["**.exp"],
+    ["**.sym"],
+]
+
+[repo_package.packages."platform:linux-x86_64".docs]
+omniverse_flow_version_scheme_2 = true
+files = [
+    ["_build/docs"]
+]
+warn_if_not_exist = true
