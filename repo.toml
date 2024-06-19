@@ -1,0 +1,161 @@
+[repo]
+name = "usd-exchange"
+logging = "warning"
+folders.version_file = "CHANGELOG.md"
+extra_tool_paths."++" = [
+    "$root/tools/repoman",
+]
+
+[repo.tokens]
+usd_flavor = "usd"
+usd_ver = "23.11"
+python_ver = "3.10"
+
+[repo_version_header]
+enabled = true
+company = "NVIDIA"
+product = "OpenUSD Exchange SDK"
+macro_namespace = "USDEX"
+target_version_header_file = "include/usdex/core/Version.h"
+target_resource_file = "version.rc"
+generate_version_stub_file = true
+
+[repo_feature_header]
+enabled = true
+target_file = "include/usdex/core/Feature.h"
+
+[repo_build_number]
+enabled = true
+
+[repo_build]
+fetch.packman_target_files_to_pull = [
+    "$root/deps/target-deps.packman.xml"
+]
+
+# enable only for internal use
+docker.enabled = false
+
+clean.folders."++" = ["$root/_conan", "$root/_deps"]
+
+# enable only for internal use
+licensing.enabled = false
+licensing.fail_on_missing = true
+fetch.pip.gather_licenses_path = ""
+
+# pre_build.commands happens after project generation, this is too late
+fetch.after_pull_commands = [
+    ["$root/repo${shell_ext}", "version_header"],
+    ["$root/repo${shell_ext}", "feature_header", "--python", "${python_ver}"],
+]
+
+post_build.commands = [
+    [
+        "$root/repo${shell_ext}",
+        "--set-token", "usd_flavor:${usd_flavor}",
+        "--set-token", "usd_ver:${usd_ver}",
+        "--set-token", "python_ver:${python_ver}",
+        "install_usdex",
+        "-c", "$config",
+        "--use-existing-build",
+        "--staging-dir", "_build",
+        "--install-dir", "_build/$platform/$config",
+    ],
+    ["$root/repo${shell_ext}", "--set-token", "python_ver:${python_ver}", "stubgen", "-c", "$config"],
+]
+
+msbuild.sln_file = "${conf:repo.name}.sln"
+msbuild.vs_version = 'vs2019'
+
+fetch.generated_packman_file = "$root/_build/$platform/$config/dev/deps/all-deps.packman.xml"
+
+# Setup IntelliSense in VSCode
+[repo_build.vscode]
+settings_template_file = "$root/tools/vscode/settings.template.json"
+write_python_paths_in_settings_json = true
+generate_python_env_file = false
+# note: remove this when repo_build supports the generic `repo.python_executable` settings
+python = "$root/_build/target-deps/python/python${exe_ext}"
+python_env.PATH."++" = [
+    "$root/_build/$platform/$config/lib",
+    "$root/_build/target-deps/usd/$config/lib",
+    "$root/_build/target-deps/usd/$config/bin",
+    "$root/_build/target-deps/usd/$config/plugin/usd",
+]
+python_env.PYTHONPATH."++" = [
+    "$root/_build/$platform/$config/python",
+    "$root/_build/target-deps/omni_asset_validator/$config/python",
+    "$root/_build/target-deps/usd/$config/lib/python",
+    "$root/_repo/deps/repo_test",
+]
+
+[repo_stubgen]
+enabled = true
+stubgen_exclude = [
+    "$root/_build/$platform/$config/python/pxr/UsdMtlx",  # fails on some flavors (eg houdini)
+]
+
+[repo_test]
+default_config = "release"
+default_suite = "all"
+test_root = "$root/_build/$platform/$config"
+archive_pattern = "$root/_build/packages/usd-exchange.usd-${usd_flavor}-${usd_ver}.py${python_ver}.${platform}.${config}*.7z"  # note: revisit
+archive_post_unpack_cmds = [
+    [
+        "$root/repo${shell_ext}",
+        "--set-token", "usd_flavor:${usd_flavor}",
+        "--set-token", "usd_ver:${usd_ver}",
+        "--set-token", "python_ver:${python_ver}",
+        "install_usdex",
+        "-c", "$config",
+        "--use-existing-build",
+        "--staging-dir", "_build",
+        "--install-dir", "${test_root}",
+    ],
+]
+library_paths = [
+    "${test_root}/lib",
+    # this is for windows only, when running on basic machines without c/c++ runtimes
+    "$root/_build/host-deps/msvc/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64",
+]
+python_paths = [
+    "${test_root}/python",
+]
+env_vars = [
+    [ "USD_FLAVOR", "${usd_flavor}" ],  # We pass the USD flavor token to environment so it can be queried in tests.
+]
+
+## \todo: move this to `repo.python_executable` when all tools support it
+[repo_test.python_executable]
+packman_file_path = "deps/target-deps.packman.xml"
+packman_package_name = "python"
+python_executable_path = "python${exe_ext}"
+
+[repo_test.suites.main]
+kind = "unittest"
+log_file = "${test_root}/tests/usdex.core.results.xml"
+discover_path = "$root/source/core/tests/unittest"
+verbosity = 1
+
+[repo_test.suites.cpp]
+kind = "catch2"
+tests_per_process = 0
+executables = [
+	"${test_root}/bin/test_usdex_core",
+]
+
+[repo_format]
+cpp.files.exclude = [
+    "include/usdex/pybind/BindingUtils.h",
+]
+python.files.exclude."++" = [
+    "tools/repoman/pybind11_stubgen.py",
+]
+python.line_length = 150
+python.maintain_legal_blurbs = true
+python.python_version = "py${python_ver}"
+
+[repo_install_usdex]
+enabled = true
+usd_flavor = "${usd_flavor}"
+usd_ver = "${usd_ver}"
+python_ver = "${python_ver}"

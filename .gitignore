@@ -24,7 +24,6 @@ user.repo.toml
 .lastverify
 
 # Generated Files
-PACKAGE-INFO.yaml
 PACKAGE-DEPS.yaml
 VERSION
 version.rc
