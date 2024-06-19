@@ -27,5 +27,6 @@ user.repo.toml
 PACKAGE-DEPS.yaml
 VERSION
 version.rc
+deps/usd-deps.packman.xml
 include/usdex/core/Feature.h
 include/usdex/core/Version.h

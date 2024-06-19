@@ -1,0 +1,16 @@
+<project toolsVersion="5.0">
+
+  <!-- Cross platform -->
+  <dependency name="premake" linkPath="../_build/host-deps/premake" tags="non-redist">
+    <package name="premake" version="5.0.0-beta2+nv1-${platform}" platforms="windows-x86_64 linux-x86_64 linux-aarch64" />
+  </dependency>
+
+  <!-- Windows only -->
+  <dependency name="msvc" linkPath="../_build/host-deps/msvc" tags="non-redist">
+    <package name="msvc" version="2019-16.11.24" platforms="windows-x86_64" />
+  </dependency>
+  <dependency name="winsdk" linkPath="../_build/host-deps/winsdk" tags="non-redist">
+    <package name="winsdk" version="10.0.20348.0" platforms="windows-x86_64"/>
+  </dependency>
+
+</project>

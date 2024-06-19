@@ -1,0 +1,93 @@
+-- Shared build scripts from repo_build package
+repo_build = require("omni/repo/build")
+repo_build.root = os.getcwd()
+
+-- module to simplify premake setup further
+usdex = true
+usdex_build = require("tools/premake/usdex_build")
+
+workspace "usd-exchange"
+    usdex_build.setup_workspace({security_hardening=true})
+    -- note: remove once /guard:cf is included from add_security_hardening_flags
+    filter {"system:windows"}
+        buildoptions { "/guard:cf" }
+    filter {}
+
+
+project "devtools"
+    kind "Utility"
+    repo_build.prebuild_link({
+        { "include", target_build_dir.."/include" },
+        { "tools/repoman", target_build_dir.."/dev/tools/repoman" },
+        { "tools/vscode", target_build_dir.."/dev/tools/vscode" },
+    })
+    -- serialize hardcoded usdex_options
+    io.writefile(
+        "_build/generated/usdex_options.lua",
+        "USD_FLAVOR = \""..USD_FLAVOR.."\"\n"..
+        "USD_VERSION = \""..USD_VERSION.."\"\n"..
+        "PYTHON_VERSION = \""..PYTHON_VERSION.."\"\n"
+    )
+    -- copy usdex_build and serialized options
+    repo_build.prebuild_copy({
+        { "tools/premake/usdex_build.lua", target_build_dir.."/dev/tools/premake" },
+        { "_build/generated/usdex_options.lua", target_build_dir.."/dev/tools/premake" },
+    })
+     -- generate a public packman config
+     io.writefile(
+        "_build/generated/config.packman.xml",
+        "<config remotes=\"cloudfront\">\n"..
+        "    <remote2 name=\"cloudfront\">\n"..
+        "        <transport actions=\"download\" protocol=\"https\" packageLocation=\"d4i3qtqj3r0z5.cloudfront.net/${name}@${version}\" />\n"..
+        "    </remote2>\n"..
+        "</config>\n"
+    )
+    -- copy packman and generated public config
+    repo_build.prebuild_copy({
+        { "tools/packman", target_build_dir.."/dev/tools/packman" },
+        { "_build/generated/config.packman.xml", target_build_dir.."/dev/tools/packman" },
+    })
+
+group "core"
+
+    namespace = "usdex_core"
+
+    project "core_library"
+        usdex_build.use_fmt()
+        usdex_build.use_omni_transcoding()
+        usdex_build.use_usd({ "arch", "gf", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "usdUtils", "vt" })
+        usdex_build.shared_library{
+            library_name = namespace,
+            headers = { "include/usdex/core/*.h", "include/usdex/core/*.inl" },
+            sources = { "source/core/library/*.cpp", "source/core/library/*.h" },
+        }
+
+    if usdex_build.with_python() then
+        project "core_python"
+            dependson { "core_library" }
+            usdex_build.use_usd({"gf", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "vt"})
+            usdex_build.use_usdex_core()
+            usdex_build.python_module{
+                bindings_module_name = namespace,
+                bindings_sources = "source/core/python/bindings/*.cpp",
+                python_sources = "source/core/python/*.py",
+            }
+    end
+
+    project "core_test_executable"
+        dependson { "core_library" }
+        usdex_build.use_fmt()
+        usdex_build.use_cxxopts()
+        usdex_build.use_doctest()
+        usdex_build.use_usd({"gf", "sdf", "tf", "usd", "usdGeom", "vt"})
+        usdex_build.use_usdex_core()
+        filter { "configurations:release" }
+            links { "tbb" } -- required by use of TfErrorMarks
+        filter { "configurations:debug" }
+            links { "tbb_debug" } -- required by use of TfErrorMarks
+        filter {}
+        usdex_build.executable{
+            name = "test_"..namespace,
+            headers = { "source/core/tests/doctest/*.h" },
+            sources = { "source/core/tests/doctest/*.cpp" },
+        }

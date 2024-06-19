@@ -42,6 +42,17 @@ licensing.enabled = false
 licensing.fail_on_missing = true
 fetch.pip.gather_licenses_path = ""
 
+fetch.before_pull_commands = [
+    [
+        "$root/repo${shell_ext}",
+        "usd",
+        "--generate-usd-deps",
+        "--usd-flavor", "${usd_flavor}",
+        "--usd-ver", "${usd_ver}",
+        "--python-ver", "${python_ver}",
+    ],
+]
+
 # pre_build.commands happens after project generation, this is too late
 fetch.after_pull_commands = [
     ["$root/repo${shell_ext}", "version_header"],
@@ -67,6 +78,21 @@ msbuild.sln_file = "${conf:repo.name}.sln"
 msbuild.vs_version = 'vs2019'
 
 fetch.generated_packman_file = "$root/_build/$platform/$config/dev/deps/all-deps.packman.xml"
+
+[[repo_build.argument]]
+name = "usd_flavor"
+help = "Set the USD flavor to build against"
+extra_premake_args = ["--usd-flavor=${usd_flavor}"]
+
+[[repo_build.argument]]
+name = "usd_version"
+help = "Set the USD version to build against"
+extra_premake_args = ["--usd-ver=${usd_ver}"]
+
+[[repo_build.argument]]
+name = "python_ver"
+help = "Set the python version to build against"
+extra_premake_args = ["--python-ver=${python_ver}"]
 
 # Setup IntelliSense in VSCode
 [repo_build.vscode]
