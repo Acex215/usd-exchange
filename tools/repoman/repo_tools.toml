@@ -1,0 +1,112 @@
+[repo_install_usdex]
+enabled = false
+command = "install_usdex"
+entry_point = "install_usdex:setup_repo_tool"
+
+# Sets the staging root folder for package links.
+#
+# Required compile, link, and runtime dependencies will be downloaded & linked this folder.
+staging_dir = "$root/_install"
+
+# Sets the install root folder.
+#
+# Required runtime files will be assembled into this folder.
+install_dir = "$root/_install/$platform/$config"
+
+# Enable this to use an existing build of Connect SDK rather than download a package.
+#
+# The Connect SDK distro must already exist in the install_dir or the process will fail.
+use_existing_build = false
+
+# Sets the usd flavor (set 'usd' for stock pxr builds of OpenUSD)
+usd_flavor = "usd"
+
+# Sets the usd version (YY.MM)
+usd_ver = ""
+
+# Sets the python version.
+#
+# Use "0" to indicate that python should be disabled.
+python_ver = ""
+
+[repo_stubgen]
+enabled = false
+command = "stubgen"
+entry_point = "stubgen:setup_repo_tool"
+
+# The runtime location that `omni_connect_core` can be started from (eg `$CARB_APP_PATH`)
+runtime_path = "$root/_build/$platform/$config"
+
+# Location of the `pybind11_stubgen.py` script
+pybind11_stubgen = "$root/tools/repoman"
+
+# Only generate stubs for python libraries within the subtree of these paths
+stubgen_include = ["$root/_build/$platform/$config/python", "$root/_build/$platform/$config/bindings-python"]
+
+# Explicitly exclude stubs for python libraries on these paths, even if they would be included via the `stubgen_include` list
+stubgen_exclude = []
+
+## \todo: move this to `repo.python_executable` when all tools support it
+[repo_stubgen.python_executable]
+packman_file_path = "deps/target-deps.packman.xml"
+packman_package_name = "python"
+python_executable_path = "python${exe_ext}"
+
+[repo_version_header]
+enabled = false
+command = "version_header"
+entry_point = "version_header:setup_repo_tool"
+
+# Path to generate the target `Version.h` file
+target_version_header_file = ""
+
+# Path to generate the target `version.rc` resource file.
+#
+# See https://learn.microsoft.com/en-us/windows/win32/menurc/versioninfo-resource for details.
+#
+# If empty, no `version.rc` will be generated.
+target_resource_file = ""
+
+# The company name
+company = ""
+
+# The product name
+product = ""
+
+# The namespace macro for the library
+macro_namespace = ""
+
+# The preamble must contain only lines either starting with "SPDX" or containing the word "Copyright" in some form.
+license_preamble = """
+SPDX-FileCopyrightText: Copyright (c) {years} NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+"""
+
+# license_text will always be after the spdx_license_text or copyright line, separated by a single newline
+license_text = """
+NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+property and proprietary rights in and to this material, related
+documentation and any modifications thereto. Any use, reproduction,
+disclosure or distribution of this material and related documentation
+without an express license agreement from NVIDIA CORPORATION or
+its affiliates is strictly prohibited.
+"""
+
+# Generates a sidecar `$root/VERSION` file.
+#
+# This is a workaround for `repo_docs` not respecting `repo.folders.version_file`.
+# Only set this flag if you use a non-standard `version_file` and you use `repo_docs`.
+generate_version_stub_file = false
+
+[repo_feature_header]
+enabled = false
+command = "feature_header"
+entry_point = "feature_header:setup_repo_tool"
+
+# Path to generate the header file
+target_file = ""
+
+# Sets the python version.
+#
+# Any value other than "0" indicates that the build is "with python".
+python_ver = "0"

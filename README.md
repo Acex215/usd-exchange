@@ -8,24 +8,24 @@ It provides convenience middleware on top of lower-level USD concepts, so develo
 
 # Get Started
 
-To start using OpenUSD Exchange SDK see [Getting Started with USD Exchange](docs/getting-started.md)
+To start using OpenUSD Exchange SDK see [Getting Started with OpenUSD Exchange SDK](docs/getting-started.md).
 
 ## Downloading or Building
 
-We provide precompiled binaries of OpenUSD Exchange SDK, as well as all dependencies required to compile, link, and run a program that uses the OpenUSD Exchange libraries and modules. Additionally, OpenUSD Exchange SDK is source available and is licensed for modification & re-distribution (see our [License Notices](docs/licenses.md)).
+We provide precompiled binaries of OpenUSD Exchange SDK, as well as all dependencies required to compile, link, and run a program that uses the OpenUSD Exchange libraries and modules. Additionally, OpenUSD Exchange SDK is source available and is licensed for modification & re-distribution (see our License Notices).
 
 To download the precompiled OpenUSD Exchange SDK binaries and all the necessary dependencies:
   - Download or clone the [OpenUSD Exchange SDK repository](https://github.com/NVIDIA-Omniverse/usd-exchange)
   - Navigate to your local `usd-exchange` directory
-  - Run `./repo.sh install_sdk` or `.\repo.bat install_sdk` to download & assemble the OpenUSD Exchange SDK runtime requirements into a dedicated folder.
+  - Run `./repo.sh install_usdex` or `.\repo.bat install_usdex` to download & assemble the OpenUSD Exchange SDK runtime requirements into a dedicated folder.
 
-For more details on choosing build flavors & features, or different versions of the SDK, see the [repo_install_sdk documentation](docs/devtools.md#repo_install_sdk).
+For more details on choosing build flavors & features, or different versions of the SDK, see the [repo_install_usdex documentation](docs/devtools.md#repo_install_usdex).
 
-If you would like to modify it, or build it against your own OpenUSD distribution, see [CONTRIBUTING.md](CONTRIBUTING.md) to learn about building from source.
+If you would like to modify it, or build it against your own OpenUSD distribution, see CONTRIBUTING.md to learn about building from source.
 
 # Contribution Guidelines
 
-We are not currently accepting code contributions to OpenUSD Exchange SDK directly. See [CONTRIBUTING.md](CONTRIBUTING.md) to learn about contributing via GitHub issues, as well as building the libraries from source. Feel free to modify & rebuild the SDK libraries to suite your needs.
+We are not currently accepting code contributions to OpenUSD Exchange SDK directly. See CONTRIBUTING.md to learn about contributing via GitHub issues, as well as building the libraries from source. Feel free to modify & rebuild the SDK libraries to suite your needs.
 
 # Community
 
