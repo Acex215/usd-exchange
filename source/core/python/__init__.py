@@ -18,7 +18,7 @@ import os
 
 if hasattr(os, "add_dll_directory"):
     __scriptdir = os.path.dirname(os.path.realpath(__file__))
-    __dlldir = os.path.abspath(os.path.join(__scriptdir, "../../../../lib"))
+    __dlldir = os.path.abspath(os.path.join(__scriptdir, "../../../lib"))
     if os.path.exists(__dlldir):
         with os.add_dll_directory(__dlldir):
             from ._usdex_core import *  # noqa

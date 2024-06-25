@@ -227,6 +227,11 @@ end
 
 function m.use_doctest()
     externalincludedirs { target_deps.."/doctest/include" }
+    filter { "system:windows" }
+        disablewarnings {
+            "4805", -- '==': unsafe mix of type 'const bool' and type 'const R' in operation
+        }
+    filter {}
 end
 
 function m.use_usd(libs)
