@@ -111,7 +111,9 @@ python_env.PYTHONPATH."++" = [
     "$root/_build/$platform/$config/python",
     "$root/_build/target-deps/omni_asset_validator/$config/python",
     "$root/_build/target-deps/usd/$config/lib/python",
+    "$root/_repo/deps/repo_man",
     "$root/_repo/deps/repo_test",
+    "$root/_repo/deps/repo_ci",
 ]
 
 [repo_stubgen]
@@ -124,6 +126,9 @@ stubgen_exclude = [
 default_config = "release"
 default_suite = "all"
 test_root = "$root/_build/$platform/$config"
+catch2.junit_output = true
+catch2.junit_result_filename = "$root/_build/tests/test_results.xml"
+aggregated_log_file = "$root/_build/tests/test_results.xml"
 archive_pattern = "$root/_build/packages/usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}*$platform.$config.7z"
 archive_post_unpack_cmds = [
     [
@@ -204,6 +209,7 @@ sphinx_exclude_patterns = [
     "_install",
     ".gitlab",
     ".github",
+    "usd-exchange-ci",  # exists in CI
 ]
 use_fast_doxygen_conversion = true
 only_preprocessor_enabled = true
@@ -262,3 +268,26 @@ files = [
     ["_build/docs"]
 ]
 warn_if_not_exist = true
+
+[repo_codesign]
+enabled = true
+folder_input = "${root}/_build/unsignedpackages"
+folder_output = "${root}/_build/signedpackages"
+
+[repo_publish]
+enabled = true
+fail_if_nothing_found = true
+fail_if_exist = false  # allow re-runs of failed publish CI jobs to account for infrastructure issues
+packages = ["usd-exchange*"]
+
+[repo_verify_deps]
+enabled = true
+
+[repo_ci.jobs]
+format.script = "$root/tools/ci/format.py"
+build.script = "$root/tools/ci/build.py"
+test.script = "$root/tools/ci/test.py"
+verify_deps.script = "$root/tools/ci/verify_deps.py"
+# the publishing scripts only exist during CI
+publish_packages.script = "$root/usd-exchange-ci/scripts/publish_packages.py"
+publish_docs.script = "$root/usd-exchange-ci/scripts/publish_docs.py"

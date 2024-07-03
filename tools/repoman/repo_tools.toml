@@ -46,7 +46,6 @@ stubgen_include = ["$root/_build/$platform/$config/python", "$root/_build/$platf
 # Explicitly exclude stubs for python libraries on these paths, even if they would be included via the `stubgen_include` list
 stubgen_exclude = []
 
-## \todo: move this to `repo.python_executable` when all tools support it
 [repo_stubgen.python_executable]
 packman_file_path = "deps/target-deps.packman.xml"
 packman_package_name = "python"
@@ -110,3 +109,8 @@ target_file = ""
 #
 # Any value other than "0" indicates that the build is "with python".
 python_ver = "0"
+
+[repo_verify_deps]
+enabled = false
+command = "verify_deps"
+entry_point = "verify_deps:setup_repo_tool"
