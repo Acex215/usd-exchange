@@ -18,11 +18,12 @@ import packmanapi
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
+    pythonInstallDir = "${install_dir}/python/" + moduleNamespace
     prebuild_copy_dict.extend(
         [
-            [f"{sourceRoot}/{moduleNamespace}/*.py", "${install_dir}/python/" + moduleNamespace],
-            [f"{sourceRoot}/{moduleNamespace}/*.pyi", "${install_dir}/python/" + moduleNamespace],
-            [f"{sourceRoot}/{moduleNamespace}/{libPrefix}*" + "${bindings_ext}", "${install_dir}/python/" + moduleNamespace],
+            [f"{sourceRoot}/{moduleNamespace}/*.py", pythonInstallDir],
+            [f"{sourceRoot}/{moduleNamespace}/*.pyi", pythonInstallDir],
+            [f"{sourceRoot}/{moduleNamespace}/{libPrefix}*" + "${bindings_ext}", pythonInstallDir],
         ]
     )
 
@@ -99,7 +100,7 @@ def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flav
 
     print("Download usd-exchange dependencies...")
     depsFile = f"{usd_exchange_path}/dev/deps/all-deps.packman.xml"
-    # TODO: filter downloads for runtimeDeps only
+    # FUTURE: filter downloads for runtimeDeps only
     result = packmanapi.pull(depsFile, platform=platform, tokens=tokens, return_extra_info=True)
     for dep, info in result.items():
         if dep in runtimeDeps:
@@ -124,43 +125,46 @@ def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flav
     usd_path = f"{targetDepsDir}/usd/{buildConfig}"
     transcoding_path = f"{targetDepsDir}/omni_transcoding/{buildConfig}"
 
+    libInstallDir = "${install_dir}/lib"
+    usdPluginInstallDir = "${install_dir}/lib/usd"
+
     prebuild_dict = {
         "copy": [
             # transcoding
-            [transcoding_path + "/lib/${lib_prefix}omni_transcoding${lib_ext}", "${install_dir}/lib"],
+            [transcoding_path + "/lib/${lib_prefix}omni_transcoding${lib_ext}", libInstallDir],
             # usdex
-            [usd_exchange_path + "/lib/${lib_prefix}usdex_core${lib_ext}", "${install_dir}/lib"],
+            [usd_exchange_path + "/lib/${lib_prefix}usdex_core${lib_ext}", libInstallDir],
             # usd
-            [usd_path + "/lib/${lib_prefix}*ar${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*arch${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*gf${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*js${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*kind${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*ndr${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*pcp${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*plug${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*sdf${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*sdr${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*tf${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*trace${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usd${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usdGeom${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usdLux${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usdShade${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usdUtils${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*vt${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*work${lib_ext}", "${install_dir}/lib"],
-            [usd_path + "/lib/${lib_prefix}*usd_ms${lib_ext}", "${install_dir}/lib"],  # special case for monolithic flavors
+            [usd_path + "/lib/${lib_prefix}*ar${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*arch${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*gf${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*js${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*kind${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*ndr${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*pcp${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*plug${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*sdf${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*sdr${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*tf${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*trace${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usd${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usdGeom${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usdLux${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usdShade${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usdUtils${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*vt${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*work${lib_ext}", libInstallDir],
+            [usd_path + "/lib/${lib_prefix}*usd_ms${lib_ext}", libInstallDir],  # special case for monolithic flavors
         ],
     }
     if usd_flavor == "blender":
         prebuild_dict["copy"].extend(
             [
                 # blender uses a monolithic usd build which requires extra libs
-                [usd_path + "/bin/${lib_prefix}*${lib_ext}", "${install_dir}/lib"],
+                [usd_path + "/bin/${lib_prefix}*${lib_ext}", libInstallDir],
                 # blender separates usd plugins into two folders, but requires them all at runtime
-                [f"{usd_path}/lib/usd", "${install_dir}/lib/usd"],
-                [f"{usd_path}/plugin/usd", "${install_dir}/lib/usd"],
+                [f"{usd_path}/lib/usd", usdPluginInstallDir],
+                [f"{usd_path}/plugin/usd", usdPluginInstallDir],
             ]
         )
         for moduleNamespace, libPrefix in (
@@ -192,23 +196,23 @@ def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flav
         prebuild_dict["copy"].extend(
             [
                 # default usd plugins folder
-                [f"{usd_path}/lib/usd", "${install_dir}/lib/usd"],
+                [f"{usd_path}/lib/usd", usdPluginInstallDir],
             ]
         )
     if buildConfig == "debug":
         prebuild_dict["copy"].extend(
             [
                 # tbb ships with usd, but is named differently in release/debug
-                [usd_path + "/lib/${lib_prefix}tbb_debug${lib_ext}*", "${install_dir}/lib"],
-                [usd_path + "/bin/${lib_prefix}tbb_debug${lib_ext}*", "${install_dir}/lib"],  # windows
+                [usd_path + "/lib/${lib_prefix}tbb_debug${lib_ext}*", libInstallDir],
+                [usd_path + "/bin/${lib_prefix}tbb_debug${lib_ext}*", libInstallDir],  # windows
             ]
         )
     else:
         prebuild_dict["copy"].extend(
             [
                 # tbb ships with usd, but is named differently in release/debug
-                [usd_path + "/lib/${lib_prefix}tbb${lib_ext}*", "${install_dir}/lib"],
-                [usd_path + "/bin/${lib_prefix}tbb${lib_ext}*", "${install_dir}/lib"],  # windows
+                [usd_path + "/lib/${lib_prefix}tbb${lib_ext}*", libInstallDir],
+                [usd_path + "/bin/${lib_prefix}tbb${lib_ext}*", libInstallDir],  # windows
             ]
         )
     if python_ver != "0":
@@ -217,10 +221,10 @@ def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flav
         # usd
         prebuild_dict["copy"].extend(
             [
-                [usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", "${install_dir}/lib"],
+                [usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir],
                 # note: revisit installing libpython, it can cause issues in some deployments
-                [python_path + "/lib/${lib_prefix}*python*${lib_ext}*", "${install_dir}/lib"],
-                [python_path + "/${lib_prefix}*python*${lib_ext}*", "${install_dir}/lib"],  # windows
+                [python_path + "/lib/${lib_prefix}*python*${lib_ext}*", libInstallDir],
+                [python_path + "/${lib_prefix}*python*${lib_ext}*", libInstallDir],  # windows
             ]
         )
         for moduleNamespace, libPrefix in (
