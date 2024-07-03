@@ -43,11 +43,20 @@ body:
         - Built from Source
 
   - type: input
+    id: usd-flavor
+    attributes:
+      label: OpenUSD Flavor
+      description: What flavor of OpenUSD are you using?
+      placeholder: "example: stock or custom"
+    validations:
+      required: true
+
+  - type: input
     id: usd-version
     attributes:
       label: OpenUSD Version
       description: What version of OpenUSD are you using?
-      placeholder: "example: pxr-23.11"
+      placeholder: "example: 24.05"
     validations:
       required: true
 

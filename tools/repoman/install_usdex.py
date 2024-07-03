@@ -298,19 +298,19 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument(
         "--usd-flavor",
         dest="usd_flavor",
-        choices=["usd", "nv-usd"],  # public flavors only
+        choices=["usd"],  # public flavors only
         help=f"The OpenUSD flavor to install. 'usd' means stock pxr builds. Defaults to `{usd_flavor}`",
     )
     parser.add_argument(
         "--usd-version",
         dest="usd_ver",
-        choices=["23.11"],  # public versions only
+        choices=["24.05", "23.11"],  # public versions only
         help=f"The OpenUSD version to install. Defaults to `{usd_ver}`",
     )
     parser.add_argument(
         "--python-version",
         dest="python_ver",
-        choices=["3.10", "0"],
+        choices=["3.11", "3.10", "0"],
         help=f"The Python flavor to install. Use `0` to disable Python features. Defaults to `{python_ver}`",
     )
 

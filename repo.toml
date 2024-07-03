@@ -8,7 +8,7 @@ extra_tool_paths."++" = [
 
 [repo.tokens]
 usd_flavor = "usd"
-usd_ver = "23.11"
+usd_ver = "24.05"
 python_ver = "3.10"
 
 [repo_version_header]
