@@ -6,6 +6,9 @@ extra_tool_paths."++" = [
     "$root/tools/repoman",
 ]
 
+# keep in-sync with the tokens below
+default_flavor = "usd_24.05_py_3.10"
+
 [repo.tokens]
 usd_flavor = "usd"
 usd_ver = "24.05"

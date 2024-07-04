@@ -44,11 +44,12 @@ def main(arguments: argparse.Namespace):
     omni.repo.ci.launch(build)
 
     # build the docs for the default flavor in release mode only
-    if arguments.build_config == "release" and omni.repo.man.resolve_tokens("${usd_flavor}_${usd_ver}_py_${python_ver}") == "usd_24.05_py_3.10":
-        omni.repo.ci.launch([repo, "docs"])
-        # package the docs for linux only as we don't want overlapping packages once all flavors are assembled
-        if not omni.repo.ci.is_windows():
-            omni.repo.ci.launch([repo, "package", "-m", "docs"])
+    if arguments.merged_tool_config["repo"]["default_flavor"] == omni.repo.man.resolve_tokens("${usd_flavor}_${usd_ver}_py_${python_ver}"):
+        if arguments.build_config == "release":
+            omni.repo.ci.launch([repo, "docs"])
+            # package the docs for linux only as we don't want overlapping packages once all flavors are assembled
+            if not omni.repo.ci.is_windows():
+                omni.repo.ci.launch([repo, "package", "--mode", "docs"])
 
     # generate the package
     omni.repo.ci.launch(
