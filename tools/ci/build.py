@@ -73,7 +73,10 @@ def main(arguments: argparse.Namespace):
         ]
     )
 
-    # clean the build so it can't influence the tests, but retain the packages
+    # clean the build so it can't influence the tests,
+    # but retain the packages and the sidecar binaries
     shutil.move("_build/packages", "packages")
+    shutil.move(omni.repo.man.resolve_tokens(f"_build/$platform/{arguments.build_config}/bin"), "bin")
     omni.repo.ci.launch([repo, "build", "--clean", "--config", arguments.build_config])
+    shutil.move("bin", omni.repo.man.resolve_tokens(f"_build/$platform/{arguments.build_config}/bin"))
     shutil.move("packages", "_build/packages")

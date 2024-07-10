@@ -176,7 +176,7 @@ verbosity = 1
 kind = "catch2"
 tests_per_process = 0
 executables = [
-	"${test_root}/bin/test_usdex_core",
+	"$root/_build/$platform/$config/bin/test_usdex_core",
 ]
 
 [repo_format]
@@ -253,7 +253,6 @@ warn_if_not_exist = true
 package_per_config = true
 remove_pycache = true
 files = [
-    ["_build/$platform/$config/bin", "bin"],
     ["_build/$platform/$config/include", "include"],
     ["_build/$platform/$config/lib/${lib_prefix}usdex_*", "lib"],
     ["_build/$platform/$config/python/usdex", "python/usdex"],
