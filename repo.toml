@@ -186,7 +186,7 @@ python.files.exclude."++" = [
 ]
 python.line_length = 150
 python.maintain_legal_blurbs = true
-python.python_version = "py${python_ver}"
+python.python_version = "py310"
 
 [repo_install_usdex]
 enabled = true
