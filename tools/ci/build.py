@@ -30,12 +30,16 @@ def main(arguments: argparse.Namespace):
     # clean build of the specified usd & python flavors, in docker when on linux, with licensing force enabled
     build = [
         repo,
-        "--set-token", f"usd_flavor:{usd_flavor}",
-        "--set-token", f"usd_ver:{usd_ver}",
-        "--set-token", f"python_ver:{python_ver}",
+        "--set-token",
+        f"usd_flavor:{usd_flavor}",
+        "--set-token",
+        f"usd_ver:{usd_ver}",
+        "--set-token",
+        f"python_ver:{python_ver}",
         "build",
         "--rebuild",
-        "--config", arguments.build_config,
+        "--config",
+        arguments.build_config,
         "--/repo_build/licensing/enabled=true",
     ]
     if not omni.repo.ci.is_windows():
@@ -55,12 +59,17 @@ def main(arguments: argparse.Namespace):
     omni.repo.ci.launch(
         [
             repo,
-            "--set-token", f"usd_flavor:{usd_flavor}",
-            "--set-token", f"usd_ver:{usd_ver}",
-            "--set-token", f"python_ver:{python_ver}",
+            "--set-token",
+            f"usd_flavor:{usd_flavor}",
+            "--set-token",
+            f"usd_ver:{usd_ver}",
+            "--set-token",
+            f"python_ver:{python_ver}",
             "package",
-            "--mode", "usdex",
-            "--config", arguments.build_config,
+            "--mode",
+            "usdex",
+            "--config",
+            arguments.build_config,
         ]
     )
 

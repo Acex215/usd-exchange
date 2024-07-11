@@ -77,7 +77,18 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
         raise omni.repo.man.exceptions.ConfigurationError(f"Unable to download {packageName}, version {packageVersion}")
 
 
-def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flavor: str, usd_ver: str, python_ver: str, buildConfig: str, clean: bool, version: str):
+def __install(
+    installDir: str,
+    useExistingBuild: bool,
+    stagingDir: str,
+    usd_flavor: str,
+    usd_ver: str,
+    python_ver: str,
+    buildConfig: str,
+    clean: bool,
+    version: str,
+    installPythonLibs: bool,
+):
     tokens = omni.repo.man.get_tokens()
     tokens["config"] = buildConfig
     platform = tokens["platform"]
@@ -222,11 +233,16 @@ def __install(installDir: str, useExistingBuild: bool, stagingDir: str, usd_flav
         prebuild_dict["copy"].extend(
             [
                 [usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir],
-                # note: revisit installing libpython, it can cause issues in some deployments
-                [python_path + "/lib/${lib_prefix}*python*${lib_ext}*", libInstallDir],
-                [python_path + "/${lib_prefix}*python*${lib_ext}*", libInstallDir],  # windows
             ]
         )
+        if installPythonLibs:
+            prebuild_dict["copy"].extend(
+                [
+                    [python_path + "/lib/${lib_prefix}*python*${lib_ext}*", libInstallDir],
+                    [python_path + "/${lib_prefix}*python*${lib_ext}*", libInstallDir],  # windows
+                ]
+            )
+
         for moduleNamespace, libPrefix in (
             ("pxr/Ar", "_ar"),
             ("pxr/Gf", "_gf"),
@@ -317,6 +333,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         choices=["3.11", "3.10", "0"],
         help=f"The Python flavor to install. Use `0` to disable Python features. Defaults to `{python_ver}`",
     )
+    parser.add_argument(
+        "--install-python-libs",
+        action="store_true",
+        dest="install_python_libs",
+        default=False,
+        help="""
+        Enable to install libpython3.so / python3.dll.
+        This should not be used if you are providing your own python runtime.
+        This has no effect if --python-version=0
+        """,
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         toolConfig = config["repo_install_usdex"]
@@ -326,6 +353,17 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         usd_flavor = options.usd_flavor or toolConfig["usd_flavor"]
         usd_ver = options.usd_ver or toolConfig["usd_ver"]
         python_ver = options.python_ver or toolConfig["python_ver"]
-        __install(installDir, useExistingBuild, stagingDir, usd_flavor, usd_ver, python_ver, options.config, options.clean, options.version)
+        __install(
+            installDir,
+            useExistingBuild,
+            stagingDir,
+            usd_flavor,
+            usd_ver,
+            python_ver,
+            options.config,
+            options.clean,
+            options.version,
+            options.install_python_libs,
+        )
 
     return run_repo_tool

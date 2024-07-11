@@ -148,6 +148,8 @@ archive_post_unpack_cmds = [
 ]
 library_paths = [
     "${test_root}/lib",
+    # required because the CI runners don't necessarily match the python flavor requested
+    "$root/_build/target-deps/python/lib",
     # this is for windows only, when running on basic machines without c/c++ runtimes
     "$root/_build/host-deps/msvc/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64",
 ]
@@ -186,7 +188,7 @@ python.files.exclude."++" = [
 ]
 python.line_length = 150
 python.maintain_legal_blurbs = true
-python.python_version = "py${python_ver}"
+python.python_version = "py310"
 
 [repo_install_usdex]
 enabled = true

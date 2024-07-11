@@ -43,9 +43,12 @@ def main(_: argparse.Namespace):
                 repo,
                 "usd",
                 "--generate-usd-deps",
-                "--usd-flavor", usd_flavor,
-                "--usd-ver", usd_ver,
-                "--python-ver", python_ver,
+                "--usd-flavor",
+                usd_flavor,
+                "--usd-ver",
+                usd_ver,
+                "--python-ver",
+                python_ver,
             ],
         )
 
@@ -53,9 +56,12 @@ def main(_: argparse.Namespace):
         status = omni.repo.ci.launch(
             [
                 repo,
-                "--set-token", f"usd_flavor:{usd_flavor}",
-                "--set-token", f"usd_ver:{usd_ver}",
-                "--set-token", f"python_ver:{python_ver}",
+                "--set-token",
+                f"usd_flavor:{usd_flavor}",
+                "--set-token",
+                f"usd_ver:{usd_ver}",
+                "--set-token",
+                f"python_ver:{python_ver}",
                 "verify_deps",
             ],
             warning_only=True,
