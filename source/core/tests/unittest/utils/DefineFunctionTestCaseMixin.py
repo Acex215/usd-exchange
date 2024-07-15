@@ -1,0 +1,274 @@
+# SPDX-FileCopyrightText: Copyright (c) 2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+#
+# NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+# property and proprietary rights in and to this material, related
+# documentation and any modifications thereto. Any use, reproduction,
+# disclosure or distribution of this material and related documentation
+# without an express license agreement from NVIDIA CORPORATION or
+# its affiliates is strictly prohibited.
+from abc import ABC, abstractmethod
+
+from pxr import Sdf, Tf, Usd, UsdGeom
+from usdex.test import ScopedTfDiagnosticChecker
+
+
+class DefineFunctionTestCaseMixin(ABC):
+    """Mixin class to make assertions that should be valid for all usdex functions that define typed prims"""
+
+    @property
+    @abstractmethod
+    def defineFunc(self):
+        """The function used to define the prim"""
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def requiredArgs(self):
+        """A tuple of valid values for the required arguments"""
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def schema(self):
+        """The class that the return value should be an instance of"""
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def typeName(self):
+        """The type name that the defined prim should have"""
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def requiredPropertyNames(self):
+        """A set of property names that the defined prim should have"""
+        raise NotImplementedError()
+
+    def createTestStage(self):
+        """Create an in memory stage holding a range of prims that are useful for testing"""
+        # Create the stage and define the standard "/World" prim at the root
+
+        # Build a layered stage
+        self.weakerSubLayer = Sdf.Layer.CreateAnonymous(tag="Weaker")
+        self.strongerSubLayer = Sdf.Layer.CreateAnonymous(tag="Stronger")
+
+        self.rootLayer = Sdf.Layer.CreateAnonymous(tag="Root")
+        self.rootLayer.subLayerPaths.append(self.strongerSubLayer.identifier)
+        self.rootLayer.subLayerPaths.append(self.weakerSubLayer.identifier)
+
+        stage = Usd.Stage.Open(self.rootLayer)
+
+        # Define the standard "/World" prim in the root layer
+        stage.SetEditTarget(Usd.EditTarget(self.rootLayer))
+        prim = UsdGeom.Xform.Define(stage, "/World").GetPrim()
+        stage.SetDefaultPrim(prim)
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        UsdGeom.SetStageMetersPerUnit(stage, UsdGeom.LinearUnits.centimeters)
+
+        # Define test prims in the weaker layer
+        stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
+
+        # Create a prototype prim and then add an instanceable reference to it from within /World
+        # This can be used to create scenarios where a path points to an instance proxy prim
+        # Typeless prims will fail the TypeChecker asset validation checks
+        stage.CreateClassPrim("/Prototypes")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype")
+        xformPrim = UsdGeom.Xform.Define(stage, "/World/Instance")
+        xformPrim.GetPrim().GetReferences().AddInternalReference(Sdf.Path("/Prototypes/Prototype"))
+        xformPrim.GetPrim().SetInstanceable(True)
+
+        # Set the edit target to the stronger layer
+        stage.SetEditTarget(Usd.EditTarget(self.strongerSubLayer))
+
+        return stage
+
+    def assertDefineFunctionSuccess(self, result):
+        """Assert that the result returned represents success"""
+        # The result should be a valid instance of the schema associated with the typed prim being defined
+        self.assertIsInstance(result, self.schema)
+        self.assertTrue(result)
+
+        # Get the stages current edit target layer to assert that opinions have been authored explicitly
+        layer = result.GetPrim().GetStage().GetEditTarget().GetLayer()
+
+        # The prim should have a "def" specifier and type name authored in the current layer
+        primPath = result.GetPath()
+        primSpec = layer.GetPrimAtPath(primPath)
+        self.assertTrue(primSpec, f'No prim defined at "{primPath}" in layer "{layer.identifier}"')
+        self.assertEqual(primSpec.typeName, self.typeName)
+        self.assertEqual(primSpec.specifier, Sdf.SpecifierDef)
+
+        # All of the required properties should have default values authored in the current layer
+        for propertyName in self.requiredPropertyNames:
+            propertyPath = primPath.AppendProperty(propertyName)
+            propertySpec = layer.GetPropertyAtPath(propertyPath)
+            self.assertTrue(propertySpec, f'No property defined at "{propertyPath}" in layer "{layer.identifier}"')
+            self.assertTrue(propertySpec.HasDefaultValue())
+
+    def assertDefineFunctionFailure(self, result):
+        """Assert that the result returned represents a failure"""
+        # The result should be an invalid instance of the schema associated with the typed prim being defined
+        self.assertIsInstance(result, self.schema)
+        self.assertFalse(result)
+
+    def testStagePathSuccess(self):
+        # A valid stage and path will result in success
+        stage = self.createTestStage()
+
+        # A prim can be defined in the root layer
+        path = Sdf.Path("/World/NewPrim")
+        stage.SetEditTarget(Usd.EditTarget(self.rootLayer))
+        result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+    def testWeakerStronger(self):
+        # A prim can be defined in a weaker sub layer and then re-defined in a stronger one.
+        stage = self.createTestStage()
+
+        path = Sdf.Path("/World/WeakerFirst")
+        stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
+        result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+        stage.SetEditTarget(Usd.EditTarget(self.strongerSubLayer))
+        result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+    def testStrongerWeaker(self):
+        # A prim can be defined in a stronger sub layer and then re-defined in a weaker one.
+        stage = self.createTestStage()
+
+        path = Sdf.Path("/World/StrongerFirst")
+        stage.SetEditTarget(Usd.EditTarget(self.strongerSubLayer))
+        result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+        stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
+        result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+    def testParentNameSuccess(self):
+        # A valid parent and name will result in success
+        stage = self.createTestStage()
+
+        # A location where no prim currently exists will result in success
+        parent = stage.GetPrimAtPath("/World")
+        name = "NewPrim"
+        result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+
+    def testInvalidStage(self):
+        # An invalid stage will result in a failure
+        path = Sdf.Path("/World/InvalidStage")
+
+        # A null object will be accepted but the function will return a failure
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "Invalid UsdStage")]):
+            result = self.defineFunc(None, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+    def testInvalidPath(self):
+        # A invalid path will result in a failure
+        stage = self.createTestStage()
+
+        # The absolute root is an invalid
+        path = Sdf.Path("/")
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # A relative path is invalid
+        path = Sdf.Path("Foo/Bar")
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # An uninitialized path is invalid
+        path = Sdf.Path()
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # The path for an instance proxy is invalid
+        path = Sdf.Path("/World/Instance/Instanced")
+        with ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced"),
+            ],
+        ):
+            result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # A path where a parent is an instance proxy is invalid
+        path = Sdf.Path("/World/Instance/Instanced/Prim")
+        with ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced/Prim"),
+            ],
+        ):
+            result = self.defineFunc(stage, path, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+    def testInvalidParent(self):
+        # A invalid parent will result in a failure
+        stage = self.createTestStage()
+        name = "Prim"
+
+        # An un-initialized prim is invalid
+        parent = Usd.Prim()
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # An invalid prim is invalid
+        parent = stage.GetPrimAtPath("/World/InvalidParent")
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # An instance proxy is invalid
+        parent = stage.GetPrimAtPath("/World/Instance/Instanced")
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+    def testInvalidName(self):
+        # A invalid name will result in a failure
+        stage = self.createTestStage()
+        parent = stage.GetPrimAtPath("/World")
+
+        # An empty string is invalid
+        name = ""
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # A string containing illegal characters is invalid
+        name = "Foo Bar"
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # A string starting with a numeric is invalid
+        name = "1_Prim"
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
+
+        # The name of an instance proxy is invalid
+        parent = stage.GetPrimAtPath("/World/Instance")
+        name = "Instanced"
+        with ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced"),
+            ],
+        ):
+            result = self.defineFunc(parent, name, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)
