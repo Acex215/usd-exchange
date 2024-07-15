@@ -8,6 +8,7 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
+#include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
 
 using namespace usdex::core::bindings;
@@ -19,6 +20,7 @@ namespace
 PYBIND11_MODULE(_usdex_core, m)
 {
     bindCore(m);
+    bindCameraAlgo(m);
 }
 
 } // namespace

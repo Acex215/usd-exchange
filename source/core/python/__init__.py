@@ -12,6 +12,8 @@ __all__ = [
     # core
     "version",
     "deprecated",
+    # camera
+    "defineCamera",
 ]
 
 import os
