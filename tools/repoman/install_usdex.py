@@ -318,8 +318,11 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument(
         "--usd-flavor",
         dest="usd_flavor",
-        choices=["usd"],  # public flavors only
-        help=f"The OpenUSD flavor to install. 'usd' means stock pxr builds. Defaults to `{usd_flavor}`",
+        choices=["usd", "usd-minimal"],  # public flavors only
+        help=f"""
+        The OpenUSD flavor to install. 'usd' means stock pxr builds, while 'usd-minimal' excludes many plugins, excludes python bindings, and
+        is a monolithic build with just one usd_ms library. Defaults to `{usd_flavor}`
+        """,
     )
     parser.add_argument(
         "--usd-version",
@@ -353,6 +356,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         usd_flavor = options.usd_flavor or toolConfig["usd_flavor"]
         usd_ver = options.usd_ver or toolConfig["usd_ver"]
         python_ver = options.python_ver or toolConfig["python_ver"]
+
+        if usd_flavor == "usd-minimal":
+            if python_ver != "0":
+                print(f"usd-minimal flavors explicitly exclude python. Overriding '{python_ver}' to '0'")
+            python_ver = "0"
+
         __install(
             installDir,
             useExistingBuild,

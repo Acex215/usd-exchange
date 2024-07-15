@@ -45,14 +45,15 @@ The `repo build` command accepts additional arguments (e.g. `-config release`), 
 OpenUSD Exchange SDK can be compiled for many flavors of OpenUSD and Python. It is important to build using the dependencies required by your client application or other deployment. Additionally, some features of OpenUSD Exchange SDK are compile-time optional. For example, the libraries can be built with or without Python functionality.
 
 To build OpenUSD Exchange SDK for different flavors of the upstream dependencies, we provide the following tokens that can be overridden on the commandline:
-- `$usd`: many options, see details below
-- `$py`: 310, 0 (disable python)
+- `$usd_flavor`: either 'usd' or 'usd-minimal'
+- `$usd_ver`: many options, see details below
+- `$python_var`: 3.11, 3.10, 0 (disable python)
 
-For example, to build with dependencies matching Omniverse USD Explorer 2023, you need NV USD 22.11, Python 3.10. This can be accomplished by calling `repo --set-token usd:nv-22_11 --set-token py:310 build`.
+For example, to build with USD 23.11 and Python 3.10, call `repo --set-token usd_flavor:usd --set-token usd_ver:23.11 --set-token python_ver:3.10 build`.
 
-Similarly, to build with dependencies matching Unreal Engine 5.2, you need OpenUSD 22.08 (with ArResolver 2.0 enabled) and Python 3.9, so should call `repo --set-token usd:pxr-22_08-ar2 --set-token py:39 build`.
+Similarly, for a minimal monothlicic build of USD 24.05 with no python support, so should call `repo --set-token usd_flavor:usd-minimal --set-token usd_ver:24.05 --set-token python_ver:0 build`.
 
-> Important : When building multiple flavors using the same working directories, you need to rebuild using `-x` to force premake to re-create all artifacts.
+> Important : When building multiple flavors using the same working directories, you need to rebuild using `-x/--clean` to force premake to re-create all artifacts.
 
 If you attempt a build and it is not successful, it may be because the upstream dependencies do not exist in this particular combination on your current platform. Validate that the packages for OpenUSD, Omniverse Transcoding, and Python all exist and are able to be downloaded successfully.
 
@@ -68,7 +69,7 @@ If none of the existing flavors meet the requirements of your application, you h
 
 To run all the unittest suites, use `repo.bat test` or `repo.sh test`, depending on your local platform. We currently have 2 suites, `main` and `cpp`. Both suites run by default. Any failure in any suite will fail the test process.
 
-> Note: `repo test` uses the same `$usd` and `$py` tokens as `repo build`. If you are building for a non-default flavor it is critical to supply the same token values to `repo test`. For example, `repo --set-token usd:pxr-22_08-ar2 --set-token py:39 test -s main`
+> Note: `repo test` uses the same `$usd` and `$py` tokens as `repo build`. If you are building for a non-default flavor it is critical to supply the same token values to `repo test`. For example, `repo --set-token usd_ver:24.05 --set-token python_ver:3.11 test -s main`
 
 ### Main Test Suite
 
