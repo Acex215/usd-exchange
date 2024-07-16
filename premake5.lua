@@ -91,3 +91,13 @@ group "core"
             headers = { "source/core/tests/doctest/*.h" },
             sources = { "source/core/tests/doctest/*.cpp" },
         }
+
+group "test"
+
+    namespace = "usdex_test"
+
+    project "devtools"
+        kind "Utility"
+        repo_build.prebuild_link({
+            { "source/test/python", target_build_dir.."/python/usdex/test" },
+        })
