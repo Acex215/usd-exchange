@@ -19,7 +19,7 @@ The first step to building an application or plugin using OpenUSD Exchange SDK i
 
 ```{eval-rst}
 .. important::
-  Be sure to configure the `--usd-version`, `--python-version`, and `--version` arguments appropriately to download your preferred flavor of OpenUSD Exchange SDK. See `repo install_usdex -h` for available options.
+  Be sure to configure the `--usd-flavor`, `--usd-version`, `--python-version`, and `--version` arguments appropriately to download your preferred flavor of OpenUSD Exchange SDK. See `repo install_usdex -h` for available options.
 ```
 
 This tool can be invoked from a clone of the [GitHub repository](https://github.com/NVIDIA-Omniverse/usd-exchange) or from a source archive downloaded from an [official release](https://github.com/NVIDIA-Omniverse/usd-exchange/releases).
