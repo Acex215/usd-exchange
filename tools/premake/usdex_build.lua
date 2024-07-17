@@ -186,7 +186,7 @@ function m.use_usdex_core()
     links { "usdex_core" }
 
     if client == true then
-        usdex_path = target_deps.."/usdex"
+        usdex_path = target_deps.."/usd-exchange"
         usdex_build_path = usdex_path.."/%{cfg.buildcfg}"
         externalincludedirs { usdex_build_path.."/include" }
         syslibdirs { usdex_build_path.."/lib" }
