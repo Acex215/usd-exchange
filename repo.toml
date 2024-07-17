@@ -149,7 +149,8 @@ archive_post_unpack_cmds = [
 library_paths = [
     "${test_root}/lib",
     # required because the CI runners don't necessarily match the python flavor requested
-    "$root/_build/target-deps/python/lib",
+    "$root/_build/target-deps/python/lib",  # for linux
+    "$root/_build/target-deps/python",  # for windows
     # this is for windows only, when running on basic machines without c/c++ runtimes
     "$root/_build/host-deps/msvc/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64",
 ]
