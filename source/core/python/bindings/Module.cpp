@@ -10,6 +10,7 @@
 
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
+#include "LayerAlgoBindings.h"
 
 using namespace usdex::core::bindings;
 using namespace pybind11;
@@ -20,6 +21,7 @@ namespace
 PYBIND11_MODULE(_usdex_core, m)
 {
     bindCore(m);
+    bindLayerAlgo(m);
     bindCameraAlgo(m);
 }
 

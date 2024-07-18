@@ -12,6 +12,11 @@ __all__ = [
     # core
     "version",
     "deprecated",
+    # layers
+    "hasLayerAuthoringMetadata",
+    "setLayerAuthoringMetadata",
+    "saveLayer",
+    "exportLayer",
     # camera
     "defineCamera",
 ]
