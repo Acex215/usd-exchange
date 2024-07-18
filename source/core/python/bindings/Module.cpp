@@ -11,6 +11,7 @@
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
 #include "LayerAlgoBindings.h"
+#include "NameAlgoBindings.h"
 #include "StageAlgoBindings.h"
 #include "XformAlgoBindings.h"
 
@@ -25,6 +26,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindCore(m);
     bindLayerAlgo(m);
     bindStageAlgo(m);
+    bindNameAlgo(m);
     bindXformAlgo(m);
     bindCameraAlgo(m);
 }

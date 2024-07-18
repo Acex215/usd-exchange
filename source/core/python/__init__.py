@@ -21,6 +21,18 @@ __all__ = [
     "createStage",
     "configureStage",
     "saveStage",
+    # names
+    "getValidPrimName",
+    "getValidPrimNames",
+    "getValidChildNames",
+    "ValidChildNameCache",
+    "getValidPropertyName",
+    "getValidPropertyNames",
+    "getDisplayName",
+    "setDisplayName",
+    "clearDisplayName",
+    "blockDisplayName",
+    "computeEffectiveDisplayName",
     # xform
     "defineXform",
     "RotationOrder",

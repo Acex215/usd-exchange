@@ -270,6 +270,7 @@ def __install(
         if installTestModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
             __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
+            __installPythonModule(prebuild_dict["copy"], f"{transcoding_path}/python", "omni/transcoding", "_omni_transcoding")
             # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
             prebuild_dict["copy"].extend(
                 [
