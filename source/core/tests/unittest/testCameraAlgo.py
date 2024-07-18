@@ -76,7 +76,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         with usdex.test.ScopedTfDiagnosticChecker(
             self,
             [
-                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "opinions in the composed layer stack are stronger"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*opinions in the composed layer stack are stronger"),
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, "Could not clear xformOpOrder"),
             ],
         ):
