@@ -164,7 +164,7 @@ class DefineFunctionTestCaseMixin(ABC):
         path = Sdf.Path("/World/InvalidStage")
 
         # A null object will be accepted but the function will return a failure
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "Invalid UsdStage")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Invalid UsdStage")]):
             result = self.defineFunc(None, path, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
@@ -174,19 +174,19 @@ class DefineFunctionTestCaseMixin(ABC):
 
         # The absolute root is an invalid
         path = Sdf.Path("/")
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # A relative path is invalid
         path = Sdf.Path("Foo/Bar")
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # An uninitialized path is invalid
         path = Sdf.Path()
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
@@ -195,8 +195,8 @@ class DefineFunctionTestCaseMixin(ABC):
         with ScopedTfDiagnosticChecker(
             self,
             [
-                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
-                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced"),
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, ".*authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, '.*at "/World/Instance/Instanced"'),
             ],
         ):
             result = self.defineFunc(stage, path, *self.requiredArgs)
@@ -207,8 +207,8 @@ class DefineFunctionTestCaseMixin(ABC):
         with ScopedTfDiagnosticChecker(
             self,
             [
-                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
-                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced/Prim"),
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, ".*authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, '.*at "/World/Instance/Instanced/Prim"'),
             ],
         ):
             result = self.defineFunc(stage, path, *self.requiredArgs)
@@ -221,19 +221,19 @@ class DefineFunctionTestCaseMixin(ABC):
 
         # An un-initialized prim is invalid
         parent = Usd.Prim()
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # An invalid prim is invalid
         parent = stage.GetPrimAtPath("/World/InvalidParent")
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # An instance proxy is invalid
         parent = stage.GetPrimAtPath("/World/Instance/Instanced")
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "invalid location")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
@@ -244,19 +244,19 @@ class DefineFunctionTestCaseMixin(ABC):
 
         # An empty string is invalid
         name = ""
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*not a valid prim name")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # A string containing illegal characters is invalid
         name = "Foo Bar"
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*not a valid prim name")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
         # A string starting with a numeric is invalid
         name = "1_Prim"
-        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "not a valid prim name")]):
+        with ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*not a valid prim name")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
 
@@ -266,8 +266,8 @@ class DefineFunctionTestCaseMixin(ABC):
         with ScopedTfDiagnosticChecker(
             self,
             [
-                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "authoring to an instance proxy is not allowed"),
-                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "/World/Instance/Instanced"),
+                (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, ".*authoring to an instance proxy is not allowed"),
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, '.*at "/World/Instance/Instanced"'),
             ],
         ):
             result = self.defineFunc(parent, name, *self.requiredArgs)

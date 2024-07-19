@@ -8,6 +8,7 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+import re
 from typing import List, Tuple
 
 from pxr import Tf, UsdUtils
@@ -38,7 +39,14 @@ class ScopedTfDiagnosticChecker:
             if i >= len(self.expected):
                 return
             self.testCase.assertEqual(error.errorCode, self.expected[i][0])
-            self.testCase.assertIn(self.expected[i][1], error.commentary)
+            pattern = f"{self.expected[i][1]}"
+            self.testCase.assertTrue(
+                re.match(pattern, error.commentary),
+                msg=f"""
+                Pattern: {pattern}
+                Commentary: {error.commentary}
+                """,
+            )
             i += 1
 
         for diagnostic in diagnostics:
@@ -46,7 +54,14 @@ class ScopedTfDiagnosticChecker:
             if i >= len(self.expected):
                 return
             self.testCase.assertEqual(diagnostic.diagnosticCode, self.expected[i][0])
-            self.testCase.assertIn(self.expected[i][1], diagnostic.commentary)
+            pattern = f"{self.expected[i][1]}"
+            self.testCase.assertTrue(
+                re.match(pattern, diagnostic.commentary),
+                msg=f"""
+                Pattern: {pattern}
+                Commentary: {diagnostic.commentary}
+                """,
+            )
             i += 1
 
         self.testCase.assertEqual(i, len(self.expected))
