@@ -71,6 +71,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         stage.SetEditTarget(Usd.EditTarget(self.strongerSubLayer))
         result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionSuccess(result)
+        self.assertIsValidUsd(result.GetPrim().GetStage())
 
         stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
         with usdex.test.ScopedTfDiagnosticChecker(
@@ -90,6 +91,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         camera = usdex.core.defineCamera(stage, path, cameraData)
         self.assertDefineFunctionSuccess(camera)
         self.assertCamerasEqual(camera, cameraData)
+        self.assertIsValidUsd(stage)
 
     def testDefineOrthoCamera(self):
         stage = self.createTestStage()
@@ -98,6 +100,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         camera = usdex.core.defineCamera(stage, path, cameraData)
         self.assertDefineFunctionSuccess(camera)
         self.assertCamerasEqual(camera, cameraData)
+        self.assertIsValidUsd(stage)
 
     def testDefineTransformedCamera(self):
         stage = self.createTestStage()
@@ -111,3 +114,4 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         camera = usdex.core.defineCamera(stage, path, cameraData)
         self.assertDefineFunctionSuccess(camera)
         self.assertCamerasEqual(camera, cameraData)
+        self.assertIsValidUsd(stage)
