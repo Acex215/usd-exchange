@@ -15,7 +15,7 @@
 
 #include "Api.h"
 
-//! @brief The namespace for the Connect SDK Core Library.
+//! @brief The namespace for the OpenUSD Exchange SDK Core Library.
 namespace usdex::core
 {
 

@@ -9,7 +9,6 @@
 // its affiliates is strictly prohibited.
 
 #define DOCTEST_CONFIG_IMPLEMENT // we will be supplying main()
-#include <cxxopts.hpp>
 #include <doctest/doctest.h>
 
 int main(int argc, char** argv)

@@ -13,6 +13,7 @@
 #include <usdex/core/Version.h>
 
 #include <doctest/doctest.h>
+
 #include <string>
 
 TEST_CASE("Version and Features")

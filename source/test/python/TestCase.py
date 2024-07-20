@@ -9,8 +9,10 @@
 # its affiliates is strictly prohibited.
 
 import os
+import pathlib
 import re
 import shutil
+import sys
 import tempfile
 import unittest
 from typing import List, Optional
@@ -18,7 +20,7 @@ from typing import List, Optional
 import omni.asset_validator
 import pkg_resources
 import usdex.core
-from pxr import Sdf, Usd
+from pxr import Sdf, Usd, UsdGeom
 
 
 class TestCase(unittest.TestCase):
@@ -27,7 +29,22 @@ class TestCase(unittest.TestCase):
     """
 
     maxDiff = None
+
     validFileIdentifierRegex = r"[^A-Za-z0-9_-]"
+
+    defaultPrimName = "Root"
+    "The default prim name to be used when configuring a `Usd.Stage`"
+
+    defaultUpAxis = UsdGeom.Tokens.y
+    "The default Up Axis to be used when configuring a `Usd.Stage`"
+
+    defaultLinearUnits = UsdGeom.LinearUnits.meters
+    "The default Linear Units to be used when configuring a `Usd.Stage`"
+
+    defaultAuthoringMetadata = (
+        f"usdex unittests: {usdex.core.version()}, usd_ver: {Usd.GetVersion()}, python_ver: {sys.version_info.major}.{sys.version_info.minor}"
+    )
+    "The default authoring metadata to be used when configuring a `Usd.Stage`"
 
     def setUp(self):
         super().setUp()
@@ -87,6 +104,13 @@ class TestCase(unittest.TestCase):
     def assertUsdLayerEncoding(self, layer: Sdf.Layer, encoding: str):
         """Assert that the given layer uses the given encoding type"""
         self.assertEqual(self.getUsdEncoding(layer), encoding)
+
+    def assertSdfLayerIdentifier(self, layer, identifier):
+        """Assert that the given layer has the expected identifier"""
+        # Resolve paths to normalize casing and then make them into posix paths, this removes platform specific variations
+        expected = pathlib.Path(identifier).resolve().as_posix()
+        returned = pathlib.Path(layer.identifier).resolve().as_posix()
+        self.assertEqual(expected, returned)
 
     def tmpLayer(self, name: str = "", ext: str = "usda") -> Sdf.Layer:
         """
