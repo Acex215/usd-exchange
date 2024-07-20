@@ -38,9 +38,7 @@ class TestCase(unittest.TestCase):
         """Assert that given asset passes all enabled validation rules
 
         Args:
-             asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
-
-        Kwargs:
+            asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
             extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
             msg: Optional message to report while validation failed.
