@@ -46,7 +46,7 @@
 //!     Do not include the version in this message, it will be appended automatically.
 #define USDEX_DEPRECATED(version, message) [[deprecated(message ". It was deprecated in v" version " and will be removed in the future.")]]
 
-//! Define USDEX_API macro based on whether or not we are compiling omni_connect_core,
+//! Define USDEX_API macro based on whether or not we are compiling usdex_core,
 //! or including headers for linking to it. Functions that wish to be exported from a .dll/.so
 //! should be decorated with USDEX_API.
 #ifdef usdex_core_EXPORTS

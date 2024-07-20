@@ -79,7 +79,7 @@ group "core"
         usdex_build.use_fmt()
         usdex_build.use_cxxopts()
         usdex_build.use_doctest()
-        usdex_build.use_usd({"gf", "sdf", "tf", "usd", "usdGeom", "vt"})
+        usdex_build.use_usd({"arch", "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "vt"})
         usdex_build.use_usdex_core()
         filter { "configurations:release" }
             links { "tbb" } -- required by use of TfErrorMarks

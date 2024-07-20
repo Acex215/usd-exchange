@@ -38,7 +38,7 @@ def generate_header(target_file, license_preamble, license_text, with_python):
 #pragma once
 
 //! @file {target_file.split("include/")[-1]}
-//! @brief //! Feature macros for this library
+//! @brief Feature macros for this library
 //! Automatically generated file
 
 //! With Python feature.
