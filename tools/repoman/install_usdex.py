@@ -88,6 +88,7 @@ def __install(
     clean: bool,
     version: str,
     installPythonLibs: bool,
+    installTestModules: bool,
 ):
     tokens = omni.repo.man.get_tokens()
     tokens["config"] = buildConfig
@@ -108,10 +109,11 @@ def __install(
     runtimeDeps = ["omni_transcoding", f"usd-{buildConfig}"]
     if python_ver != "0":
         runtimeDeps.append("python")
+        if installTestModules:
+            runtimeDeps.append("omni_asset_validator")
 
     print("Download usd-exchange dependencies...")
     depsFile = f"{usd_exchange_path}/dev/deps/all-deps.packman.xml"
-    # FUTURE: filter downloads for runtimeDeps only
     result = packmanapi.pull(depsFile, platform=platform, tokens=tokens, return_extra_info=True)
     for dep, info in result.items():
         if dep in runtimeDeps:
@@ -135,6 +137,7 @@ def __install(
     python_path = f"{targetDepsDir}/python"
     usd_path = f"{targetDepsDir}/usd/{buildConfig}"
     transcoding_path = f"{targetDepsDir}/omni_transcoding/{buildConfig}"
+    validator_path = f"{targetDepsDir}/omni_asset_validator"
 
     libInstallDir = "${install_dir}/lib"
     usdPluginInstallDir = "${install_dir}/lib/usd"
@@ -227,9 +230,13 @@ def __install(
             ]
         )
     if python_ver != "0":
-        # usdex
+        # usdex core only
         __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/core", "_usdex_core")
-        # usd
+        # usdex.test and its dependencies
+        if installTestModules:
+            __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
+            __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
+        # usd dependencies
         prebuild_dict["copy"].extend(
             [
                 [usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir],
@@ -242,7 +249,7 @@ def __install(
                     [python_path + "/${lib_prefix}*python*${lib_ext}*", libInstallDir],  # windows
                 ]
             )
-
+        # minimal selection of usd modules
         for moduleNamespace, libPrefix in (
             ("pxr/Ar", "_ar"),
             ("pxr/Gf", "_gf"),
@@ -347,6 +354,16 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         This has no effect if --python-version=0
         """,
     )
+    parser.add_argument(
+        "--install-test",
+        action="store_true",
+        dest="install_test_modules",
+        default=False,
+        help="""
+        Enable to install `usdex.test` python unittest module and its dependencies.
+        This has no effect if --python-version=0
+        """,
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         toolConfig = config["repo_install_usdex"]
@@ -373,6 +390,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             options.clean,
             options.version,
             options.install_python_libs,
+            options.install_test_modules,
         )
 
     return run_repo_tool

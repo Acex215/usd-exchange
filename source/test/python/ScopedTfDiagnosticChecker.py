@@ -15,7 +15,35 @@ from pxr import Tf, UsdUtils
 
 
 class ScopedTfDiagnosticChecker:
-    """A context manager to capture and assert expected Tf.Diagnostics and Tf.ErrorMarks"""
+    """A context manager to capture and assert expected `Tf.Diagnostics` and `Tf.ErrorMarks`
+
+    Construct a `ScopedTfDiagnosticChecker` with a `unittest.TestCase` instance and a list of expected diagnostic messages.
+
+    Each `Tuple` must contain:
+
+        - One `Tf.DiagnosticType` (e.g `Tf.TF_DIAGNOSTIC_STATUS_TYPE`)
+        - A regex pattern matching the expected diagnostic commentary (message)
+
+    On context exit, the `ScopedTfDiagnosticChecker` will assert that all expected `Tf.Diagnostics` and `Tf.ErrorMarks` were emmitted.
+
+    Note:
+
+        Any `Tf.ErrorMarks` will be diagnosed before any general `Tf.Diagnostics`. The supplied list of expected values should account for this.
+
+    Example:
+
+        .. code-block:: python
+
+            import unittest
+
+            import usdex.test
+            from pxr import Tf
+
+            class MyTestCase(unittest.TestCase):
+                def testDiagnostics(self):
+                    with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*foo")]):
+                        Tf.Warn("This message ends in foo")
+    """
 
     def __init__(self, testCase, expected: List[Tuple[Tf.DiagnosticType, str]]) -> None:
         self.testCase = testCase

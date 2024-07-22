@@ -13,9 +13,11 @@ import re
 import shutil
 import tempfile
 import unittest
+from typing import List, Optional
 
+import omni.asset_validator
 import pkg_resources
-import usdex
+import usdex.core
 from pxr import Sdf, Usd
 
 
@@ -26,6 +28,60 @@ class TestCase(unittest.TestCase):
 
     maxDiff = None
     validFileIdentifierRegex = r"[^A-Za-z0-9_-]"
+
+    def setUp(self):
+        super().setUp()
+
+        self.validationEngine = omni.asset_validator.ValidationEngine()
+
+    def assertIsValidUsd(self, asset: omni.asset_validator.AssetType, extraIssuePredicates: Optional[List] = None, msg: Optional[str] = None):
+        """Assert that given asset passes all enabled validation rules
+
+        Args:
+            asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
+            extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+                The default list of IssuePredicates will always be enabled.
+            msg: Optional message to report while validation failed.
+        """
+        issues = self.__validateUsd(asset=asset, engine=self.validationEngine, extraIssuePredicates=extraIssuePredicates)
+        if issues:
+            if msg is None:
+                msg = "\n".join(str(issue) for issue in issues)
+            self.fail(msg=msg)
+
+    def assertIsInvalidUsd(self, asset: omni.asset_validator.AssetType, issuePredicates: omni.asset_validator.IssuePredicates):
+        """Assert that given asset reported with issuePredicates
+
+        Args:
+            asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
+            issuePredicates (List): List of omni.asset_validator.IssuePredicates.
+        """
+        issues = self.__validateUsd(asset=asset, engine=self.validationEngine)
+
+        nonDetectedPredicates = []
+        for predicate in issuePredicates:
+            if not issues.filter_by(predicate):
+                nonDetectedPredicates.append(predicate)
+
+        # Chain all predicates by "or" condition
+        predicate = lambda issue: False  # First item
+        for nextPredicate in issuePredicates:
+            predicate = omni.asset_validator.IssuePredicates.Or(predicate, nextPredicate)
+        unexpectedIssues = set(issues) - set(issues.filter_by(predicate))
+
+        if not nonDetectedPredicates and not unexpectedIssues:
+            return
+
+        msg = ""
+        if nonDetectedPredicates:
+            msg += "The following IssuePredicates did not occur:\n"
+            msg = msg + "\n".join(str(predicate) for predicate in nonDetectedPredicates) + "\n"
+
+        if unexpectedIssues:
+            msg += "The following unexpected issues occurred:\n"
+            msg = msg + "\n".join(str(issue) for issue in unexpectedIssues) + "\n"
+
+        self.fail(msg=msg)
 
     def assertUsdLayerEncoding(self, layer: Sdf.Layer, encoding: str):
         """Assert that the given layer uses the given encoding type"""
@@ -112,3 +168,65 @@ class TestCase(unittest.TestCase):
                 return "usda"
             if usdcFileFormat.CanRead(layer.identifier):
                 return "usdc"
+
+    @staticmethod
+    def __validateUsd(
+        asset: omni.asset_validator.AssetType,
+        engine: omni.asset_validator.ValidationEngine = None,
+        extraIssuePredicates: Optional[List] = None,
+    ) -> omni.asset_validator.IssuesList:
+        """Validate asset passes all enabled validation rules
+
+        Args:
+            asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
+
+        Kwargs:
+            engine: Optional ValidationEngine for running Rules on a given Asset.
+                If not supplied, a default ValidationEngine will be constructed.
+            extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+                The default list of IssuePredicates will always be enabled.
+
+        Return:
+            A list of USD asset Issues.
+        """
+        engine = engine or omni.asset_validator.ValidationEngine()
+        if extraIssuePredicates:
+            issuePredicates = extraIssuePredicates
+            issuePredicates.extend(TestCase._defaultAllowedIssuePredicates())
+        else:
+            issuePredicates = TestCase._defaultAllowedIssuePredicates()
+
+        result = engine.validate(asset)
+
+        # Chain all predicates by "or" condition
+        predicate = lambda issue: False  # First item
+        for nextPredicate in issuePredicates:
+            predicate = omni.asset_validator.IssuePredicates.Or(predicate, nextPredicate)
+
+        issues = result.issues()
+        allowedIssues = issues.filter_by(predicate)
+        if allowedIssues:
+            issues = omni.asset_validator.IssuesList(set(issues) - set(allowedIssues))
+
+        return issues
+
+    @staticmethod
+    def _defaultAllowedIssuePredicates() -> List[omni.asset_validator.IssuePredicates]:
+        """Return a list of callables that determine if an issue can be bypassed by tests"""
+
+        def checkUnresolvableDependenciesIssue(issue):
+            # Anon layers are reported as unresolvable external dependency by Asset Validator
+            if re.match("Found unresolvable external dependency 'anon:.*'\.", issue.message):
+                return True
+            # material and maps
+            if re.match("Found unresolvable external dependency '.*\.(mdl|png)'\.", issue.message):
+                return True
+
+        # Allows any issue reporting `The path "Omni*.mdl" does not exist.` to be bypassed. We should remove it once we have an agreement of
+        # how to handle this case
+        omniMdlPredicate = omni.asset_validator.IssuePredicates.And(
+            omni.asset_validator.IssuePredicates.ContainsMessage("The path Omni"),
+            omni.asset_validator.IssuePredicates.ContainsMessage(".mdl does not exist."),
+        )
+
+        return [omniMdlPredicate, checkUnresolvableDependenciesIssue]

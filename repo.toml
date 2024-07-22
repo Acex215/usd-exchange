@@ -71,6 +71,7 @@ post_build.commands = [
         "install_usdex",
         "-c", "$config",
         "--use-existing-build",
+        "--install-test",
         "--staging-dir", "_build",
         "--install-dir", "_build/$platform/$config",
     ],
@@ -142,6 +143,7 @@ archive_post_unpack_cmds = [
         "install_usdex",
         "-c", "$config",
         "--use-existing-build",
+        "--install-test",
         "--staging-dir", "_build",
         "--install-dir", "${test_root}",
     ],
@@ -183,9 +185,11 @@ executables = [
 [repo_format]
 cpp.files.exclude = [
     "include/usdex/pybind/BindingUtils.h",
+    "_*/**",
 ]
 python.files.exclude."++" = [
     "tools/repoman/pybind11_stubgen.py",
+    "_*/**",
 ]
 python.line_length = 150
 python.maintain_legal_blurbs = true
