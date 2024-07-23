@@ -39,8 +39,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
 
     def assertCamerasEqual(self, camera: UsdGeom.Camera, cameraData: Gf.Camera):
         self.assertEqual(camera.GetLocalTransformation(), cameraData.transform)
-        # TODO: Restore this test once getLocalTransformMatrix has been ported
-        # self.assertEqual(usdex.core.getLocalTransformMatrix(camera.GetPrim()), cameraData.transform)
+        self.assertEqual(usdex.core.getLocalTransformMatrix(camera.GetPrim()), cameraData.transform)
 
         projection = camera.GetProjectionAttr().Get()
         if projection == "perspective":
