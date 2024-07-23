@@ -33,6 +33,9 @@ class TestCase(unittest.TestCase):
         super().setUp()
 
         self.validationEngine = omni.asset_validator.ValidationEngine()
+        for rule in omni.asset_validator.BaseRuleChecker.__subclasses__():
+            if not rule.__name__.startswith("ARKit"):
+                self.validationEngine.enable_rule(rule)
 
     def assertIsValidUsd(self, asset: omni.asset_validator.AssetType, extraIssuePredicates: Optional[List] = None, msg: Optional[str] = None):
         """Assert that given asset passes all enabled validation rules
@@ -46,7 +49,7 @@ class TestCase(unittest.TestCase):
         issues = self.__validateUsd(asset=asset, engine=self.validationEngine, extraIssuePredicates=extraIssuePredicates)
         if issues:
             if msg is None:
-                msg = "\n".join(str(issue) for issue in issues)
+                msg = "\n".join(str(issue) for issue in list(issues))
             self.fail(msg=msg)
 
     def assertIsInvalidUsd(self, asset: omni.asset_validator.AssetType, issuePredicates: omni.asset_validator.IssuePredicates):
@@ -64,9 +67,7 @@ class TestCase(unittest.TestCase):
                 nonDetectedPredicates.append(predicate)
 
         # Chain all predicates by "or" condition
-        predicate = lambda issue: False  # First item
-        for nextPredicate in issuePredicates:
-            predicate = omni.asset_validator.IssuePredicates.Or(predicate, nextPredicate)
+        predicate = omni.asset_validator.IssuePredicates.Or(*issuePredicates)
         unexpectedIssues = set(issues) - set(issues.filter_by(predicate))
 
         if not nonDetectedPredicates and not unexpectedIssues:
@@ -164,15 +165,14 @@ class TestCase(unittest.TestCase):
         # If the encoding is implicit check which of the explicit extensions can read the layer and return that type
         usdFileFormat = Sdf.FileFormat.FindById("usd")
         if fileFormat == usdFileFormat:
-            if usdaFileFormat.CanRead(layer.identifier):
-                return "usda"
-            if usdcFileFormat.CanRead(layer.identifier):
-                return "usdc"
+            return usdFileFormat.GetUnderlyingFormatForLayer(layer)
+
+        return ""
 
     @staticmethod
     def __validateUsd(
         asset: omni.asset_validator.AssetType,
-        engine: omni.asset_validator.ValidationEngine = None,
+        engine: omni.asset_validator.ValidationEngine,
         extraIssuePredicates: Optional[List] = None,
     ) -> omni.asset_validator.IssuesList:
         """Validate asset passes all enabled validation rules
@@ -181,15 +181,13 @@ class TestCase(unittest.TestCase):
             asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
 
         Kwargs:
-            engine: Optional ValidationEngine for running Rules on a given Asset.
-                If not supplied, a default ValidationEngine will be constructed.
+            engine: ValidationEngine for running Rules on a given Asset.
             extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
 
         Return:
             A list of USD asset Issues.
         """
-        engine = engine or omni.asset_validator.ValidationEngine()
         if extraIssuePredicates:
             issuePredicates = extraIssuePredicates
             issuePredicates.extend(TestCase._defaultAllowedIssuePredicates())
@@ -198,15 +196,10 @@ class TestCase(unittest.TestCase):
 
         result = engine.validate(asset)
 
-        # Chain all predicates by "or" condition
-        predicate = lambda issue: False  # First item
-        for nextPredicate in issuePredicates:
-            predicate = omni.asset_validator.IssuePredicates.Or(predicate, nextPredicate)
-
         issues = result.issues()
-        allowedIssues = issues.filter_by(predicate)
+        allowedIssues = issues.filter_by(omni.asset_validator.IssuePredicates.Or(*issuePredicates))
         if allowedIssues:
-            issues = omni.asset_validator.IssuesList(set(issues) - set(allowedIssues))
+            issues = omni.asset_validator.IssuesList(list(set(issues) - set(allowedIssues)))
 
         return issues
 
