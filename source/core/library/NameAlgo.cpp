@@ -120,6 +120,21 @@ TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& nam
     return getValidNames(names, usdex::core::getValidPrimName, cache);
 }
 
+TfToken usdex::core::getValidChildName(const pxr::UsdPrim& prim, const std::string& name)
+{
+    ValidChildNameCache cache;
+    cache.update(prim);
+    TfToken result = cache.getValidChildName(prim, name);
+    if (result == _tokens->error)
+    {
+        TF_RUNTIME_ERROR(
+            "Could not produce a valid child name for <%s> based on the preferred name %s",
+            prim.GetPath().GetAsString().c_str(),
+            name.c_str()
+        );
+    }
+    return result;
+}
 
 TfTokenVector usdex::core::getValidChildNames(const UsdPrim& prim, const std::vector<std::string>& names)
 {

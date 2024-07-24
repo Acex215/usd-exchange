@@ -118,6 +118,34 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
             ["mesh__", "mesh___1", "mesh___2", "mesh___3"],
         )
 
+    def testGetValidChildName(self):
+        # Define a prim for which we will get a valid child name
+        stage = Usd.Stage.CreateInMemory()
+        prim = UsdGeom.Xform.Define(stage, "/Root").GetPrim()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        self.assertIsValidUsd(stage)
+
+        # Add a child with a "def" specifier
+        UsdGeom.Xform.Define(stage, "/Root/cube")
+        # Add a child with an "class" specifier
+        stage.CreateClassPrim("/Root/cube_1")
+        # Add a child with an "over" specifier
+        UsdGeom.Xform.Define(stage, "/Root/cube_2")
+        # Define and deactivate a child
+        UsdGeom.Xform.Define(stage, "/Root/cube_3").GetPrim().SetActive(False)
+
+        # Existing names on stage with inactivate prim
+        self.assertEqual(usdex.core.getValidChildName(prim, "cube"), "cube_4")
+        self.assertEqual(usdex.core.getValidChildName(prim, "cube_1"), "cube_1_1")
+        self.assertEqual(usdex.core.getValidChildName(prim, "sphere"), "sphere")
+        self.assertEqual(usdex.core.getValidChildName(prim, "cube_3"), "cube_3_1")
+
+        # Illegal names
+        self.assertEqual(usdex.core.getValidChildName(prim, "123cube"), "tn__123cube_")
+        self.assertEqual(usdex.core.getValidChildName(prim, r"sphere%$%#ad@$1"), "tn__spheread1_kAHAJ8jC")
+        self.assertEqual(usdex.core.getValidChildName(prim, "cube$3"), "tn__cube3_Y6")
+        self.assertEqual(usdex.core.getValidChildName(prim, ""), "tn__")
+
     def testGetValidChildNames(self):
         # Define a prim for which we will get valid child names
         stage = Usd.Stage.CreateInMemory()

@@ -48,6 +48,13 @@ USDEX_API std::string getValidPrimName(const std::string& name);
 //! @returns A vector of valid and unique names.
 USDEX_API pxr::TfTokenVector getValidPrimNames(const std::vector<std::string>& names, const pxr::TfTokenVector& reservedNames = {});
 
+//! Take a prim and a preferred name. Return a valid and unique name as the child name of the given prim.
+//!
+//! @param prim The USD prim where the given prim name should live under.
+//! @param name A preferred prim name.
+//! @returns A valid and unique name.
+USDEX_API pxr::TfToken getValidChildName(const pxr::UsdPrim& prim, const std::string& name);
+
 //! Take a prim and a vector of the preferred names. Return a matching vector of valid and unique names as the child names of the given prim.
 //!
 //! @param prim The USD prim where the given prim names should live under.
