@@ -232,10 +232,6 @@ def __install(
     if python_ver != "0":
         # usdex core only
         __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/core", "_usdex_core")
-        # usdex.test and its dependencies
-        if installTestModules:
-            __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
-            __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
         # usd dependencies
         prebuild_dict["copy"].extend(
             [
@@ -250,7 +246,7 @@ def __install(
                 ]
             )
         # minimal selection of usd modules
-        for moduleNamespace, libPrefix in (
+        usdModules = [
             ("pxr/Ar", "_ar"),
             ("pxr/Gf", "_gf"),
             ("pxr/Kind", "_kind"),
@@ -268,7 +264,25 @@ def __install(
             ("pxr/UsdUtils", "_usdUtils"),
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
-        ):
+        ]
+
+        # usdex.test
+        if installTestModules:
+            __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
+            __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
+            # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
+            prebuild_dict["copy"].extend(
+                [
+                    [usd_path + "/lib/${lib_prefix}*usdSkel${lib_ext}", libInstallDir],
+                ]
+            )
+            usdModules.extend(
+                [
+                    ("pxr/UsdSkel", "_usdSkel"),
+                ]
+            )
+
+        for moduleNamespace, libPrefix in usdModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_path}/lib/python", moduleNamespace, libPrefix)
 
     omni.repo.man.fileutils.ERROR_IF_NOT_EXIST = True

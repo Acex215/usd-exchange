@@ -55,16 +55,26 @@ IncludeCategories:
     Priority:        1
   - Regex:           '"usdex\/pybind\/(.*).h"'
     Priority:        2
-  - Regex:           '"(.*).h"'
+  - Regex:           '"usdex\/test\/(.*).h"'
     Priority:        3
-  - Regex:           '<usdex\/.+>'
+  - Regex:           '"(.*).h"'
     Priority:        4
-  - Regex:           '<pxr\/.+>'
+  - Regex:           '<usdex\/test\/.+>'
     Priority:        5
-  - Regex:           '<pybind11\/.+>'
+  - Regex:           '<usdex\/pybind\/.+>'
     Priority:        6
-  - Regex:           '<.+>'
+  - Regex:           '<usdex\/core\/.+>'
     Priority:        7
+  - Regex:           '<pxr\/.+>'
+    Priority:        8
+  - Regex:           '<pybind11\/.+>'
+    Priority:        9
+  - Regex:           '<fmt\/.+>'
+    Priority:        10
+  - Regex:           '<doctest\/.+>'
+    Priority:        11
+  - Regex:           '<.+>'
+    Priority:        12
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentFunctionDeclarationAfterType: false

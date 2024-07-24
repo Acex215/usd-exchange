@@ -39,6 +39,7 @@ class CoreTest(unittest.TestCase):
         allowList = [
             "os",  # module necessary to locate bindings on windows
             "_usdex_core",  # our binding module
+            "_StageAlgoBindings",  # hand rolled binding
         ]
         allowList.extend([x for x in dir(usdex.core) if x.startswith("__")])  # private members
 

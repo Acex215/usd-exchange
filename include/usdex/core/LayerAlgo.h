@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/LayerAlgo.h
-//! @brief Utilities for manipulating SdfLayer data
+//! @brief Utility functions to provide consistant authoring of `SdfLayers`
 
 #include "Api.h"
 
@@ -35,7 +35,7 @@ namespace usdex::core
 //! the content author should be captured via `SdfLayer::SetComment`. While these are trivial using `SdfLayer` public methods, they are
 //! also easy to forget, and difficult to discover.
 //!
-//! These functions assist authoring applications in settings authoring metadata, so that each application can produce consistant provenance
+//! These functions assist authoring applications in setting authoring metadata, so that each application can produce consistant provenance
 //! information. The metadata should only add information which can be used to track the data back to its origin. It should not be used to
 //! store sensitive information about the content, nor about the end user (i.e. do not use it to store Personal Identifier Information).
 //!

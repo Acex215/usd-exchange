@@ -17,6 +17,10 @@ __all__ = [
     "setLayerAuthoringMetadata",
     "saveLayer",
     "exportLayer",
+    # stage
+    "createStage",
+    "configureStage",
+    "saveStage",
     # camera
     "defineCamera",
 ]
@@ -34,6 +38,9 @@ if hasattr(os, "add_dll_directory"):
         from ._usdex_core import *  # noqa
 else:
     from ._usdex_core import *  # noqa
+
+# Import hand rolled python bindings
+from ._StageAlgoBindings import *  # noqa
 
 
 def deprecated(version: str, message: str):

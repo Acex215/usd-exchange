@@ -8,16 +8,12 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-import sys
-
 import usdex.core
 import usdex.test
-from pxr import Sdf, Tf, Usd
+from pxr import Sdf, Tf
 
 
 class LayerAlgoTest(usdex.test.TestCase):
-
-    defaultAuthoringMetadata = f"usdex unittests: {usdex.core.version()}, usd_ver: {Usd.GetVersion()} python_ver: {sys.version}"
 
     def __expectedAuthoringMetadata(self):
         return {

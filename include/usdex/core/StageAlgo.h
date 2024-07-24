@@ -1,0 +1,107 @@
+// SPDX-FileCopyrightText: Copyright (c) 2022-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: LicenseRef-NvidiaProprietary
+//
+// NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
+// property and proprietary rights in and to this material, related
+// documentation and any modifications thereto. Any use, reproduction,
+// disclosure or distribution of this material and related documentation
+// without an express license agreement from NVIDIA CORPORATION or
+// its affiliates is strictly prohibited.
+
+#pragma once
+
+//! @file usdex/core/StageAlgo.h
+//! @brief Utility functions to provide consistant authoring of `UsdStages`
+
+#include "Api.h"
+
+#include <pxr/base/tf/token.h>
+#include <pxr/usd/usd/stage.h>
+
+#include <optional>
+#include <string_view>
+
+namespace usdex::core
+{
+
+//! @defgroup stage UsdStage Algorithms
+//!
+//! Utility functions to provide consistant authoring of `UsdStages`
+//!
+//! When authoring `UsdStages` it is important to configure certain metrics & metadata on the root `SdfLayer` of the stage. While this is trivial
+//! using various `Usd` and `UsdGeom` public methods, it is also easy to forget, and difficult to discover.
+//!
+//! These functions assist authoring applications in setting stage metrics and authoring metadata (see @ref layers), so that each application can
+//! produce consistant metadata on the `SdfLayers` it exports.
+
+//! @{
+
+//! Create and configure a `UsdStage` so that the defining metadata is explicitly authored.
+//!
+//! See `configureStage` for more details.
+//!
+//! @note The extension of the `identifier` must be associated with a file format that supports editing.
+//!
+//! @param identifier The identifier to be used for the root layer of this stage.
+//! @param defaultPrimName Name of the default root prim.
+//! @param upAxis The up axis for all the geometry contained in the stage.
+//! @param linearUnits The meters per unit for all linear measurements in the stage.
+//! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
+//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
+//! @param fileFormatArgs Additional file format-specific arguments to be supplied during Stage creation.
+//! @returns The newly created stage or a null pointer.
+USDEX_API pxr::UsdStageRefPtr createStage(
+    const std::string& identifier,
+    const std::string& defaultPrimName,
+    const pxr::TfToken& upAxis,
+    const double linearUnits,
+    const std::string& authoringMetadata,
+    const pxr::SdfLayer::FileFormatArguments& fileFormatArgs = pxr::SdfLayer::FileFormatArguments()
+);
+
+//! Configure a stage so that the defining metadata is explicitly authored.
+//!
+//! The default prim will be used as the target of a Reference or Payload to this layer when no explicit prim path is specified.
+//! A root prim with the given `defaultPrimName` will be defined on the stage if one is not already specified.
+//! If a new prim is defined then the prim type will be set to `Scope`.
+//!
+//! The stage metrics of [Up Axis](https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details) and
+//! [Linear Units](https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details) will be authored.
+//!
+//! The root layer will be annotated with authoring metadata, unless previously annotated. This is to preserve
+//! authoring metadata on referenced layers that came from other applications. See @ref layers for more details
+//! on `setLayerAuthoringMetadata`.
+//!
+//! @param stage The stage to be configured.
+//! @param defaultPrimName Name of the default root prim.
+//! @param upAxis The up axis for all the geometry contained in the stage.
+//! @param linearUnits The meters per unit for all linear measurements in the stage.
+//! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
+//! @returns A bool indicating if the metadata was successfully authored.
+USDEX_API bool configureStage(
+    pxr::UsdStagePtr stage,
+    const std::string& defaultPrimName,
+    const pxr::TfToken& upAxis,
+    const double linearUnits,
+    const std::string& authoringMetadata
+);
+
+//! Save the given `UsdStage` with metadata applied to all dirty layers.
+//!
+//! Save all dirty layers and sublayers contributing to this stage.
+//!
+//! All dirty layers will be annotated with authoring metadata, unless previously annotated. This is to preserve
+//! authoring metadata on referenced layers that came from other applications. See @ref layers for more details
+//! on `setLayerAuthoringMetadata`.
+//!
+//! The comment will be authored in all layers as the SdfLayer comment.
+//!
+//! @param stage The stage to be saved.
+//! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
+//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
+//! @param comment The comment will be authored in all dirty layers as the `Sdf.Layer` comment.
+USDEX_API void saveStage(pxr::UsdStagePtr stage, const std::string& authoringMetadata, std::optional<std::string_view> comment = std::nullopt);
+
+//! @}
+
+} // namespace usdex::core
