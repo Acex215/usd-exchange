@@ -112,6 +112,22 @@ class TestCase(unittest.TestCase):
         returned = pathlib.Path(layer.identifier).resolve().as_posix()
         self.assertEqual(expected, returned)
 
+    def assertAttributeHasAuthoredValue(self, attr: Usd.Attribute, time=Usd.TimeCode.Default()):
+        """Asserts that a `Usd.Attribute` has a value authored at a given time"""
+        if time == Usd.TimeCode.Default():
+            self.assertIsNotNone(attr.Get(time))
+        else:
+            self.assertIn(time, attr.GetTimeSamples())
+
+    def assertMatricesAlmostEqual(self, first, second, places=12):
+        """Assert that all 16 values of a pair of 4x4 matrices are equal, to a specified number of decimal places"""
+        for row in range(4):
+            for col in range(4):
+                x = first[row][col]
+                y = second[row][col]
+                self.assertEqual(round(x - y, places), 0)
+        self.assertTrue(True)
+
     def tmpLayer(self, name: str = "", ext: str = "usda") -> Sdf.Layer:
         """
         Create a temporary Sdf.Layer on the local filesystem

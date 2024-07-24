@@ -12,6 +12,7 @@
 #include "CoreBindings.h"
 #include "LayerAlgoBindings.h"
 #include "StageAlgoBindings.h"
+#include "XformAlgoBindings.h"
 
 using namespace usdex::core::bindings;
 using namespace pybind11;
@@ -24,6 +25,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindCore(m);
     bindLayerAlgo(m);
     bindStageAlgo(m);
+    bindXformAlgo(m);
     bindCameraAlgo(m);
 }
 

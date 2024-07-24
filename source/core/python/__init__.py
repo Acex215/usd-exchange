@@ -21,6 +21,13 @@ __all__ = [
     "createStage",
     "configureStage",
     "saveStage",
+    # xform
+    "defineXform",
+    "RotationOrder",
+    "getLocalTransform",
+    "getLocalTransformMatrix",
+    "getLocalTransformComponents",
+    "setLocalTransform",
     # camera
     "defineCamera",
 ]
