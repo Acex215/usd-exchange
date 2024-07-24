@@ -108,9 +108,9 @@ TfTokenVector getValidNames(
 
 } // namespace
 
-std::string usdex::core::getValidPrimName(const std::string& name)
+TfToken usdex::core::getValidPrimName(const std::string& name)
 {
-    return usdex::core::detail::makeValidIdentifier(name);
+    return TfToken(usdex::core::detail::makeValidIdentifier(name));
 }
 
 TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& names, const TfTokenVector& reservedNames)
@@ -220,7 +220,7 @@ void usdex::core::ValidChildNameCache::clear(const UsdPrim& prim)
     m_impl->clear(prim);
 }
 
-std::string usdex::core::getValidPropertyName(const std::string& name)
+TfToken usdex::core::getValidPropertyName(const std::string& name)
 {
     // Split the name based on the ":" delimiter
     std::vector<std::string> tokens = TfStringSplit(name, ":");
@@ -241,7 +241,7 @@ std::string usdex::core::getValidPropertyName(const std::string& name)
     }
 
     // Join the namespaces again using the ":" delimiter
-    return TfStringJoin(validTokens, ":");
+    return TfToken(TfStringJoin(validTokens, ":"));
 }
 
 TfTokenVector usdex::core::getValidPropertyNames(const std::vector<std::string>& names, const TfTokenVector& reservedNames)

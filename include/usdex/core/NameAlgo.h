@@ -39,7 +39,7 @@ namespace usdex::core
 //!
 //! @param name The input name
 //! @returns A string that is considered valid for use as a prim name.
-USDEX_API std::string getValidPrimName(const std::string& name);
+USDEX_API pxr::TfToken getValidPrimName(const std::string& name);
 
 //! Take a vector of the preferred names and return a matching vector of valid and unique names.
 //!
@@ -124,7 +124,7 @@ private:
 //!
 //! @param name The input name
 //! @returns A string that is considered valid for use as a property name.
-USDEX_API std::string getValidPropertyName(const std::string& name);
+USDEX_API pxr::TfToken getValidPropertyName(const std::string& name);
 
 //! Take a vector of the preferred names and return a matching vector of valid and unique names.
 //!
