@@ -8,31 +8,23 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include "CameraAlgoBindings.h"
-#include "CoreBindings.h"
-#include "LayerAlgoBindings.h"
-#include "NameAlgoBindings.h"
-#include "PrimvarDataBindings.h"
-#include "SettingsBindings.h"
-#include "StageAlgoBindings.h"
-#include "XformAlgoBindings.h"
+#pragma once
 
-using namespace usdex::core::bindings;
+#include "usdex/core/Settings.h"
+
+#include "usdex/pybind/UsdBindings.h"
+
+#include <pybind11/pybind11.h>
+
+using namespace usdex::core;
 using namespace pybind11;
 
-namespace
+namespace usdex::core::bindings
 {
 
-PYBIND11_MODULE(_usdex_core, m)
+void bindSettings(module& m)
 {
-    bindCore(m);
-    bindSettings(m);
-    bindLayerAlgo(m);
-    bindStageAlgo(m);
-    bindNameAlgo(m);
-    bindXformAlgo(m);
-    bindPrimvarData(m);
-    bindCameraAlgo(m);
+    m.attr("enableOmniTranscodingSetting") = USDEX_ENABLE_OMNI_TRANSCODING._name;
 }
 
-} // namespace
+} // namespace usdex::core::bindings

@@ -47,3 +47,6 @@ class CoreTest(unittest.TestCase):
             if attr in allowList:
                 continue
             self.assertIn(attr, usdex.core.__all__)
+
+        for attr in usdex.core.__all__:
+            self.assertIn(attr, dir(usdex.core))
