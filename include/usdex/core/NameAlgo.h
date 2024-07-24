@@ -39,7 +39,7 @@ namespace usdex::core
 //!
 //! @param name The input name
 //! @returns A string that is considered valid for use as a prim name.
-USDEX_API std::string getValidPrimName(const std::string& name);
+USDEX_API pxr::TfToken getValidPrimName(const std::string& name);
 
 //! Take a vector of the preferred names and return a matching vector of valid and unique names.
 //!
@@ -47,6 +47,13 @@ USDEX_API std::string getValidPrimName(const std::string& name);
 //! @param reservedNames A vector of reserved prim names. Names in the vector will not be included in the returns.
 //! @returns A vector of valid and unique names.
 USDEX_API pxr::TfTokenVector getValidPrimNames(const std::vector<std::string>& names, const pxr::TfTokenVector& reservedNames = {});
+
+//! Take a prim and a preferred name. Return a valid and unique name as the child name of the given prim.
+//!
+//! @param prim The USD prim where the given prim name should live under.
+//! @param name A preferred prim name.
+//! @returns A valid and unique name.
+USDEX_API pxr::TfToken getValidChildName(const pxr::UsdPrim& prim, const std::string& name);
 
 //! Take a prim and a vector of the preferred names. Return a matching vector of valid and unique names as the child names of the given prim.
 //!
@@ -117,7 +124,7 @@ private:
 //!
 //! @param name The input name
 //! @returns A string that is considered valid for use as a property name.
-USDEX_API std::string getValidPropertyName(const std::string& name);
+USDEX_API pxr::TfToken getValidPropertyName(const std::string& name);
 
 //! Take a vector of the preferred names and return a matching vector of valid and unique names.
 //!

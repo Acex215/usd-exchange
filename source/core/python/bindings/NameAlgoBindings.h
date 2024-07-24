@@ -57,6 +57,23 @@ void bindNameAlgo(module& m)
     );
 
     m.def(
+        "getValidChildName",
+        &getValidChildName,
+        arg("prim"),
+        arg("name"),
+        R"(
+            Take a prim and a preferred name. Return a valid and unique name as the child name of the given prim.
+
+            Args:
+                prim: The USD prim where the given prim name should live under.
+                names: A preferred prim name.
+
+            Returns:
+                A valid and unique name.
+        )"
+    );
+
+    m.def(
         "getValidChildNames",
         &getValidChildNames,
         arg("prim"),

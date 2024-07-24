@@ -108,9 +108,9 @@ TfTokenVector getValidNames(
 
 } // namespace
 
-std::string usdex::core::getValidPrimName(const std::string& name)
+TfToken usdex::core::getValidPrimName(const std::string& name)
 {
-    return usdex::core::detail::makeValidIdentifier(name);
+    return TfToken(usdex::core::detail::makeValidIdentifier(name));
 }
 
 TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& names, const TfTokenVector& reservedNames)
@@ -120,6 +120,21 @@ TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& nam
     return getValidNames(names, usdex::core::getValidPrimName, cache);
 }
 
+TfToken usdex::core::getValidChildName(const pxr::UsdPrim& prim, const std::string& name)
+{
+    ValidChildNameCache cache;
+    cache.update(prim);
+    TfToken result = cache.getValidChildName(prim, name);
+    if (result == _tokens->error)
+    {
+        TF_RUNTIME_ERROR(
+            "Could not produce a valid child name for <%s> based on the preferred name %s",
+            prim.GetPath().GetAsString().c_str(),
+            name.c_str()
+        );
+    }
+    return result;
+}
 
 TfTokenVector usdex::core::getValidChildNames(const UsdPrim& prim, const std::vector<std::string>& names)
 {
@@ -205,7 +220,7 @@ void usdex::core::ValidChildNameCache::clear(const UsdPrim& prim)
     m_impl->clear(prim);
 }
 
-std::string usdex::core::getValidPropertyName(const std::string& name)
+TfToken usdex::core::getValidPropertyName(const std::string& name)
 {
     // Split the name based on the ":" delimiter
     std::vector<std::string> tokens = TfStringSplit(name, ":");
@@ -226,7 +241,7 @@ std::string usdex::core::getValidPropertyName(const std::string& name)
     }
 
     // Join the namespaces again using the ":" delimiter
-    return TfStringJoin(validTokens, ":");
+    return TfToken(TfStringJoin(validTokens, ":"));
 }
 
 TfTokenVector usdex::core::getValidPropertyNames(const std::vector<std::string>& names, const TfTokenVector& reservedNames)
