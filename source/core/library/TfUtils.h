@@ -8,27 +8,20 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include "CameraAlgoBindings.h"
-#include "CoreBindings.h"
-#include "LayerAlgoBindings.h"
-#include "NameAlgoBindings.h"
-#include "StageAlgoBindings.h"
-#include "XformAlgoBindings.h"
+#pragma once
 
-using namespace usdex::core::bindings;
-using namespace pybind11;
+#include <string>
 
-namespace
+namespace usdex::core::detail
 {
 
-PYBIND11_MODULE(_usdex_core, m)
-{
-    bindCore(m);
-    bindLayerAlgo(m);
-    bindStageAlgo(m);
-    bindNameAlgo(m);
-    bindXformAlgo(m);
-    bindCameraAlgo(m);
-}
+//! Produce a valid identifier from `in` by replacing invalid characters with "_".
+//!
+//! This function differs from pxr::TfMakeValidIdentifier in how it handles numeric characters at the start of the value.
+//! Rather than replacing the character with an "_" this function will add an "_" prefix.
+//!
+//! @param in The input value
+//! @returns A string that is considered valid for use as an identifier.
+std::string makeValidIdentifier(const std::string& in);
 
-} // namespace
+} // namespace usdex::core::detail
