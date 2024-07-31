@@ -8,29 +8,18 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include "CameraAlgoBindings.h"
-#include "CoreBindings.h"
-#include "LayerAlgoBindings.h"
-#include "NameAlgoBindings.h"
-#include "PrimvarDataBindings.h"
-#include "StageAlgoBindings.h"
-#include "XformAlgoBindings.h"
+#include "usdex/core/PrimvarData.h"
 
-using namespace usdex::core::bindings;
-using namespace pybind11;
-
-namespace
+namespace usdex::core
 {
 
-PYBIND11_MODULE(_usdex_core, m)
-{
-    bindCore(m);
-    bindLayerAlgo(m);
-    bindStageAlgo(m);
-    bindNameAlgo(m);
-    bindXformAlgo(m);
-    bindPrimvarData(m);
-    bindCameraAlgo(m);
-}
+// explicitly instantiate each of the types we defined in the public header.
+template class PrimvarData<float>;
+template class PrimvarData<int64_t>;
+template class PrimvarData<int>;
+template class PrimvarData<std::string>;
+template class PrimvarData<pxr::TfToken>;
+template class PrimvarData<pxr::GfVec2f>;
+template class PrimvarData<pxr::GfVec3f>;
 
-} // namespace
+} // namespace usdex::core
