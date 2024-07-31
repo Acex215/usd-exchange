@@ -43,6 +43,14 @@ __all__ = [
     "setLocalTransform",
     # camera
     "defineCamera",
+    # primvars
+    "FloatPrimvarData",
+    "IntPrimvarData",
+    "Int64PrimvarData",
+    "Vec3fPrimvarData",
+    "Vec2fPrimvarData",
+    "StringPrimvarData",
+    "TokenPrimvarData",
 ]
 
 import os
