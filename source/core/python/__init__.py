@@ -12,6 +12,8 @@ __all__ = [
     # core
     "version",
     "deprecated",
+    # settings
+    "enableOmniTranscodingSetting",
     # layers
     "hasLayerAuthoringMetadata",
     "setLayerAuthoringMetadata",

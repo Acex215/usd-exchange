@@ -230,6 +230,7 @@ doxygen_input = [
 ]
 doxygen_predefined = [
     "__cplusplus",
+    "USDEX_API",
     "USDEX_IMPORT",
     "USDEX_WITH_PYTHON",
 ]
