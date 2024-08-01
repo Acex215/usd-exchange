@@ -12,6 +12,7 @@
 #include "CoreBindings.h"
 #include "LayerAlgoBindings.h"
 #include "NameAlgoBindings.h"
+#include "PointsAlgoBindings.h"
 #include "PrimvarDataBindings.h"
 #include "SettingsBindings.h"
 #include "StageAlgoBindings.h"
@@ -32,6 +33,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindNameAlgo(m);
     bindXformAlgo(m);
     bindPrimvarData(m);
+    bindPointsAlgo(m);
     bindCameraAlgo(m);
 }
 

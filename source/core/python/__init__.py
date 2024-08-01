@@ -43,6 +43,8 @@ __all__ = [
     "getLocalTransformMatrix",
     "getLocalTransformComponents",
     "setLocalTransform",
+    # geometry
+    "definePointCloud",
     # camera
     "defineCamera",
     # primvars
