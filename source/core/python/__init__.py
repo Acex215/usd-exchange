@@ -45,6 +45,7 @@ __all__ = [
     "setLocalTransform",
     # geometry
     "definePointCloud",
+    "definePolyMesh",
     # camera
     "defineCamera",
     # primvars
