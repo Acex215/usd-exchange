@@ -332,15 +332,6 @@ bool validatePrimvar(
     std::string* reason
 )
 {
-    if (!primvar.isValid())
-    {
-        if (reason != nullptr)
-        {
-            *reason = TfStringPrintf("The primvar data is invalid.");
-        }
-        return false;
-    }
-
     if (!::validatePrimvarInterpolation<T>(primvar, interpolations, curveVertexCounts, points, type, basis, wrap))
     {
         if (reason != nullptr)
@@ -351,6 +342,15 @@ bool validatePrimvar(
                 primvar.effectiveSize(),
                 primvar.hasIndices() ? "indices" : "values"
             );
+        }
+        return false;
+    }
+
+    if (!primvar.isValid())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("The primvar data is invalid.");
         }
         return false;
     }

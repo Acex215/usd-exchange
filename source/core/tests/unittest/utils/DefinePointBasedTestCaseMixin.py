@@ -294,6 +294,20 @@ class DefinePointBasedTestCaseMixin(DefineFunctionTestCaseMixin):
         primvar = result.GetDisplayColorPrimvar()
         self.assertPrimvar(primvar, data)
 
+        # If an invalid interpolation is specified no prim is defined
+        path = parentPath.AppendChild("EmptyValue")
+        values = Vt.Vec3fArray([Gf.Vec3f(1.5, 1.5, 1.5)])
+        data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.rightHanded, values)
+        with usdex.test.ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, '.*invalid display color: The interpolation "rightHanded" is not valid for 1 values'),
+            ],
+        ):
+            result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
+        self.assertFalse(result)
+        self.assertFalse(stage.GetPrimAtPath(path))
+
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, Vt.Vec3fArray())

@@ -56,15 +56,6 @@ bool validatePrimvarInterpolation(const PrimvarData<T>& primvar, const TfTokenVe
 template <typename T>
 bool validatePrimvar(const PrimvarData<T>& primvar, const TfTokenVector& interpolations, const VtArray<GfVec3f>& points, std::string* reason)
 {
-    if (!primvar.isValid())
-    {
-        if (reason != nullptr)
-        {
-            *reason = TfStringPrintf("The primvar data is invalid.");
-        }
-        return false;
-    }
-
     if (!::validatePrimvarInterpolation<T>(primvar, interpolations, points))
     {
         if (reason != nullptr)
@@ -75,6 +66,15 @@ bool validatePrimvar(const PrimvarData<T>& primvar, const TfTokenVector& interpo
                 primvar.effectiveSize(),
                 primvar.hasIndices() ? "indices" : "values"
             );
+        }
+        return false;
+    }
+
+    if (!primvar.isValid())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("The primvar data is invalid.");
         }
         return false;
     }
