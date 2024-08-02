@@ -10,6 +10,7 @@
 
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
+#include "CurvesAlgoBindings.h"
 #include "LayerAlgoBindings.h"
 #include "MeshAlgoBindings.h"
 #include "NameAlgoBindings.h"
@@ -36,6 +37,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindPrimvarData(m);
     bindPointsAlgo(m);
     bindMeshAlgo(m);
+    bindCurvesAlgo(m);
     bindCameraAlgo(m);
 }
 

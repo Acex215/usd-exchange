@@ -46,6 +46,8 @@ __all__ = [
     # geometry
     "definePointCloud",
     "definePolyMesh",
+    "defineLinearBasisCurves",
+    "defineCubicBasisCurves",
     # camera
     "defineCamera",
     # primvars
