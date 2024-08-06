@@ -10,6 +10,7 @@
 import argparse
 import contextlib
 import os
+import re
 import shutil
 from typing import Callable, Dict
 
@@ -75,6 +76,44 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
         return list(result.values())[0]
     except packmanapi.PackmanErrorFileNotFound:
         raise omni.repo.man.exceptions.ConfigurationError(f"Unable to download {packageName}, version {packageVersion}")
+
+
+def __computeUsdMidfix(usd_root: str):
+    # try to find out what the USD prefix is by looking for a known non-monolithic USD library name with a longer name
+    usd_libraries = [f for f in os.listdir(os.path.join(usd_root, "lib")) if re.match(r".*usdGeom.*", f)]
+    if usd_libraries:
+        # sort the results by length and use the first one
+        usd_libraries.sort(key=len)
+        usd_library = os.path.splitext(os.path.basename(usd_libraries[0]))[0]
+        usd_lib_prefix = usd_library[:-7]
+        if os.name != "nt":  # equivalent to os.host() ~= "windows"
+            # we also picked up the lib part, which we don't want
+            return usd_lib_prefix[3:], False
+        else:
+            return usd_lib_prefix, False
+    else:
+        # couldn't find a prefixed or un-prefixed usdGeom library could be monolithic - we do this last because *usd_ms is a
+        # very short name to match and likely would be matched by several libraries
+        library_name = None
+        library_prefix = ""
+
+        # first try looking for the release build
+        monolithic_libraries = [f for f in os.listdir(os.path.join(usd_root, "lib")) if re.match(r".*usd_ms.*", f)]
+        if monolithic_libraries:
+            # sort the results by length and use the first one
+            monolithic_libraries.sort(key=len)
+            library_name = os.path.splitext(os.path.basename(monolithic_libraries[0]))[0]
+
+        if os.name != "nt" and library_name is not None:
+            # We picked up the library prefix from the file name (i.e libusd_ms.so)
+            library_name = library_name[3:]
+
+        if library_name is not None:
+            start_index = library_name.rfind("usd_ms")
+            if start_index > 0:
+                library_prefix = library_name[:start_index]
+
+        return library_prefix, True
 
 
 def __install(
@@ -148,29 +187,38 @@ def __install(
             [transcoding_path + "/lib/${lib_prefix}omni_transcoding${lib_ext}", libInstallDir],
             # usdex
             [usd_exchange_path + "/lib/${lib_prefix}usdex_core${lib_ext}", libInstallDir],
-            # usd
-            [usd_path + "/lib/${lib_prefix}*ar${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*arch${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*gf${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*js${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*kind${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*ndr${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*pcp${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*plug${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*sdf${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*sdr${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*tf${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*trace${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usd${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usdGeom${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usdLux${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usdShade${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usdUtils${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*vt${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*work${lib_ext}", libInstallDir],
-            [usd_path + "/lib/${lib_prefix}*usd_ms${lib_ext}", libInstallDir],  # special case for monolithic flavors
         ],
     }
+
+    # usd
+    usdLibMidfix, monolithic = __computeUsdMidfix(usd_path)
+    if monolithic:
+        usdLibs = ["usd_ms"]
+    else:
+        usdLibs = [
+            "ar",
+            "arch",
+            "gf",
+            "js",
+            "kind",
+            "ndr",
+            "pcp",
+            "plug",
+            "sdf",
+            "sdr",
+            "tf",
+            "trace",
+            "usd",
+            "usdGeom",
+            "usdLux",
+            "usdShade",
+            "usdUtils",
+            "vt",
+            "work",
+        ]
+    for lib in usdLibs:
+        prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + lib + "${lib_ext}", libInstallDir])
+
     if usd_flavor == "blender":
         prebuild_dict["copy"].extend(
             [
@@ -213,6 +261,7 @@ def __install(
                 [f"{usd_path}/lib/usd", usdPluginInstallDir],
             ]
         )
+
     if buildConfig == "debug":
         prebuild_dict["copy"].extend(
             [
@@ -229,6 +278,7 @@ def __install(
                 [usd_path + "/bin/${lib_prefix}tbb${lib_ext}*", libInstallDir],  # windows
             ]
         )
+
     if python_ver != "0":
         # usdex core only
         __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/core", "_usdex_core")
