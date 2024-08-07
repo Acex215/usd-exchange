@@ -13,6 +13,8 @@
 //! @file usdex/test/ScopedTfDiagnosticChecker.h
 //! @brief A scoped class to capture and assert expected `TfDiagnostics` and `TfErrorMarks` for use in a `doctest` suite.
 
+#include <usdex/core/Diagnostics.h>
+
 #include <pxr/base/tf/diagnosticMgr.h>
 #include <pxr/base/tf/enum.h>
 #include <pxr/base/tf/errorMark.h>
@@ -77,7 +79,12 @@ public:
     ScopedTfDiagnosticChecker() = default;
 
     //! Construct a `ScopedTfDiagnosticChecker` with a vector of expected `DiagnosticPattern` pairs.
-    ScopedTfDiagnosticChecker(DiagnosticPatterns expected) : m_expected{ std::move(expected) } {};
+    ScopedTfDiagnosticChecker(DiagnosticPatterns expected) : m_expected{ std::move(expected) }
+    {
+        // disable the usdex output stream
+        m_originalOutputStream = usdex::core::getDiagnosticsOutputStream();
+        usdex::core::setDiagnosticsOutputStream(usdex::core::DiagnosticsOutputStream::eNone);
+    };
 
     //! On destruction the `ScopedTfDiagnosticChecker` will assert the expected `TfDiagnostics` and `TfErrorMarks` were emitted using doctest `CHECK`
     ~ScopedTfDiagnosticChecker()
@@ -130,6 +137,9 @@ public:
 
         // dismiss the errors so they don't propagate to stderr
         m_errors.Clear();
+
+        // restore the usdex output stream
+        usdex::core::setDiagnosticsOutputStream(m_originalOutputStream);
     };
 
 private:
@@ -137,6 +147,7 @@ private:
     pxr::TfErrorMark m_errors;
     pxr::UsdUtilsCoalescingDiagnosticDelegate m_delegate;
     DiagnosticPatterns m_expected;
+    usdex::core::DiagnosticsOutputStream m_originalOutputStream;
 };
 
 //! @}

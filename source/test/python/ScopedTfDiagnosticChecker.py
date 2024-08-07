@@ -15,6 +15,7 @@ __all__ = [
 import re
 from typing import List, Tuple
 
+import usdex.core
 from pxr import Tf, UsdUtils
 
 
@@ -52,10 +53,13 @@ class ScopedTfDiagnosticChecker:
     def __init__(self, testCase, expected: List[Tuple[Tf.DiagnosticType, str]]) -> None:
         self.testCase = testCase
         self.expected = expected
+        self.__originalOutputStream = usdex.core.getDiagnosticsOutputStream() if usdex.core.isDiagnosticsDelegateActive() else False
 
     def __enter__(self):
         self.errorMark = Tf.Error.Mark()
         self.delegate = UsdUtils.CoalescingDiagnosticDelegate()
+        if usdex.core.isDiagnosticsDelegateActive():
+            usdex.core.setDiagnosticsOutputStream(usdex.core.DiagnosticsOutputStream.eNone)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         diagnostics = self.delegate.TakeUncoalescedDiagnostics()
@@ -115,3 +119,6 @@ Expected:
         self.testCase.assertEqual(i, len(self.expected))
 
         self.errorMark.Clear()
+
+        if usdex.core.isDiagnosticsDelegateActive():
+            usdex.core.setDiagnosticsOutputStream(self.__originalOutputStream)

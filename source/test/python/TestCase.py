@@ -50,6 +50,11 @@ class TestCase(unittest.TestCase):
     )
     "The default authoring metadata to be used when configuring a `Usd.Stage`"
 
+    @classmethod
+    def setUpClass(cls):
+        # activate the usdex delegate to affect OpenUSD diagnostic logs
+        usdex.core.activateDiagnosticsDelegate()
+
     def setUp(self):
         super().setUp()
 

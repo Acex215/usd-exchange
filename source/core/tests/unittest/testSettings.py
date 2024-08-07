@@ -20,23 +20,32 @@ from pxr import Tf
 
 class SettingsTest(usdex.test.TestCase):
 
-    def assertEnvSetting(self, setting, value, command, expectedOutputPattern=None):
+    def assertEnvSetting(self, setting, value, command, expectedOutputPattern):
         env = os.environ.copy()
+
+        # PXR env vars that drive TfEnvSettings can cause extra stderr output
+        # We aren't concerned with any non-default behavior in these tests, so
+        # we clear those env vars to ensure a consistent stderr stream.
+        # Important: PXR_WORK_THREAD_LIMIT my be set in CI to reduce thread contention
+        # on multi-job runners. Do not invoke multiple threads from these tests.
+        for key in list(env.keys()):
+            if key.startswith("PXR_"):
+                del env[key]
+
         env[setting] = str(value)
-        try:
-            output = subprocess.check_output(
-                [sys.executable, "-c", command],
-                env=env,
-                stderr=subprocess.STDOUT,
-                encoding="utf-8",
-                universal_newlines=True,
-            )
-        except subprocess.CalledProcessError as e:
-            output = e.output
-            self.fail(msg=output)
-        finally:
-            if expectedOutputPattern:
-                self.assertRegexpMatches(output, expectedOutputPattern)
+        result = subprocess.run(
+            [sys.executable, "-c", command],
+            env=env,
+            capture_output=True,
+            encoding="utf-8",
+            universal_newlines=True,
+        )
+        if result.returncode != 0:
+            self.fail(msg=result.stderr)
+        if expectedOutputPattern == "":
+            self.assertEqual(result.stderr, "")
+        else:
+            self.assertRegexpMatches(result.stderr, expectedOutputPattern)
 
     def testOmniTranscodingSetting(self):
         self.assertEqual(usdex.core.enableOmniTranscodingSetting, "USDEX_ENABLE_OMNI_TRANSCODING")
@@ -63,6 +72,7 @@ class SettingsTest(usdex.test.TestCase):
                 assert usdex.core.getValidPrimName("") == "tn__"
                 """
             ),
+            expectedOutputPattern="",
         )
 
     def testDisableOmniTranscodingSetting(self):
