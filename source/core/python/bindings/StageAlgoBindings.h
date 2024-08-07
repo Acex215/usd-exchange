@@ -86,6 +86,61 @@ void bindStageAlgo(module& m)
                 comment: The comment will be authored in all dirty layers as the `Sdf.Layer` comment.
         )"
     );
+
+    m.def(
+        "isEditablePrimLocation",
+        [](const UsdStagePtr stage, const SdfPath path)
+        {
+            std::string reason;
+            bool result = isEditablePrimLocation(stage, path, &reason);
+            return pybind11::make_tuple(result, reason);
+        },
+        arg("stage"),
+        arg("path"),
+        R"(
+            Validate that prim opinions could be authored at this path on the stage
+
+            This validates that the `stage` and `path` are valid, and that the path is absolute.
+            If a prim already exists at the given path it must not be an instance proxy.
+
+            If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+
+            Parameters:
+                - **stage** - The stage to consider.
+                - **path** - The absolute to consider.
+
+            Returns:
+                Tuple[bool, str] with a bool indicating if the location is valid, and the string is a non-empty reason if the location is invalid.
+        )"
+    );
+
+    m.def(
+        "isEditablePrimLocation",
+        [](const UsdPrim prim, const std::string& nameStr)
+        {
+            std::string reason;
+            bool result = isEditablePrimLocation(prim, nameStr, &reason);
+            return pybind11::make_tuple(result, reason);
+        },
+        arg("prim"),
+        arg("name"),
+        R"(
+            Validate that prim opinions could be authored for a child prim with the given name
+
+            This validates that the `prim` is valid, and that the `name` is a valid identifier.
+            If a prim already exists at the given path it must not be an instance proxy.
+
+            If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+
+            Parameters:
+                - **parent** - The UsdPrim which would be the parent of the proposed location.
+                - **name** - The name which would be used for the UsdPrim at the proposed location.
+
+            Returns:
+                Tuple[bool, str] with a bool indicating if the location is valid, and the string is a non-empty reason if the location is invalid.
+
+        )"
+    );
 }
 
 } // namespace usdex::core::bindings

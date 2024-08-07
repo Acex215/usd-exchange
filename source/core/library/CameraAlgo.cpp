@@ -10,7 +10,7 @@
 
 #include "usdex/core/CameraAlgo.h"
 
-#include "UsdUtils.h"
+#include "usdex/core/StageAlgo.h"
 
 #include <pxr/base/tf/diagnostic.h>
 #include <pxr/usd/usdGeom/xformable.h>
@@ -22,7 +22,7 @@ UsdGeomCamera usdex::core::defineCamera(UsdStagePtr stage, const SdfPath& path, 
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(stage, path, &reason))
+    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomCamera due to an invalid location: %s", reason.c_str());
         return UsdGeomCamera();
@@ -66,7 +66,7 @@ UsdGeomCamera usdex::core::defineCamera(UsdPrim parent, const std::string& name,
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(parent, name, &reason))
+    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomCamera due to an invalid location: %s", reason.c_str());
         return UsdGeomCamera();

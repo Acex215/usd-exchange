@@ -587,3 +587,70 @@ class SaveStageTestCase(usdex.test.TestCase):
                 omni.asset_validator.IssuePredicates.ContainsMessage("Missing type for Prim"),
             ],
         )
+
+
+class LocationEditableTestCase(usdex.test.TestCase):
+    def testIsEditableLocationFromStagePath(self):
+        stage = Usd.Stage.CreateInMemory()
+        result, reason = usdex.core.isEditablePrimLocation(stage, "/Valid")
+        self.assertTrue(result)
+        self.assertEqual(reason, "")
+
+        # paths must be absolute
+        stage = Usd.Stage.CreateInMemory()
+        path = "../relative"
+        result, reason = usdex.core.isEditablePrimLocation(stage, path)
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is not a valid absolute prim path")
+
+        # paths must be prim paths
+        path = "/absolute.property"
+        result, reason = usdex.core.isEditablePrimLocation(stage, path)
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is not a valid absolute prim path")
+
+        # if the prim exists it cannot be an Instance Proxy
+        stage.CreateClassPrim("/Prototypes")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype/InstanceProxyChild")
+        xformPrim = UsdGeom.Xform.Define(stage, "/World/Instance").GetPrim()
+        xformPrim.GetReferences().AddInternalReference(Sdf.Path("/Prototypes/Prototype"))
+        xformPrim.SetInstanceable(True)
+        result, reason = usdex.core.isEditablePrimLocation(stage, f"{xformPrim.GetPath()}/InstanceProxyChild")
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")
+
+    def testIsEditableLocationFromPrimName(self):
+        stage = Usd.Stage.CreateInMemory()
+        validPrim = UsdGeom.Xform.Define(stage, "/Valid").GetPrim()
+        result, reason = usdex.core.isEditablePrimLocation(validPrim, "child")
+        self.assertTrue(result)
+        self.assertEqual(reason, "")
+
+        # an invalid prim fails
+        invalidPrim = Usd.Prim()
+        result, reason = usdex.core.isEditablePrimLocation(invalidPrim, "child")
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*Invalid UsdPrim")
+
+        # the name must be a valid identifier
+        result, reason = usdex.core.isEditablePrimLocation(validPrim, "1 2 3 !!!")
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is not a valid prim name")
+
+        # if the child exists it cannot be an Instance Proxy
+        stage.CreateClassPrim("/Prototypes")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype/InstanceProxyChild")
+        xformPrim = UsdGeom.Xform.Define(stage, "/World/Instance").GetPrim()
+        xformPrim.GetReferences().AddInternalReference(Sdf.Path("/Prototypes/Prototype"))
+        xformPrim.SetInstanceable(True)
+        result, reason = usdex.core.isEditablePrimLocation(xformPrim, "InstanceProxyChild")
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")
+
+        # the parent cannot be an Instance Proxy either
+        instanceProxyChild = stage.GetPrimAtPath(f"{xformPrim.GetPath()}/InstanceProxyChild")
+        result, reason = usdex.core.isEditablePrimLocation(instanceProxyChild, "grandchild")
+        self.assertFalse(result)
+        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")

@@ -10,7 +10,7 @@
 
 #include "usdex/core/CurvesAlgo.h"
 
-#include "UsdUtils.h"
+#include "usdex/core/StageAlgo.h"
 
 #include <pxr/usd/usdGeom/basisCurves.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
@@ -541,7 +541,7 @@ UsdGeomBasisCurves usdex::core::defineLinearBasisCurves(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(stage, path, &reason))
+    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves due to an invalid location: %s", reason.c_str());
         return UsdGeomBasisCurves();
@@ -564,7 +564,7 @@ UsdGeomBasisCurves usdex::core::defineLinearBasisCurves(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(parent, name, &reason))
+    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves due to an invalid location: %s", reason.c_str());
         return UsdGeomBasisCurves();
@@ -591,7 +591,7 @@ UsdGeomBasisCurves usdex::core::defineCubicBasisCurves(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(stage, path, &reason))
+    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves due to an invalid location: %s", reason.c_str());
         return UsdGeomBasisCurves();
@@ -627,7 +627,7 @@ UsdGeomBasisCurves usdex::core::defineCubicBasisCurves(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(parent, name, &reason))
+    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves due to an invalid location: %s", reason.c_str());
         return UsdGeomBasisCurves();

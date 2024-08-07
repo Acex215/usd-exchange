@@ -10,7 +10,7 @@
 
 #include "usdex/core/XformAlgo.h"
 
-#include "UsdUtils.h"
+#include "usdex/core/StageAlgo.h"
 
 #include <pxr/base/tf/token.h>
 #include <pxr/usd/usdGeom/xformCommonAPI.h>
@@ -574,7 +574,7 @@ UsdGeomXform usdex::core::defineXform(UsdStagePtr stage, const SdfPath& path, st
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(stage, path, &reason))
+    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomXform due to an invalid location: %s", reason.c_str());
         return UsdGeomXform();
@@ -606,7 +606,7 @@ UsdGeomXform usdex::core::defineXform(UsdPrim parent, const std::string& name, s
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(parent, name, &reason))
+    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomXform due to an invalid location: %s", reason.c_str());
         return UsdGeomXform();

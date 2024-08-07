@@ -10,7 +10,7 @@
 
 #include "usdex/core/PointsAlgo.h"
 
-#include "UsdUtils.h"
+#include "usdex/core/StageAlgo.h"
 
 #include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
@@ -249,7 +249,7 @@ UsdGeomPoints usdex::core::definePointCloud(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(stage, path, &reason))
+    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomPoints due to an invalid location: %s", reason.c_str());
         return UsdGeomPoints();
@@ -271,7 +271,7 @@ UsdGeomPoints usdex::core::definePointCloud(
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
-    if (!usdex::core::detail::isEditablePrimLocation(parent, name, &reason))
+    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
     {
         TF_RUNTIME_ERROR("Unable to define UsdGeomPoints due to an invalid location: %s", reason.c_str());
         return UsdGeomPoints();

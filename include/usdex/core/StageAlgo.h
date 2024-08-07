@@ -24,7 +24,7 @@
 namespace usdex::core
 {
 
-//! @defgroup stage UsdStage Algorithms
+//! @defgroup stageMetadata UsdStage Configuration
 //!
 //! Utility functions to provide consistant authoring of `UsdStages`
 //!
@@ -101,6 +101,40 @@ USDEX_API bool configureStage(
 //!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 //! @param comment The comment will be authored in all dirty layers as the `Sdf.Layer` comment.
 USDEX_API void saveStage(pxr::UsdStagePtr stage, const std::string& authoringMetadata, std::optional<std::string_view> comment = std::nullopt);
+
+//! @}
+
+//! @defgroup stageHierarchy UsdStage Hierarchy
+//!
+//! Utility functions to avoid common mistakes when manipulating the prim hierarchy of a `UsdStage`.
+//!
+//! @{
+
+//! Validate that prim opinions could be authored at this path on the stage
+//!
+//! This validates that the `stage` and `path` are valid, and that the path is absolute.
+//! If a prim already exists at the given path it must not be an instance proxy.
+//!
+//! If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+//!
+//! @param stage The Stage to consider.
+//! @param path The Path to consider.
+//! @param reason The output message for failed validation.
+//! @returns True if the location is valid, or false otherwise.
+USDEX_API bool isEditablePrimLocation(const pxr::UsdStagePtr stage, const pxr::SdfPath& path, std::string* reason);
+
+//! Validate that prim opinions could be authored for a child prim with the given name
+//!
+//! This validates that the `prim` is valid, and that the name is a valid identifier.
+//! If a prim already exists at the given path it must not be an instance proxy.
+//!
+//! If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+//!
+//! @param prim The UsdPrim which would be the parent of the proposed location.
+//! @param name The name which would be used for the UsdPrim at the proposed location.
+//! @param reason The output message for failed validation.
+//! @returns True if the location is valid, or false otherwise.
+USDEX_API bool isEditablePrimLocation(const pxr::UsdPrim& prim, const std::string& name, std::string* reason);
 
 //! @}
 
