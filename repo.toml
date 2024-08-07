@@ -131,7 +131,6 @@ default_config = "release"
 default_suite = "all"
 test_root = "$root/_build/$platform/$config"
 catch2.junit_output = true
-catch2.junit_result_filename = "$root/_build/tests/test_results.xml"
 aggregated_log_file = "$root/_build/tests/test_results.xml"
 archive_pattern = "$root/_build/packages/usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}*$platform.$config.7z"
 archive_post_unpack_cmds = [
