@@ -14,6 +14,16 @@ __all__ = [
     "deprecated",
     # settings
     "enableOmniTranscodingSetting",
+    # diagnostics
+    "DiagnosticsLevel",
+    "DiagnosticsOutputStream",
+    "isDiagnosticsDelegateActive",
+    "activateDiagnosticsDelegate",
+    "deactivateDiagnosticsDelegate",
+    "setDiagnosticsLevel",
+    "getDiagnosticsLevel",
+    "setDiagnosticsOutputStream",
+    "getDiagnosticsOutputStream",
     # layers
     "hasLayerAuthoringMetadata",
     "setLayerAuthoringMetadata",
