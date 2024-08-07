@@ -215,9 +215,11 @@ sphinx_exclude_patterns = [
     "CONTRIBUTING.md",
     "LICENSE.md",
     "SECURITY.md",
+    "_build",
     "_install",
     ".gitlab",
     ".github",
+    ".cache",
     "usd-exchange-ci",  # exists in CI
 ]
 use_fast_doxygen_conversion = true
