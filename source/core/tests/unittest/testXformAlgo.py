@@ -77,8 +77,8 @@ class BaseXformTestCase(usdex.test.TestCase):
         """Create an in memory stage holding a range of prims that are useful for testing"""
 
         # Build a layered stage
-        weakerLayer = Sdf.Layer.CreateAnonymous()
-        strongerLayer = Sdf.Layer.CreateAnonymous()
+        weakerLayer = self.tmpLayer(name="Weaker")
+        strongerLayer = self.tmpLayer(name="Stronger")
 
         rootLayer = Sdf.Layer.CreateAnonymous()
         rootLayer.subLayerPaths.append(strongerLayer.identifier)
