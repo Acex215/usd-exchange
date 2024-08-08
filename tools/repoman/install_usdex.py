@@ -179,6 +179,7 @@ def __install(
     validator_path = f"{targetDepsDir}/omni_asset_validator"
 
     libInstallDir = "${install_dir}/lib"
+    usdPluginSourceDir = f"{usd_path}/lib/usd"
     usdPluginInstallDir = "${install_dir}/lib/usd"
 
     prebuild_dict = {
@@ -194,6 +195,22 @@ def __install(
     usdLibMidfix, monolithic = __computeUsdMidfix(usd_path)
     if monolithic:
         usdLibs = ["usd_ms"]
+        usdPlugins = [
+            "ar",
+            "ndr",
+            "sdf",
+            "usd",
+            "usdGeom",
+            "usdLux",
+            "usdMedia",
+            "usdPhysics",
+            "usdProc",
+            "usdRender",
+            "usdShade",
+            "usdSkel",
+            "usdUI",
+            "usdVol",
+        ]
     else:
         usdLibs = [
             "ar",
@@ -216,51 +233,20 @@ def __install(
             "vt",
             "work",
         ]
+        usdPlugins = [
+            "ar",
+            "ndr",
+            "sdf",
+            "usd",
+            "usdGeom",
+            "usdLux",
+            "usdShade",
+        ]
     for lib in usdLibs:
         prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + lib + "${lib_ext}", libInstallDir])
-
-    if usd_flavor == "blender":
-        prebuild_dict["copy"].extend(
-            [
-                # blender uses a monolithic usd build which requires extra libs
-                [usd_path + "/bin/${lib_prefix}*${lib_ext}", libInstallDir],
-                # blender separates usd plugins into two folders, but requires them all at runtime
-                [f"{usd_path}/lib/usd", usdPluginInstallDir],
-                [f"{usd_path}/plugin/usd", usdPluginInstallDir],
-            ]
-        )
-        for moduleNamespace, libPrefix in (
-            ("pxr/PxOsd", "_pxOsd"),
-            ("pxr/Garch", "_garch"),
-            ("pxr/Glf", "_glf"),
-            ("pxr/CameraUtil", "_cameraUtil"),
-            ("pxr/UsdImagingGL", "_usdImagingGL"),
-            ("pxr/GeomUtil", "_geomUtil"),
-            ("pxr/SdrGlslfx", "_sdrGlslfx"),
-            ("pxr/UsdAppUtils", "_usdAppUtils"),
-            ("pxr/UsdMedia", "_usdMedia"),
-            ("pxr/UsdPhysics", "_usdPhysics"),
-            ("pxr/UsdProc", "_usdProc"),
-            ("pxr/UsdRender", "_usdRender"),
-            ("pxr/UsdRi", "_usdRi"),
-            ("pxr/UsdShaders", "_usdShaders"),
-            ("pxr/UsdVol", "_usdVol"),
-        ):
-            __installPythonModule(prebuild_dict["copy"], f"{usd_path}/lib/python", moduleNamespace, libPrefix)
-    elif usd_flavor == "houdini":
-        prebuild_dict["copy"].extend(
-            [
-                # houdini ships with custom `usd_plugins` folder and it appears to be a hardcoded search location in their usd libs
-                [f"{usd_path}/lib/usd_plugins", "${install_dir}/lib/usd_plugins"],
-            ]
-        )
-    else:
-        prebuild_dict["copy"].extend(
-            [
-                # default usd plugins folder
-                [f"{usd_path}/lib/usd", usdPluginInstallDir],
-            ]
-        )
+    prebuild_dict["copy"].append([f"{usdPluginSourceDir}/plugInfo.json", f"{usdPluginInstallDir}/plugInfo.json"])
+    for plugin in usdPlugins:
+        prebuild_dict["copy"].append([f"{usdPluginSourceDir}/{plugin}", f"{usdPluginInstallDir}/{plugin}"])
 
     if buildConfig == "debug":
         prebuild_dict["copy"].extend(
@@ -322,16 +308,9 @@ def __install(
             __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
             __installPythonModule(prebuild_dict["copy"], f"{transcoding_path}/python", "omni/transcoding", "_omni_transcoding")
             # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
-            prebuild_dict["copy"].extend(
-                [
-                    [usd_path + "/lib/${lib_prefix}*usdSkel${lib_ext}", libInstallDir],
-                ]
-            )
-            usdModules.extend(
-                [
-                    ("pxr/UsdSkel", "_usdSkel"),
-                ]
-            )
+            prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "usdSkel" + "${lib_ext}", libInstallDir])
+            prebuild_dict["copy"].append([f"{usdPluginSourceDir}/usdSkel", f"{usdPluginInstallDir}/usdSkel"])
+            usdModules.extend([("pxr/UsdSkel", "_usdSkel")])
 
         for moduleNamespace, libPrefix in usdModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_path}/lib/python", moduleNamespace, libPrefix)
