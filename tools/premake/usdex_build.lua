@@ -60,7 +60,7 @@ function m.setup_workspace(args)
     filter { "system:windows" }
         defines { "NOMINMAX" }
     filter { "system:linux" }
-        buildoptions { "-fvisibility=hidden", "-fdiagnostics-color", "-Wno-deprecated" }
+        buildoptions { "-fvisibility=hidden", "-fdiagnostics-color", "-Wno-deprecated", "-Wconversion" }
     filter {}
 
     flags { "ShadowedVariables" }
