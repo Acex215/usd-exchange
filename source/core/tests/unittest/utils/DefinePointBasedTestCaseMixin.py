@@ -131,7 +131,7 @@ class DefinePointBasedTestCaseMixin(DefineFunctionTestCaseMixin):
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
 
-        self.validationEngine.disableRule(omni.asset_validator.IndexedPrimvarChecker)
+        self.validationEngine.disable_rule(omni.asset_validator.IndexedPrimvarChecker)
         self.assertIsValidUsd(stage)
 
     def testIndexedNormals(self):
@@ -369,7 +369,7 @@ class DefinePointBasedTestCaseMixin(DefineFunctionTestCaseMixin):
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
 
-        self.validationEngine.disableRule(omni.asset_validator.IndexedPrimvarChecker)
+        self.validationEngine.disable_rule(omni.asset_validator.IndexedPrimvarChecker)
         self.assertIsValidUsd(stage)
 
     def testIndexedDisplayColor(self):
@@ -592,7 +592,7 @@ class DefinePointBasedTestCaseMixin(DefineFunctionTestCaseMixin):
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
 
-        self.validationEngine.disableRule(omni.asset_validator.IndexedPrimvarChecker)
+        self.validationEngine.disable_rule(omni.asset_validator.IndexedPrimvarChecker)
         self.assertIsValidUsd(stage)
 
     def testIndexedDisplayOpacity(self):

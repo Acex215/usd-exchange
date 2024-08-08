@@ -49,10 +49,7 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         super().setUp()
 
-        self.validationEngine = omni.asset_validator.ValidationEngine()
-        for rule in omni.asset_validator.BaseRuleChecker.__subclasses__():
-            if not rule.__name__.startswith("ARKit"):
-                self.validationEngine.enable_rule(rule)
+        self.validationEngine = omni.asset_validator.ValidationEngine(init_rules=True)
 
     def assertIsValidUsd(self, asset: omni.asset_validator.AssetType, extraIssuePredicates: Optional[List] = None, msg: Optional[str] = None):
         """Assert that given asset passes all enabled validation rules

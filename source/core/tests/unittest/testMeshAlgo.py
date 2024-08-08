@@ -170,7 +170,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.TestCase):
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
 
-        self.validationEngine.disableRule(omni.asset_validator.IndexedPrimvarChecker)
+        self.validationEngine.disable_rule(omni.asset_validator.IndexedPrimvarChecker)
         self.assertIsValidUsd(stage)
 
     def testIndexedUvs(self):
