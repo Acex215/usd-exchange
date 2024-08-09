@@ -12,7 +12,7 @@ import contextlib
 import os
 import re
 import shutil
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 import omni.repo.man
 import packmanapi
@@ -128,6 +128,7 @@ def __install(
     version: str,
     installPythonLibs: bool,
     installTestModules: bool,
+    extraPlugins: List[str],
 ):
     tokens = omni.repo.man.get_tokens()
     tokens["config"] = buildConfig
@@ -242,6 +243,23 @@ def __install(
             "usdLux",
             "usdShade",
         ]
+
+    if installTestModules and python_ver != "0":
+        # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
+        extraPlugins.append("usdSkel")
+
+    # allow for extra user supplied plugins
+    for extra in extraPlugins:
+        extraLibExists = os.path.exists(omni.repo.man.resolve_tokens(usd_path + "/lib/${lib_prefix}" + usdLibMidfix + extra + "${lib_ext}"))
+        extraPluginExists = os.path.exists(f"{usdPluginSourceDir}/{extra}")
+        if not extraLibExists and not extraPluginExists:
+            print(f"Warning: Skipping {extra} as neither the plugInfo nor the library exist in this USD flavor")
+            continue
+        if extraLibExists and extra not in usdLibs:
+            usdLibs.append(extra)
+        if extraPluginExists and extra not in usdPlugins:
+            usdPlugins.append(extra)
+
     for lib in usdLibs:
         prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + lib + "${lib_ext}", libInstallDir])
     prebuild_dict["copy"].append([f"{usdPluginSourceDir}/plugInfo.json", f"{usdPluginInstallDir}/plugInfo.json"])
@@ -307,10 +325,13 @@ def __install(
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
             __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
             __installPythonModule(prebuild_dict["copy"], f"{transcoding_path}/python", "omni/transcoding", "_omni_transcoding")
-            # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
-            prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "usdSkel" + "${lib_ext}", libInstallDir])
-            prebuild_dict["copy"].append([f"{usdPluginSourceDir}/usdSkel", f"{usdPluginInstallDir}/usdSkel"])
-            usdModules.extend([("pxr/UsdSkel", "_usdSkel")])
+
+        # allow for extra user supplied plugins
+        for extra in extraPlugins:
+            if not any([f"_{extra}" == x[1] for x in usdModules]):
+                extraPascalCase = f"{extra[0].upper()}{extra[1:]}"
+                if os.path.exists(f"{usd_path}/lib/python/pxr/{extraPascalCase}"):
+                    usdModules.append((f"pxr/{extraPascalCase}", f"_{extra}"))
 
         for moduleNamespace, libPrefix in usdModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_path}/lib/python", moduleNamespace, libPrefix)
@@ -408,6 +429,19 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         This has no effect if --python-version=0
         """,
     )
+    parser.add_argument(
+        "--install-extra-plugins",
+        dest="install_extra_plugins",
+        nargs="+",
+        type=str,
+        default=[],
+        help="""
+        List additional OpenUSD plugins by name (e.g. 'usdPhysics' or 'usdMtlx') to install the necessary plugInfo.json and associated schema,
+        libraries, and python modules.
+        If unspecified, only the strictly required OpenUSD plugins will be installed.
+        Python modules will be skipped if --python-version=0
+        """,
+    )
 
     def run_repo_tool(options: Dict, config: Dict):
         toolConfig = config["repo_install_usdex"]
@@ -435,6 +469,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             options.version,
             options.install_python_libs,
             options.install_test_modules,
+            options.install_extra_plugins,
         )
 
     return run_repo_tool
