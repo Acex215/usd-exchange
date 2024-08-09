@@ -387,8 +387,8 @@ class DisplayNameTestCase(usdex.test.TestCase):
 
     def testDisplayName(self):
         # Build a layered stage that allows us to change the edit target
-        weakerLayer = Sdf.Layer.CreateAnonymous()
-        strongerLayer = Sdf.Layer.CreateAnonymous()
+        weakerLayer = self.tmpLayer(name="Weaker")
+        strongerLayer = self.tmpLayer(name="Stronger")
 
         layer = Sdf.Layer.CreateAnonymous()
         layer.subLayerPaths.append(strongerLayer.identifier)

@@ -188,7 +188,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.TestCas
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
-        self.validationEngine.disableRule(omni.asset_validator.IndexedPrimvarChecker)
+        self.validationEngine.disable_rule(omni.asset_validator.IndexedPrimvarChecker)
         self.assertIsValidUsd(stage)
 
     def testIndexedWidths(self):

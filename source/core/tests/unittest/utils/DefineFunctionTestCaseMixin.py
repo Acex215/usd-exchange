@@ -51,8 +51,8 @@ class DefineFunctionTestCaseMixin(ABC):
         # Create the stage and define the standard "/World" prim at the root
 
         # Build a layered stage
-        self.weakerSubLayer = Sdf.Layer.CreateAnonymous(tag="Weaker")
-        self.strongerSubLayer = Sdf.Layer.CreateAnonymous(tag="Stronger")
+        self.weakerSubLayer = self.tmpLayer(name="Weaker")
+        self.strongerSubLayer = self.tmpLayer(name="Stronger")
 
         self.rootLayer = Sdf.Layer.CreateAnonymous(tag="Root")
         self.rootLayer.subLayerPaths.append(self.strongerSubLayer.identifier)
