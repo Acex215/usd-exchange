@@ -3,6 +3,8 @@ local m = {} -- The main module table
 repo_build = require("omni/repo/build")
 repo_build.setup_options()
 
+repo_usd = require("_repo/deps/repo_usd/templates/premake/premake5-usd")
+
 -- Setup build flavor options
 
 include("usdex_options")
@@ -58,7 +60,7 @@ function m.setup_workspace(args)
     filter { "system:windows" }
         defines { "NOMINMAX" }
     filter { "system:linux" }
-        buildoptions { "-fvisibility=hidden", "-fdiagnostics-color", "-Wno-deprecated" }
+        buildoptions { "-fvisibility=hidden", "-fdiagnostics-color", "-Wno-deprecated", "-Wconversion" }
     filter {}
 
     flags { "ShadowedVariables" }
@@ -234,118 +236,35 @@ function m.use_doctest()
     filter {}
 end
 
-function m.use_usd(libs)
-    usd_path = target_deps.."/usd/%{cfg.buildcfg}"
-    usd_lib_path = "\""..usd_path.."/lib".."\""
-    externalincludedirs { usd_path.."/include" }
-    syslibdirs { usd_lib_path }
+function m.use_usd(usd_libs)
+    usd_root = target_deps.."/usd/%{cfg.buildcfg}"
+    usd_lib_path = usd_root.."/lib"
 
-    -- Some USD packages list boost headers in a subdirectory, so we need to locate them.
-    -- We can't use the buildcfg token as it will not resolve "on the fly" to drive logic.
-    boost_headers = os.matchdirs(target_deps.."/usd/*/include/boost-*")
-    if #boost_headers > 0 then
-        externalincludedirs { boost_headers[1] }
-    end
-
-    -- On Windows the vc runtime version is embedded in the boost lib suffix, and we need
-    -- to extract it and set BOOST_LIB_TOOLSET in order to compile accordingly. We don't
-    -- directly link to any boost libs, but MSVC still complains if these are mismatched.
-    if os.target() == "windows" then
-        boost_lib = os.matchfiles(target_deps.."/usd/*/lib/boost*.dll")[1]
-        if boost_lib ~= nil then
-            vc_version = string.explode(boost_lib:match("(.*).dll"):match("vc(.*)"), "-")[1]
-            defines { "BOOST_LIB_TOOLSET=\"vc"..vc_version.."\"" }
-        end
+    -- check if we have a monolithic build of USD
+    usdMonoLib, usdLibMidfix = repo_usd.find_usd_monolithic({usd_root=usd_root})
+    if usdMonoLib ~= nil then
+        repo_usd.use_usd(
+            {
+                usd_root=usd_root,
+                usd_suppress_warnings=true
+            },
+            {usdLibMidfix..usdMonoLib}
+        )
+    else
+        repo_usd.use_usd(
+            {
+                usd_root=usd_root,
+                usd_suppress_warnings=true,
+                python_root=target_deps.."/python",
+                python_version=PYTHON_VERSION
+            },
+            usd_libs
+        )
     end
 
     -- Suppress deprecated tbb/atomic.h and tbb/task.h warnings from OpenUSD
     defines { "TBB_SUPPRESS_DEPRECATED_MESSAGES" }
 
-    -- For Houdini build
-    local houdini_build = USD_VERSION:match("houdini-(.*)") ~= nil
-
-    if houdini_build then
-        boost_headers = os.matchdirs(target_deps.."/usd/*/include/hboost*")
-        if #boost_headers > 0 then
-            externalincludedirs { boost_headers[1] }
-        end
-
-        -- Disable automatic linking of boost libraries on Windows
-        -- To avoid missing hboost_python*-*-mt-gd-x64-1_72.lib error.
-        defines { "HBOOST_ALL_NO_LIB" }
-        defines { "OMNICONNECTCORE_WITH_HOUDINI" }
-    end
-
-    -- We need to determine the correct PXR_LIB_PREFIX in order to link to the USD libraries.
-    -- Note monolithic builds necessarily ignore the supplied `libs` argument and force linking
-    -- to the mono library.
-    if libs then
-        -- we can't use the buildcfg token as it will not resolve "on the fly" to drive logic
-        usd_lib_dirs = os.matchdirs(target_deps.."/usd/*/lib")
-        if #usd_lib_dirs == 0 then
-            error("The USD library path must exist on local disk")
-        end
-        usd_lib_dir = usd_lib_dirs[1]
-
-        -- check if we have a monolithic build of USD
-        monolithic = os.matchfiles(usd_lib_dir.."/*usd_ms.*")
-        if #monolithic > 0 then
-            -- there is only one library to link
-            usd_lib_name = path.replaceextension(path.getbasename(monolithic[1]), "")
-            if os.target() ~= "windows" and string.startswith(usd_lib_name, "lib") then
-                usd_lib_name = usd_lib_name:sub(4)
-            end
-            links { usd_lib_name }
-        else
-            regular = os.matchfiles(usd_lib_dir.."/*usdGeom.*")
-            if #regular == 0 then
-                error("No USD libraries found at "..usd_lib_dir)
-            end
-            usd_lib_name = path.replaceextension(path.getbasename(regular[1]), "")
-            usd_lib_prefix = string.sub(usd_lib_name, 0, string.findlast(usd_lib_name, "usd") - 1)
-            -- strip off the leading "lib" except on Windows where it can be added intentionally
-            if os.target() ~= "windows" and string.startswith(usd_lib_prefix, "lib") then
-                usd_lib_prefix = string.sub(usd_lib_prefix, 4)
-            end
-            for _, lib in ipairs(libs) do
-                links { usd_lib_prefix..lib }
-            end
-        end
-    end
-
-    if m.with_python() then
-        -- this is required because of a boost::python build issue on Linux
-        m.use_python()
-        if houdini_build then
-            externalincludedirs { usd_path.."/include/python"..python_version_suffix }
-            syslibdirs { usd_lib_path }
-            links { "hboost_python".._OPTIONS["py-flavor"].."-mt-x64" }
-        else
-            filter { "system:linux" }
-                links { "boost_python"..PYTHON_VERSION:gsub("%.", "")}
-            filter {}
-        end
-    end
-
-    filter { "system:windows" }
-        -- Warnings when including nearly any USD header
-        disablewarnings {
-            "4003", -- not enough arguments for function-like macro invocation
-            "4100", -- unreferenced formal parameter
-            "4005", -- Hide hundreds of warnings about NOMINMAX redfinition
-            "4127", -- conditional expression is constant
-            "4201", -- nonstandard extension used: nameless struct/union
-            "4305", -- (warning C4305: truncation from 'double' to 'float')
-            "4244", -- (warning C4244: conversion from 'double' to 'float')
-            "4267", -- (warning C4267: 'return': conversion from 'size_t' to 'int')
-            "4275", -- non dll-interface class used as base for dll-interface class
-            "4996", -- (warning C4996: deprecated symbols)
-        }
-        if not m.with_python() then
-            disablewarnings {
-                "4251", -- struct needs to have dll-interface to be used by clients of class, caused by a bug in pxr::TfSingleton
-            }
-        end
     filter { "system:linux" }
         linkoptions { "-Wl,-rpath-link,"..repo_build.get_abs_path(usd_lib_path) }
     filter {}

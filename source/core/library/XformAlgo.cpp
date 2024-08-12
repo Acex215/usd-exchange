@@ -206,13 +206,11 @@ void computeComponentsFromMatrix(
     pivot = transform.GetPivotPosition();
 
     // Decompose rotation into a rotationOrder of XYZ and convert from double to float
-    const GfVec3d rotationDouble = computeXyzRotationsFromRotation(transform.GetRotation());
-    rotation.Set(rotationDouble[0], rotationDouble[1], rotationDouble[2]);
+    rotation = GfVec3f(computeXyzRotationsFromRotation(transform.GetRotation()));
     rotationOrder = usdex::core::RotationOrder::eXyz;
 
     // Convert scale from double to float
-    const GfVec3d scaleDouble = transform.GetScale();
-    scale.Set(scaleDouble[0], scaleDouble[1], scaleDouble[2]);
+    scale = GfVec3f(transform.GetScale());
 }
 
 // Overloaded version of UsdGeomXformCommonAPI::GetXformVectorsByAccumulation which treats pivot as a double

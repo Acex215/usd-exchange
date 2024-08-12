@@ -19,7 +19,16 @@
 //! @note We bind the minimal set of OpenUSD types required by the OpenUSD Exchange SDK public C++ API. Not all types are supported, though more
 //! will be added as needed by the public entry points.
 
+#include <pxr/base/arch/defines.h>
+
+#if defined(ARCH_OS_LINUX)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-conversion" // conversion from ‘double’ to ‘float’ may change value
 #include "BindingUtils.h"
+#pragma GCC diagnostic pop
+#else
+#include "BindingUtils.h"
+#endif
 
 #include <pxr/base/gf/camera.h>
 #include <pxr/base/gf/transform.h>

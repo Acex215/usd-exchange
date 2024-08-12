@@ -90,7 +90,7 @@ TEST_CASE("definePointCloud does not detach arrays")
     VtIntArray normalsIndices = { 0, 1 };
     VtVec3fArray colors = { { 1, 0, 0 }, { 0, 1, 0 } };
     VtIntArray colorIndices = { 0, 1 };
-    VtFloatArray opacities = { 0.8 };
+    VtFloatArray opacities = { 0.8f };
     VtIntArray opacityIndices = { 0, 0 };
 
     UsdGeomPoints pointCloud = usdex::core::definePointCloud(
