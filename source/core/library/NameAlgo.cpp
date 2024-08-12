@@ -11,7 +11,6 @@
 #include "usdex/core/NameAlgo.h"
 
 #include "TfUtils.h"
-#include "UsdUtils.h"
 
 #include <pxr/base/tf/stringUtils.h>
 #include <pxr/usd/sdf/primSpec.h>

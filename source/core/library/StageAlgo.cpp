@@ -12,6 +12,7 @@
 
 #include "usdex/core/LayerAlgo.h"
 
+#include <pxr/base/tf/stringUtils.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
 #include <pxr/usd/usdUtils/authoring.h>
@@ -240,4 +241,87 @@ void usdex::core::saveStage(UsdStagePtr stage, const std::string& authoringMetad
         TF_STATUS("Saving \"%s\"", UsdDescribe(stage).c_str());
         stage->Save();
     }
+}
+
+bool usdex::core::isEditablePrimLocation(const UsdStagePtr stage, const SdfPath& path, std::string* reason)
+{
+    // The stage must be valid
+    if (!stage)
+    {
+        if (reason != nullptr)
+        {
+            *reason = "Invalid UsdStage.";
+        }
+        return false;
+    }
+
+    // The path must be a valid absolute prim path
+    if (!path.IsAbsolutePath() || !path.IsPrimPath())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("\"%s\" is not a valid absolute prim path.", path.GetAsString().c_str());
+        }
+        return false;
+    }
+
+    // Any existing prim must not be an instance proxy
+    const UsdPrim prim = stage->GetPrimAtPath(path);
+    if (prim && prim.IsInstanceProxy())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("\"%s\" is an instance proxy, authoring is not allowed.", path.GetAsString().c_str());
+        }
+        return false;
+    }
+
+    return true;
+}
+
+bool usdex::core::isEditablePrimLocation(const UsdPrim& prim, const std::string& name, std::string* reason)
+{
+    // The parent prim must be valid
+    // We don't need to check that the UsdStage is valid as it must be if the UsdPrim is valid.
+    if (!prim)
+    {
+        if (reason != nullptr)
+        {
+            *reason = "Invalid UsdPrim";
+        }
+        return false;
+    }
+
+    // The parent prim must not be an instance proxy
+    if (prim.IsInstanceProxy())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("\"%s\" is an instance proxy, authoring is not allowed.", prim.GetPath().GetAsString().c_str());
+        }
+        return false;
+    }
+
+    // The name must be a valid identifier
+    if (!SdfPath::IsValidIdentifier(name))
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("\"%s\" is not a valid prim name", name.c_str());
+        }
+        return false;
+    }
+
+    // Any existing prim must not be an instance proxy
+    const UsdPrim child = prim.GetChild(TfToken(name));
+    if (child && child.IsInstanceProxy())
+    {
+        if (reason != nullptr)
+        {
+            *reason = TfStringPrintf("\"%s\" is an instance proxy, authoring is not allowed.", child.GetPath().GetAsString().c_str());
+        }
+        return false;
+    }
+
+    return true;
 }

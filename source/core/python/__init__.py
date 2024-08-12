@@ -23,6 +23,7 @@ __all__ = [
     "createStage",
     "configureStage",
     "saveStage",
+    "isEditablePrimLocation",
     # names
     "getValidPrimName",
     "getValidPrimNames",
