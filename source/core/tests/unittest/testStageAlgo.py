@@ -288,9 +288,7 @@ class ConfigureStageTestCase(usdex.test.TestCase):
         self.assertEqual(stage.GetDefaultPrim().GetTypeName(), "Scope")
         self.assertIsValidUsd(
             stage,
-            extraIssuePredicates=[
-                omni.asset_validator.IssuePredicates.ContainsMessage("The prim <root> (/root) is a sibling of the default prim <Root>")
-            ],
+            issuePredicates=[omni.asset_validator.IssuePredicates.ContainsMessage("The prim <root> (/root) is a sibling of the default prim <Root>")],
         )
 
         # If there is already a prim specified in the root layer with the given name then it will be untouched
@@ -582,7 +580,7 @@ class SaveStageTestCase(usdex.test.TestCase):
                 self.assertEqual(layer.comment, comment)
         self.assertIsValidUsd(
             stage,
-            extraIssuePredicates=[
+            issuePredicates=[
                 # we defined many typeless prims in this test for convenience
                 omni.asset_validator.IssuePredicates.ContainsMessage("Missing type for Prim"),
             ],
