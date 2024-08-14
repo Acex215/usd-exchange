@@ -240,27 +240,21 @@ function m.use_usd(usd_libs)
     usd_root = target_deps.."/usd/%{cfg.buildcfg}"
     usd_lib_path = usd_root.."/lib"
 
-    -- check if we have a monolithic build of USD
-    usdMonoLib, usdLibMidfix = repo_usd.find_usd_monolithic({usd_root=usd_root})
-    if usdMonoLib ~= nil then
-        repo_usd.use_usd(
-            {
-                usd_root=usd_root,
-                usd_suppress_warnings=true
-            },
-            {usdLibMidfix..usdMonoLib}
-        )
+    if PYTHON_VERSION == "0" then
+        python_root = nil
     else
-        repo_usd.use_usd(
-            {
-                usd_root=usd_root,
-                usd_suppress_warnings=true,
-                python_root=target_deps.."/python",
-                python_version=PYTHON_VERSION
-            },
-            usd_libs
-        )
+        python_root = target_deps.."/python"
     end
+
+    repo_usd.use_usd(
+        {
+            usd_root=usd_root,
+            usd_suppress_warnings=true,
+            python_root=python_root,
+            python_version=PYTHON_VERSION
+        },
+        usd_libs
+    )
 
     -- Suppress deprecated tbb/atomic.h and tbb/task.h warnings from OpenUSD
     defines { "TBB_SUPPRESS_DEPRECATED_MESSAGES" }
