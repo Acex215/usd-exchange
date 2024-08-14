@@ -7,14 +7,29 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
-from abc import ABC, abstractmethod
+
+__all__ = [
+    "DefineFunctionTestCase",
+]
+
+from abc import abstractmethod
 
 from pxr import Sdf, Tf, Usd, UsdGeom
-from usdex.test import ScopedTfDiagnosticChecker
+
+from .ScopedTfDiagnosticChecker import ScopedTfDiagnosticChecker
+from .TestCase import TestCase
 
 
-class DefineFunctionTestCaseMixin(ABC):
-    """Mixin class to make assertions that should be valid for all usdex functions that define typed prims"""
+class DefineFunctionTestCase(TestCase):
+    """
+    Class to make assertions that should be valid for all usdex functions that define typed prims
+
+    This class inherits from `usdex.test.TestCase` and adds several abstract properties that must be overridden by derived classes
+    in order to configure the expected results of a default "define" operation.
+
+    It also adds 2 useful assertions: `assertDefineFunctionSuccess` and `assertDefineFunctionFailure` and adds several concrete
+    test method implementations to cover scenarios that all "define" functions must adhere to.
+    """
 
     @property
     @abstractmethod

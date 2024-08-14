@@ -11,7 +11,6 @@
 import usdex.core
 import usdex.test
 from pxr import Gf, Sdf, Usd, UsdGeom, Vt
-from utils.DefineFunctionTestCaseMixin import DefineFunctionTestCaseMixin
 
 IDENTITY_TRANSLATE = Gf.Vec3d(0.0, 0.0, 0.0)
 IDENTITY_ROTATE = Gf.Vec3f(0.0, 0.0, 0.0)
@@ -1218,9 +1217,9 @@ class GetLocalTransformComponentsTest(BaseXformTestCase):
         self.assertIsValidUsd(stage)
 
 
-class DefineXformTestCase(DefineFunctionTestCaseMixin, BaseXformTestCase):
+class DefineXformTestCase(usdex.test.DefineFunctionTestCase, BaseXformTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineXform
     requiredArgs = tuple()
     typeName = "Xform"

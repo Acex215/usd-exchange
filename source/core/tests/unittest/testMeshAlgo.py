@@ -29,9 +29,9 @@ POINTS = Vt.Vec3fArray(
 )
 
 
-class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.TestCase):
+class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.definePolyMesh
     requiredArgs = tuple([FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS])
     schema = UsdGeom.Mesh

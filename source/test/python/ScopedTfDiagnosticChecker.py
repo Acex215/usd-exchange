@@ -8,6 +8,10 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+__all__ = [
+    "ScopedTfDiagnosticChecker",
+]
+
 import re
 from typing import List, Tuple
 

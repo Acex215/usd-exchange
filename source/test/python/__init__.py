@@ -11,7 +11,9 @@
 __all__ = [
     "ScopedTfDiagnosticChecker",
     "TestCase",
+    "DefineFunctionTestCase",
 ]
 
+from .DefineFunctionTestCase import DefineFunctionTestCase
 from .ScopedTfDiagnosticChecker import ScopedTfDiagnosticChecker
 from .TestCase import TestCase
