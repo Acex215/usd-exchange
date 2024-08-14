@@ -59,6 +59,11 @@ __all__ = [
     "Vec2fPrimvarData",
     "StringPrimvarData",
     "TokenPrimvarData",
+    # lights
+    "isLight",
+    "getLightAttr",
+    "defineDomeLight",
+    "defineRectLight",
 ]
 
 import os
