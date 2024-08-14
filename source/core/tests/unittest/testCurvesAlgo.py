@@ -61,7 +61,7 @@ BATCHED_POINTS = Vt.Vec3fArray(
 
 class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
 
-    # Partially configure the DefineFunctionTestCaseMixin
+    # Partially configure the DefineFunctionTestCase
     schema = UsdGeom.BasisCurves
     typeName = "BasisCurves"
     requiredPropertyNames = set(
@@ -306,7 +306,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         self.assertFalse(stage.GetPrimAtPath(path))
 
 
-class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
     # Configure the DefineBasisCurvesTestCaseMixin
     defineFunc = usdex.core.defineLinearBasisCurves
@@ -394,9 +394,9 @@ class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestC
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedLinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedLinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineLinearBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS])
     primvarSizes = {
@@ -466,9 +466,9 @@ class BatchedLinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier])
     primvarSizes = {
@@ -559,9 +559,9 @@ class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedNonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedNonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.bezier])
     primvarSizes = {
@@ -623,12 +623,12 @@ class BatchedNonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usd
         self.assertEqual(curves.GetPointsAttr().Get(), points)
 
 
-class PeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
     curveVertexCounts = Vt.IntArray([6])
     points = POINTS[:-1]
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([curveVertexCounts, points, UsdGeom.Tokens.bezier, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -685,12 +685,12 @@ class PeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Te
         self.assertEqual(curves.GetPointsAttr().Get(), self.points)
 
 
-class BatchedPeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
     curveVertexCounts = Vt.IntArray([6, 9])
     points = Vt.Vec3fArray(list(BATCHED_POINTS[:6]) + list(BATCHED_POINTS[11:-1]))
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([curveVertexCounts, points, UsdGeom.Tokens.bezier, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -734,9 +734,9 @@ class BatchedPeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.
         self.assertEqual(curves.GetPointsAttr().Get(), self.points)
 
 
-class PinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier, UsdGeom.Tokens.pinned])
     primvarSizes = {
@@ -795,9 +795,9 @@ class PinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Test
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedPinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.bezier, UsdGeom.Tokens.pinned])
     primvarSizes = {
@@ -841,9 +841,9 @@ class BatchedPinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.te
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class NonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class NonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bspline])
     primvarSizes = {
@@ -901,9 +901,9 @@ class NonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedNonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedNonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.bspline])
     primvarSizes = {
@@ -947,9 +947,9 @@ class BatchedNonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, us
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class PeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bspline, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -1008,9 +1008,9 @@ class PeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.T
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedPeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.bspline, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -1054,9 +1054,9 @@ class BatchedPeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class PinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bspline, UsdGeom.Tokens.pinned])
     primvarSizes = {
@@ -1114,9 +1114,9 @@ class PinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Tes
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedPinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.bspline, UsdGeom.Tokens.pinned])
     primvarSizes = {
@@ -1159,9 +1159,9 @@ class BatchedPinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.t
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class NonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class NonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.catmullRom])
     primvarSizes = {
@@ -1219,9 +1219,9 @@ class NonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedNonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedNonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.catmullRom])
     primvarSizes = {
@@ -1265,9 +1265,9 @@ class BatchedNonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin,
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class PeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.catmullRom, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -1326,9 +1326,9 @@ class PeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedPeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.catmullRom, UsdGeom.Tokens.periodic])
     primvarSizes = {
@@ -1372,9 +1372,9 @@ class BatchedPeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, us
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
 
 
-class PinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class PinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.catmullRom, UsdGeom.Tokens.pinned])
     primvarSizes = {
@@ -1432,9 +1432,9 @@ class PinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.
         self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
 
 
-class BatchedPinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.TestCase):
+class BatchedPinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCubicBasisCurves
     requiredArgs = tuple([BATCHED_CURVE_VERTEX_COUNTS, BATCHED_POINTS, UsdGeom.Tokens.catmullRom, UsdGeom.Tokens.pinned])
     primvarSizes = {

@@ -11,12 +11,11 @@
 import usdex.core
 import usdex.test
 from pxr import Gf, Sdf, Tf, Usd, UsdGeom, Vt
-from utils.DefineFunctionTestCaseMixin import DefineFunctionTestCaseMixin
 
 
-class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
+class DefineCameraTestCase(usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.defineCamera
     requiredArgs = tuple([Gf.Camera()])
     schema = UsdGeom.Camera
@@ -62,7 +61,7 @@ class DefineCameraTestCase(DefineFunctionTestCaseMixin, usdex.test.TestCase):
         self.assertEqual(camera.GetFocusDistanceAttr().Get(), cameraData.focusDistance)
 
     def testStrongerWeaker(self):
-        # This differs from the implementation in DefineFunctionTestCaseMixin
+        # This differs from the implementation in DefineFunctionTestCase
         # A prim can be defined in a stronger sub layer but will fail to re-define in a weaker one.
         stage = self.createTestStage()
 

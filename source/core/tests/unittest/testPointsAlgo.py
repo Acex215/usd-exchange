@@ -26,9 +26,9 @@ POINTS = Vt.Vec3fArray(
 )
 
 
-class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.TestCase):
+class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctionTestCase):
 
-    # Configure the DefineFunctionTestCaseMixin
+    # Configure the DefineFunctionTestCase
     defineFunc = usdex.core.definePointCloud
     requiredArgs = tuple([POINTS])
     schema = UsdGeom.Points

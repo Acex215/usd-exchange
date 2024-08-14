@@ -8,15 +8,14 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 import omni.asset_validator
 import usdex.test
 from pxr import Gf, Sdf, Tf, UsdGeom, Vt
-from utils.DefineFunctionTestCaseMixin import DefineFunctionTestCaseMixin
 
 
-class DefinePointBasedTestCaseMixin(DefineFunctionTestCaseMixin):
+class DefinePointBasedTestCaseMixin(ABC):
     """Mixin class to make assertions that should be valid for all OpenUSD Exchange SDK functions that define PointBased prims"""
 
     @property
