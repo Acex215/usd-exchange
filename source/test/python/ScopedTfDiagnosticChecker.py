@@ -63,7 +63,23 @@ class ScopedTfDiagnosticChecker:
         if len(self.expected) == 0:
             self.testCase.assertTrue(self.errorMark.IsClean() and len(diagnostics) == 0)
         else:
-            self.testCase.assertTrue(len(diagnostics) == len(self.expected) or not self.errorMark.IsClean())
+            self.testCase.assertTrue(
+                len(diagnostics) == len(self.expected) or not self.errorMark.IsClean(),
+                msg="""
+Errors:
+{errors}
+
+Diagnostics:
+{diagnostics}
+
+Expected:
+{expected}
+                """.format(
+                    errors="\n".join([x.commentary for x in self.errorMark.GetErrors()]),
+                    diagnostics="\n".join([x.commentary for x in diagnostics]),
+                    expected="\n".join([x[1] for x in self.expected]),
+                ),
+            )
 
         i = 0
         for error in self.errorMark.GetErrors():
