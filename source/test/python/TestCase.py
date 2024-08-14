@@ -55,16 +55,16 @@ class TestCase(unittest.TestCase):
 
         self.validationEngine = omni.asset_validator.ValidationEngine(init_rules=True)
 
-    def assertIsValidUsd(self, asset: omni.asset_validator.AssetType, extraIssuePredicates: Optional[List] = None, msg: Optional[str] = None):
+    def assertIsValidUsd(self, asset: omni.asset_validator.AssetType, issuePredicates: Optional[List] = None, msg: Optional[str] = None):
         """Assert that given asset passes all enabled validation rules
 
         Args:
             asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
-            extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+            issuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
             msg: Optional message to report while validation failed.
         """
-        issues = self.__validateUsd(asset=asset, engine=self.validationEngine, extraIssuePredicates=extraIssuePredicates)
+        issues = self.__validateUsd(asset=asset, engine=self.validationEngine, issuePredicates=issuePredicates)
         if issues:
             if msg is None:
                 msg = "\n".join(str(issue) for issue in list(issues))
@@ -214,7 +214,7 @@ class TestCase(unittest.TestCase):
     def __validateUsd(
         asset: omni.asset_validator.AssetType,
         engine: omni.asset_validator.ValidationEngine,
-        extraIssuePredicates: Optional[List] = None,
+        issuePredicates: Optional[List] = None,
     ) -> omni.asset_validator.IssuesList:
         """Validate asset passes all enabled validation rules
 
@@ -223,44 +223,18 @@ class TestCase(unittest.TestCase):
 
         Kwargs:
             engine: ValidationEngine for running Rules on a given Asset.
-            extraIssuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+            issuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
 
         Return:
             A list of USD asset Issues.
         """
-        if extraIssuePredicates:
-            issuePredicates = extraIssuePredicates
-            issuePredicates.extend(TestCase._defaultAllowedIssuePredicates())
-        else:
-            issuePredicates = TestCase._defaultAllowedIssuePredicates()
-
         result = engine.validate(asset)
 
         issues = result.issues()
-        allowedIssues = issues.filter_by(omni.asset_validator.IssuePredicates.Or(*issuePredicates))
-        if allowedIssues:
-            issues = omni.asset_validator.IssuesList(list(set(issues) - set(allowedIssues)))
+        if issuePredicates:
+            allowedIssues = issues.filter_by(omni.asset_validator.IssuePredicates.Or(*issuePredicates))
+            if allowedIssues:
+                issues = omni.asset_validator.IssuesList(list(set(issues) - set(allowedIssues)))
 
         return issues
-
-    @staticmethod
-    def _defaultAllowedIssuePredicates() -> List[omni.asset_validator.IssuePredicates]:
-        """Return a list of callables that determine if an issue can be bypassed by tests"""
-
-        def checkUnresolvableDependenciesIssue(issue):
-            # Anon layers are reported as unresolvable external dependency by Asset Validator
-            if re.match("Found unresolvable external dependency 'anon:.*'\.", issue.message):
-                return True
-            # material and maps
-            if re.match("Found unresolvable external dependency '.*\.(mdl|png)'\.", issue.message):
-                return True
-
-        # Allows any issue reporting `The path "Omni*.mdl" does not exist.` to be bypassed. We should remove it once we have an agreement of
-        # how to handle this case
-        omniMdlPredicate = omni.asset_validator.IssuePredicates.And(
-            omni.asset_validator.IssuePredicates.ContainsMessage("The path Omni"),
-            omni.asset_validator.IssuePredicates.ContainsMessage(".mdl does not exist."),
-        )
-
-        return [omniMdlPredicate, checkUnresolvableDependenciesIssue]
