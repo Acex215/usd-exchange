@@ -70,7 +70,14 @@ Stderr:
         if expectSuccess and result.returncode != 0:
             self.fail(msg=failureMessage)
         elif not expectSuccess and result.returncode == 0:
-            self.fail(msg=failureMessage)
+            # Fatal diagnostics on Linux with restricted ptrace permissions currently cause the process
+            # to abort with an incorrect returncode. See OpenUSD GitHub PR3014 for more details.
+            returnCodeCanBeTrusted = True
+            if platform.system().lower() == "linux" and os.path.exists("/proc/sys/kernel/yama/ptrace_scope"):
+                with open("/proc/sys/kernel/yama/ptrace_scope", "r") as f:
+                    returnCodeCanBeTrusted = f.read().strip() == "0"
+            if returnCodeCanBeTrusted:
+                self.fail(msg=failureMessage)
 
         output = result.stdout.strip("\n").split("\n") if result.stdout else []
         self.assertEqual(len(output), len(expectedStdout), msg=failureMessage)
