@@ -8,6 +8,10 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+__all__ = [
+    "TestCase",
+]
+
 import os
 import pathlib
 import re
