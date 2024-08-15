@@ -10,7 +10,8 @@ OpenUSD Exchange SDK
    :hidden:
 
    What is OpenUSD Exchange SDK? <self>
-   Changelog <docs/changes.rst>
+   OpenUSD Exchange Changelog <docs/changes.rst>
+   OpenUSD Exchange License Notices <docs/licenses.md>
 
 .. toctree::
    :caption: Guides

@@ -5,7 +5,7 @@
     <filter include="usd-${config}" />
     <filter include="python" />
   </import>
-  <dependency name="usd-${config}" linkPath="../_build/target-deps/usd/${config}" />
+  <dependency name="usd-${config}" linkPath="../_build/target-deps/usd/${config}" tags="non-redist" />
   <dependency name="python" linkPath="../_build/target-deps/python" tags="non-redist" />
 
   <!-- General OSS -->
@@ -23,11 +23,11 @@
   </dependency>
 
   <!-- Optional Omniverse addons -->
-  <dependency name="omni_asset_validator" linkPath="../_build/target-deps/omni_asset_validator">
-    <package name="omni.asset_validator" version="0.12.0+main.889.5991537d.gl.${platform}" />
+  <dependency name="omni_asset_validator" linkPath="../_build/target-deps/omni_asset_validator" tags="non-redist">
+    <package name="omni.asset_validator" version="0.13.0+v0130.1048.e2168d89.gl.${platform}" />
   </dependency>
-  <dependency name="omni_transcoding" linkPath="../_build/target-deps/omni_transcoding/${config}">
-    <package name="omni_transcoding.${platform}.${config}" version="0.1.0+main.236.32c91ab6.gl" />
+  <dependency name="omni_transcoding" linkPath="../_build/target-deps/omni_transcoding/${config}" tags="non-redist">
+    <package name="omni_transcoding.${platform}.${config}" version="0.1.0+main.249.e5aa3370.gl" />
   </dependency>
 
 </project>
