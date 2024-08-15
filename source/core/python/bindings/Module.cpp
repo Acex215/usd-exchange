@@ -11,6 +11,7 @@
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
 #include "CurvesAlgoBindings.h"
+#include "DiagnosticsBindings.h"
 #include "LayerAlgoBindings.h"
 #include "LightAlgoBindings.h"
 #include "MeshAlgoBindings.h"
@@ -31,6 +32,7 @@ PYBIND11_MODULE(_usdex_core, m)
 {
     bindCore(m);
     bindSettings(m);
+    bindDiagnostics(m);
     bindLayerAlgo(m);
     bindStageAlgo(m);
     bindNameAlgo(m);

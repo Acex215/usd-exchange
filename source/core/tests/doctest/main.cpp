@@ -8,6 +8,8 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
+#include <usdex/core/Diagnostics.h>
+
 #define DOCTEST_CONFIG_IMPLEMENT // we will be supplying main()
 #include <doctest/doctest.h>
 
@@ -15,5 +17,9 @@ int main(int argc, char** argv)
 {
     doctest::Context context;
     context.applyCommandLine(argc, argv);
+
+    // activate the delegate to affect OpenUSD diagnostic logs
+    usdex::core::activateDiagnosticsDelegate();
+
     return context.run();
 }
