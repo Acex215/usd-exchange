@@ -43,7 +43,9 @@ clean.folders."++" = ["$root/_conan", "$root/_deps"]
 # enable only for internal use
 licensing.enabled = false
 licensing.fail_on_missing = true
-fetch.pip.gather_licenses_path = ""
+
+# pip is not used currently
+fetch.pip.files_to_pull = []
 
 fetch.before_pull_commands = [
     [
