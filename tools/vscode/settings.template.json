@@ -3,6 +3,7 @@
     "files.trimTrailingWhitespace": true,
     "files.trimFinalNewlines": true,
     "diffEditor.ignoreTrimWhitespace": false,
+    "python.defaultInterpreterPath": "",
     "python.analysis.extraPaths": [
     ],
     "python.languageServer": "Pylance",
