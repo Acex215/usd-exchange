@@ -46,4 +46,4 @@ For general questions about OpenUSD itself, use the [Alliance for OpenUSD Forum]
 
 # License
 
-This project is licensed under the NVIDIA Omniverse License Agreement - see the LICENSE.md file for details.
+This project is licensed under the [NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) - see our [License Notices](docs/licenses.md) for more details.
