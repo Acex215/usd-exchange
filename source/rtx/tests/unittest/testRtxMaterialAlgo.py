@@ -321,77 +321,13 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertFalse(volumeOutput.HasConnectedSource())
         self.assertFalse(shader.GetOutput(UsdShade.Tokens.volume))
 
-    def testColorSpaceConversions(self):
-        greySrgb = Gf.Vec3f(0.5, 0.5, 0.5)
-        darkRedSrgb = Gf.Vec3f(0.33, 0.1, 0.1)
-        lightGreenSrgb = Gf.Vec3f(0.67, 0.97, 0.67)
-        purpleSrgb = Gf.Vec3f(0.45, 0.2, 0.6)
-        blackSrgb = Gf.Vec3f(0.03, 0.03, 0.03)
-
-        greyLinear = Gf.Vec3f(0.21404114, 0.21404114, 0.21404114)
-        darkRedLinear = Gf.Vec3f(0.0889815256, 0.01002282, 0.01002282)
-        lightGreenLinear = Gf.Vec3f(0.406448301, 0.93310684, 0.406448301)
-        purpleLinear = Gf.Vec3f(0.17064493, 0.033104767, 0.3185467781)
-        blackLinear = Gf.Vec3f(0.0023219814, 0.0023219814, 0.0023219814)
-
-        convertedGreyLinear = usdex.rtx.sRgbToLinear(greySrgb)
-        convertedDarkRedLinear = usdex.rtx.sRgbToLinear(darkRedSrgb)
-        convertedLightGreenLinear = usdex.rtx.sRgbToLinear(lightGreenSrgb)
-        convertedPurpleLinear = usdex.rtx.sRgbToLinear(purpleSrgb)
-        convertedBlackLinear = usdex.rtx.sRgbToLinear(blackSrgb)
-
-        convertedGreySrgb = usdex.rtx.linearToSrgb(greyLinear)
-        convertedDarkRedSrgb = usdex.rtx.linearToSrgb(darkRedLinear)
-        convertedLightGreenSrgb = usdex.rtx.linearToSrgb(lightGreenLinear)
-        convertedPurpleSrgb = usdex.rtx.linearToSrgb(purpleLinear)
-        convertedBlackSrgb = usdex.rtx.linearToSrgb(blackLinear)
-
-        roundTripGreySrgb = usdex.rtx.linearToSrgb(convertedGreyLinear)
-        roundTripRedSrgb = usdex.rtx.linearToSrgb(convertedDarkRedLinear)
-        roundTripGreenSrgb = usdex.rtx.linearToSrgb(convertedLightGreenLinear)
-        roundTripPurpleSrgb = usdex.rtx.linearToSrgb(convertedPurpleLinear)
-        roundTripBlackSrgb = usdex.rtx.linearToSrgb(convertedBlackLinear)
-
-        roundTripGreyLinear = usdex.rtx.sRgbToLinear(convertedGreySrgb)
-        roundTripRedLinear = usdex.rtx.sRgbToLinear(convertedDarkRedSrgb)
-        roundTripGreenLinear = usdex.rtx.sRgbToLinear(convertedLightGreenSrgb)
-        roundTripPurpleLinear = usdex.rtx.sRgbToLinear(convertedPurpleSrgb)
-        roundTripBlackLinear = usdex.rtx.sRgbToLinear(convertedBlackSrgb)
-
-        self.assertVecAlmostEqual(convertedGreyLinear, greyLinear, places=6)
-        self.assertVecAlmostEqual(convertedDarkRedLinear, darkRedLinear, places=6)
-        self.assertVecAlmostEqual(convertedLightGreenLinear, lightGreenLinear, places=6)
-        self.assertVecAlmostEqual(convertedPurpleLinear, purpleLinear, places=6)
-        self.assertVecAlmostEqual(convertedBlackLinear, blackLinear, places=6)
-
-        self.assertVecAlmostEqual(convertedGreySrgb, greySrgb, places=6)
-        self.assertVecAlmostEqual(convertedDarkRedSrgb, darkRedSrgb, places=6)
-        self.assertVecAlmostEqual(convertedLightGreenSrgb, lightGreenSrgb, places=6)
-        self.assertVecAlmostEqual(convertedPurpleSrgb, purpleSrgb, places=6)
-        self.assertVecAlmostEqual(convertedBlackSrgb, blackSrgb, places=6)
-
-        self.assertVecAlmostEqual(roundTripGreyLinear, greyLinear, places=6)
-        self.assertVecAlmostEqual(roundTripRedLinear, darkRedLinear, places=6)
-        self.assertVecAlmostEqual(roundTripGreenLinear, lightGreenLinear, places=6)
-        self.assertVecAlmostEqual(roundTripPurpleLinear, purpleLinear, places=6)
-        self.assertVecAlmostEqual(roundTripBlackLinear, blackLinear, places=6)
-
-        self.assertVecAlmostEqual(roundTripGreySrgb, greySrgb, places=6)
-        self.assertVecAlmostEqual(roundTripRedSrgb, darkRedSrgb, places=6)
-        self.assertVecAlmostEqual(roundTripGreenSrgb, lightGreenSrgb, places=6)
-        self.assertVecAlmostEqual(roundTripPurpleSrgb, purpleSrgb, places=6)
-        self.assertVecAlmostEqual(roundTripBlackSrgb, blackSrgb, places=6)
-
-    def testMaterialCreation(self):
+    def testMdlMaterialCreation(self):
         stage = self._createTestStage()
         materialScopePath = stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())
         materialScope = stage.GetPrimAtPath(materialScopePath)
         cylinder = stage.GetPrimAtPath("/Root/Geometry/Xform/Cylinder")
 
-        badPrim = Usd.Prim()
-        badMaterial = UsdShade.Material()
-
-        material = usdex.rtx.createMaterial(materialScope, "TestMaterial")
+        material = usdex.core.createMaterial(materialScope, "TestMaterial")
         self._validateMaterial(material)
         shader = usdex.rtx.createMdlShader(material, "TestShader", Sdf.AssetPath("OmniPBR.mdl"), "OmniPBR")
         self._validateShader(shader, "OmniPBR")
@@ -403,22 +339,18 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self._validateMdlConnection(material, shader2)
 
         # test connectMaterialOutputs = False
-        material2 = usdex.rtx.createMaterial(materialScope, "TestMaterial2")
+        material2 = usdex.core.createMaterial(materialScope, "TestMaterial2")
         self._validateMaterial(material2)
 
         unconnectedShader = usdex.rtx.createMdlShader(material2, "unconnectedShader", Sdf.AssetPath("OmniGlass.mdl"), "OmniGlass", False)
         self._validateShader(unconnectedShader, "OmniGlass")
         self._validateMdlConnection(material2, unconnectedShader, connected=False)
 
-        usdex.rtx.bindMaterial(cylinder, material)
+        usdex.core.bindMaterial(cylinder, material)
         self.assertTrue(cylinder.HasAPI(UsdShade.MaterialBindingAPI))
 
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            testMat = usdex.rtx.createMaterial(badPrim, "badMaterial")
-        self.assertFalse(testMat.GetPrim())
-
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            testShader = usdex.rtx.createMdlShader(badMaterial, "badShader", Sdf.AssetPath("OmniPBR.mdl"), "OmniPBR", False)
+            testShader = usdex.rtx.createMdlShader(UsdShade.Material(), "badShader", Sdf.AssetPath("OmniPBR.mdl"), "OmniPBR", False)
         self.assertFalse(testShader.GetPrim())
 
         if os.environ["USD_FLAVOR"] == "nv-usd":
@@ -432,36 +364,6 @@ class MaterialAlgoTest(usdex.test.TestCase):
         with usdex.test.ScopedTfDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
-    def testInvalidMaterialCreation(self):
-        stage = self._createTestStage()
-        path = stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())
-        parent = stage.GetPrimAtPath(path)
-        name = "Material"
-
-        # An invalid parent will result in an invalid Material schema being returned
-        invalid_parent = stage.GetPrimAtPath("/Root/InvalidPath")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            material = usdex.rtx.createMaterial(invalid_parent, name)
-        self.assertIsInstance(material, UsdShade.Material)
-        self.assertFalse(material)
-
-        # An invalid name will result in an invalid Material schema being returned
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            material = usdex.rtx.createMaterial(parent, "")
-        self.assertIsInstance(material, UsdShade.Material)
-        self.assertFalse(material)
-
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            material = usdex.rtx.createMaterial(parent, "1_Material")
-        self.assertIsInstance(material, UsdShade.Material)
-        self.assertFalse(material)
-
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
-            material = usdex.rtx.createMaterial(parent, "Glass.mdl")
-        self.assertIsInstance(material, UsdShade.Material)
-        self.assertFalse(material)
-        self.assertIsValidUsd(stage)
-
     def testInvalidMdlShaderCreation(self):
         stage = self._createTestStage()
         path = stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())
@@ -469,7 +371,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         name = "Material"
 
         # Construct valid default arguments
-        material = usdex.rtx.createMaterial(parent, name)
+        material = usdex.core.createMaterial(parent, name)
         mdlPath = Sdf.AssetPath("OmniPBR.mdl")
         module = "OmniPBR"
 
@@ -505,8 +407,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
@@ -515,69 +416,56 @@ class MaterialAlgoTest(usdex.test.TestCase):
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
-        # Define a Material with no shaders
+        # A Material with no connected shaders will result in an invalid shader schema being returned
         path = stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())
         parent = stage.GetPrimAtPath(path)
         name = "Material"
-        material = usdex.rtx.createMaterial(parent, name)
-
-        # A Material with no connected shaders will result in an invalid shader schema being returned
+        material = usdex.core.createMaterial(parent, name)
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
-        # Define a Shader and connect it to the MDL render context
+        # With only the MDL render context connected, that shader will be returned for MDL, but an invalid shader schema being returned for preview
         path = material.GetPrim().GetPath().AppendChild("MdlShader")
         mdlShader = UsdShade.Shader.Define(stage, path)
         output = mdlShader.CreateOutput("out", Sdf.ValueTypeNames.Token)
         material.CreateSurfaceOutput("mdl").ConnectToSource(output)
-
-        # With only the MDL render context connected, that shader will be returned for MDL, but an invalid shader schema being returned for preview
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), mdlShader.GetPrim())
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
-        # Define a Shader and connect it to the universal render context
+        # With both render contexts connected, that associated shader will be returned for each context
         path = material.GetPrim().GetPath().AppendChild("PreviewSurface")
         previewShader = UsdShade.Shader.Define(stage, path)
         output = previewShader.CreateOutput("out", Sdf.ValueTypeNames.Token)
         material.CreateSurfaceOutput().ConnectToSource(output)
-
-        # With both render contexts connected, that associated shader will be returned for each context
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), mdlShader.GetPrim())
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), previewShader.GetPrim())
 
-        # Disconnect the MDL render context from the Shader
-        material.GetSurfaceOutput("mdl").GetAttr().ClearConnections()
-
         # With only the universal render context connected, that shader will be returned for both render contexts
+        material.GetSurfaceOutput("mdl").GetAttr().ClearConnections()
         shader = usdex.rtx.computeEffectiveMdlSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), previewShader.GetPrim())
-
-        shader = usdex.rtx.computeEffectivePreviewSurfaceShader(material)
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), previewShader.GetPrim())
@@ -593,9 +481,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
         badStage = None
         badPrim = Usd.Prim()
 
-        red = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
-        green = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.1, 0.8, 0.1))
-        blue = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.1, 0.1, 0.8))
+        red = usdex.core.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
+        green = usdex.core.sRgbToLinear(Gf.Vec3f(0.1, 0.8, 0.1))
+        blue = usdex.core.sRgbToLinear(Gf.Vec3f(0.1, 0.1, 0.8))
 
         # OmniPBR test stage overload
         materialPath = materialScopePath.AppendChild("TestMaterial")
@@ -731,7 +619,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         metallicTexture = self.tmpFile(name="M", ext="png")
         metallicTexture2 = self.tmpFile(name="M", ext="png")
 
-        red = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
+        red = usdex.core.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
 
         # OmniPBR test stage overload
         materialPath = materialScopePath.AppendChild("ORM_Material")
@@ -741,8 +629,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
         roughness = 0.77
         metallic = 0.33
         material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
-        usdex.rtx.bindMaterial(cylinder, material)
-        usdex.rtx.bindMaterial(plane, material)
+        usdex.core.bindMaterial(cylinder, material)
+        usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self._validateMaterial(material)
@@ -830,8 +718,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
-        usdex.rtx.bindMaterial(cylinder, material)
-        usdex.rtx.bindMaterial(plane, material)
+        usdex.core.bindMaterial(cylinder, material)
+        usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
 
@@ -933,8 +821,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
-        usdex.rtx.bindMaterial(cylinder, material)
-        usdex.rtx.bindMaterial(plane, material)
+        usdex.core.bindMaterial(cylinder, material)
+        usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
 
@@ -963,7 +851,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialScopePath = stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())
         mdlShaderName = "MDLShader"
         usdShaderName = "PreviewSurface"
-        red = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
+        red = usdex.core.sRgbToLinear(Gf.Vec3f(0.8, 0.1, 0.1))
 
         # OmniPBR test stage overload
         materialPath = materialScopePath.AppendChild("TestMaterial")
@@ -1012,7 +900,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         plane = stage.GetPrimAtPath("/Root/Geometry/Xform/Plane")
         diffuseTexture = self.tmpFile(name="BaseColor", ext="png")
         normalTexture = self.tmpFile(name="N", ext="png")
-        color = usdex.rtx.sRgbToLinear(Gf.Vec3f(0.0, 0.5, 0.5))
+        color = usdex.core.sRgbToLinear(Gf.Vec3f(0.0, 0.5, 0.5))
 
         materialPath = materialScopePath.AppendChild("Diffuse_Material")
 
@@ -1024,7 +912,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertFalse(shaderInput)
 
         # Invalid MDL shader
-        noShaderMaterial = usdex.rtx.createMaterial(stage.GetDefaultPrim(), "NoShaderMaterial")
+        noShaderMaterial = usdex.core.createMaterial(stage.GetDefaultPrim(), "NoShaderMaterial")
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Cannot create MDL shader input")]):
             shaderInput = usdex.rtx.createMdlShaderInput(noShaderMaterial, "invalid_mdl_shader_input", "invalid_value", Sdf.ValueTypeNames.Asset)
         self.assertIsInstance(shaderInput, UsdShade.Input)
@@ -1033,8 +921,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
         # OmniPBR test stage overload
         material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=color)
         self.assertTrue(usdex.rtx.addDiffuseTextureToPbrMaterial(material, diffuseTexture))
-        usdex.rtx.bindMaterial(cylinder, material)
-        usdex.rtx.bindMaterial(plane, material)
+        usdex.core.bindMaterial(cylinder, material)
+        usdex.core.bindMaterial(plane, material)
 
         def checkMdlShaderInput(matPrim, name, value, typeName, colorSpace=None):
             shaderInput = usdex.rtx.createMdlShaderInput(matPrim, name, value, typeName, colorSpace)
@@ -1049,11 +937,11 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertEqual(shaderInput.GetTypeName(), typeName)
 
             def colorSpaceEnumToString(colorSpace):
-                if colorSpace == usdex.rtx.ColorSpace.eAuto:
+                if colorSpace == usdex.core.ColorSpace.eAuto:
                     return "auto"
-                elif colorSpace == usdex.rtx.ColorSpace.eRaw:
+                elif colorSpace == usdex.core.ColorSpace.eRaw:
                     return "raw"
-                elif colorSpace == usdex.rtx.ColorSpace.eSrgb:
+                elif colorSpace == usdex.core.ColorSpace.eSrgb:
                     return "sRGB"
                 else:
                     return ""
@@ -1061,10 +949,10 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertEqual(attr.GetColorSpace(), colorSpaceEnumToString(colorSpace))
 
         checkMdlShaderInput(material, "project_uvw", True, Sdf.ValueTypeNames.Bool)
-        checkMdlShaderInput(material, "diffuse_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.rtx.ColorSpace.eSrgb)
-        checkMdlShaderInput(material, "diffuse_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.rtx.ColorSpace.eRaw)
-        checkMdlShaderInput(material, "diffuse_texture", diffuseTexture, Sdf.ValueTypeNames.Asset, usdex.rtx.ColorSpace.eAuto)
-        checkMdlShaderInput(material, "normalmap_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.rtx.ColorSpace.eRaw)
+        checkMdlShaderInput(material, "diffuse_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.core.ColorSpace.eSrgb)
+        checkMdlShaderInput(material, "diffuse_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.core.ColorSpace.eRaw)
+        checkMdlShaderInput(material, "diffuse_texture", diffuseTexture, Sdf.ValueTypeNames.Asset, usdex.core.ColorSpace.eAuto)
+        checkMdlShaderInput(material, "normalmap_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.core.ColorSpace.eRaw)
         checkMdlShaderInput(material, "opacity_mode", 1, Sdf.ValueTypeNames.Int)
         checkMdlShaderInput(material, "bump_factor", 2.0, Sdf.ValueTypeNames.Float)
         checkMdlShaderInput(material, "texture_translate", Gf.Vec2f(1.0, 1.0), Sdf.ValueTypeNames.Float2)

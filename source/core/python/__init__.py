@@ -74,6 +74,13 @@ __all__ = [
     "getLightAttr",
     "defineDomeLight",
     "defineRectLight",
+    # materials
+    "createMaterial",
+    "bindMaterial",
+    "computeEffectivePreviewSurfaceShader",
+    "ColorSpace",
+    "sRgbToLinear",
+    "linearToSrgb",
 ]
 
 import os
