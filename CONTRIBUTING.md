@@ -47,11 +47,11 @@ OpenUSD Exchange SDK can be compiled for many flavors of OpenUSD and Python. It 
 To build OpenUSD Exchange SDK for different flavors of the upstream dependencies, we provide the following tokens that can be overridden on the commandline:
 - `$usd_flavor`: either 'usd' or 'usd-minimal'
 - `$usd_ver`: many options, see details below
-- `$python_var`: 3.11, 3.10, 0 (disable python)
+- `$python_ver`: 3.11, 3.10, 0 (disable python)
 
 For example, to build with USD 23.11 and Python 3.10, call `repo --set-token usd_flavor:usd --set-token usd_ver:23.11 --set-token python_ver:3.10 build`.
 
-Similarly, for a minimal monothlicic build of USD 24.05 with no python support, so should call `repo --set-token usd_flavor:usd-minimal --set-token usd_ver:24.05 --set-token python_ver:0 build`.
+Similarly, for a minimal monothlicic build of USD 24.05 with no python support, call `repo --set-token usd_flavor:usd-minimal --set-token usd_ver:24.05 --set-token python_ver:0 build`.
 
 > Important : When building multiple flavors using the same working directories, you need to rebuild using `-x/--clean` to force premake to re-create all artifacts.
 
@@ -69,7 +69,7 @@ If none of the existing flavors meet the requirements of your application, you h
 
 To run all the unittest suites, use `repo.bat test` or `repo.sh test`, depending on your local platform. We currently have 2 suites, `main` and `cpp`. Both suites run by default. Any failure in any suite will fail the test process.
 
-> Note: `repo test` uses the same `$usd` and `$py` tokens as `repo build`. If you are building for a non-default flavor it is critical to supply the same token values to `repo test`. For example, `repo --set-token usd_ver:24.05 --set-token python_ver:3.11 test -s main`
+> Note: `repo test` uses the same `$usd_flavor`, `$usd_ver`, and `$python_ver` tokens as `repo build`. If you are building for a non-default flavor it is critical to supply the same token values to `repo test`. For example, `repo --set-token usd_ver:24.05 --set-token python_ver:3.11 test -s main`
 
 ### Main Test Suite
 
@@ -85,7 +85,7 @@ The `cpp` suite is a [doctest](https://github.com/doctest/doctest) suite, and is
 
 To run the `cpp` suite use `repo test -s cpp`.
 
-### Internal release instructions for Code Owners
+## Internal release instructions for Code Owners
 
 This workflow requires tag names to be consistent, using the pattern "v" plus the semver at the top of [`CHANGELOG.md`](./CHANGELOG.md?plain=1#L1) (eg "v1.2.3"). Be sure to bump this version appropriately when updating CHANGELOG.md prior to tagging.
 
