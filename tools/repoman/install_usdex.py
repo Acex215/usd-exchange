@@ -30,13 +30,25 @@ def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNames
 
 
 def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_ver, python_ver, buildConfig, version, tokens):
+    """Acquire usd-exchange
+
+    This function operates in three different modes:
+    - Run from within usdex repo
+        - `useExistingBuild` early exit, usdex is already "acquired"
+        - otherwise `version` is required, packageName@$version.$platform.$buildConfig is fetched from packman and
+          linked to `$targetDepsDir/usd-exchange/$buildConfig`
+    - Run from within a downstream repo with a configured `target-deps.packman.xml`
+        - if using a remote usdex package, package name and version is read and packageName@$packageVersion is fetched from packman
+            - this is because packageVersion is hardcoded in the `target-deps` file and doesn't require an appended platform and buildConfig
+        - if using a local usdex build, a link is created in `$targetDepsDir/usd-exchange/$buildConfig`
+    """
     if useExistingBuild:
         print(f"Using local usd-exchange from {installDir}")
         return installDir
 
     packageName = None
-    packageVersion = version
-    if not packageVersion:
+    packageVersion = None
+    if not version:
         info = {}
         # check for a packman dependency
         with contextlib.suppress(packmanapi.PackmanError):
@@ -59,7 +71,8 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
             packmanapi.link(linkPath, info["local_path"])
             return linkPath
 
-    if not packageVersion:
+    # No version passed into the function and no packageVersion found in target-deps
+    if not version and not packageVersion:
         raise omni.repo.man.exceptions.ConfigurationError(
             "No version was specified. Use the `--version` argument or setup a packman dependency for usd-exchange"
         )
@@ -69,10 +82,12 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
         packageName = f"usd-exchange_{usd_flavor}_{usd_ver}_py_{python_ver}"
 
     linkPath = f"{targetDepsDir}/usd-exchange/{buildConfig}"
-    fullPackageVersion = f"{packageVersion}.{tokens['platform']}.{buildConfig}"
-    print(f"Download and Link usd-exchange {fullPackageVersion} to {linkPath}")
+    # packageVersion is empty if a version was passed this function
+    if not packageVersion:
+        packageVersion = f"{version}.{tokens['platform']}.{buildConfig}"
+    print(f"Download and Link usd-exchange {packageVersion} to {linkPath}")
     try:
-        result = packmanapi.install(name=packageName, package_version=fullPackageVersion, remotes=["cloudfront"], link_path=linkPath)
+        result = packmanapi.install(name=packageName, package_version=packageVersion, remotes=["cloudfront"], link_path=linkPath)
         return list(result.values())[0]
     except packmanapi.PackmanErrorFileNotFound:
         raise omni.repo.man.exceptions.ConfigurationError(f"Unable to download {packageName}, version {packageVersion}")
