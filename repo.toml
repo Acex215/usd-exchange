@@ -172,16 +172,29 @@ python_executable_path = "python${exe_ext}"
 
 [repo_test.suites.main]
 kind = "unittest"
-log_file = "${test_root}/tests/usdex.core.results.xml"
-discover_path = "$root/source/core/tests/unittest"
+log_file = "${test_root}/tests/usdex.${bucket_name}.results.xml"
+discover_path = "$root/source/${bucket_name}/tests/unittest"
 verbosity = 1
+
+[[repo_test.suites.main.bucket]]
+name = "core"
+
+[[repo_test.suites.main.bucket]]
+name = "rtx"
 
 [repo_test.suites.cpp]
 kind = "catch2"
 tests_per_process = 0
 executables = [
-	"$root/_build/$platform/$config/bin/test_usdex_core",
+	"$root/_build/$platform/$config/bin/test_usdex_${bucket_name}",
 ]
+
+[[repo_test.suites.cpp.bucket]]
+name = "core"
+
+[[repo_test.suites.cpp.bucket]]
+name = "rtx"
+executables = []  # no cpp tests currently
 
 [repo_format]
 cpp.files.exclude = [

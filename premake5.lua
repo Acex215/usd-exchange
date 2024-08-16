@@ -92,6 +92,33 @@ group "core"
             sources = { "source/core/tests/doctest/*.cpp" },
         }
 
+group "rtx"
+
+    namespace = "usdex_rtx"
+
+    project "rtx_library"
+        dependson { "core_library" }
+        usdex_build.use_fmt()
+        usdex_build.use_usd({ "arch", "gf", "sdf", "tf", "usd", "usdShade", "usdUtils", "vt" })
+        usdex_build.use_usdex_core()
+        usdex_build.shared_library{
+            library_name = namespace,
+            headers = { "include/usdex/rtx/*.h" },
+            sources = { "source/rtx/library/*.cpp", "source/rtx/library/*.h" },
+        }
+
+    if usdex_build.with_python() then
+        project "rtx_python"
+            dependson { "rtx_library" }
+            usdex_build.use_usd({"gf", "sdf", "tf", "usd", "usdShade", "vt"})
+            usdex_build.use_usdex_rtx()
+            usdex_build.python_module{
+                bindings_module_name = namespace,
+                bindings_sources = "source/rtx/python/bindings/*.cpp",
+                python_sources = "source/rtx/python/*.py",
+            }
+    end
+
 group "test"
 
     namespace = "usdex_test"

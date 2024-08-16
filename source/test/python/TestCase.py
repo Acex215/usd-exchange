@@ -134,6 +134,12 @@ class TestCase(unittest.TestCase):
                 self.assertEqual(round(x - y, places), 0)
         self.assertTrue(True)
 
+    def assertVecAlmostEqual(self, first, second, places=12):
+        """Assert that all elements of a Vec are equal, to a specified number of decimal places"""
+        self.assertEqual(len(first), len(second))
+        for idx in range(len(first)):
+            self.assertAlmostEqual(first[idx], second[idx], places)
+
     def tmpLayer(self, name: str = "", ext: str = "usda") -> Sdf.Layer:
         """
         Create a temporary Sdf.Layer on the local filesystem
