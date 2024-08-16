@@ -195,6 +195,11 @@ function m.use_usdex_core()
     end
 end
 
+function m.use_usdex_rtx()
+    m.use_usdex_core()
+    links { "usdex_rtx" }
+end
+
 -- Common Dependencies
 
 function m.with_python()
