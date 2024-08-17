@@ -50,28 +50,28 @@ class MaterialAlgoTest(usdex.test.TestCase):
         material = usdex.core.createMaterial(materials, "Material")
         self.assertTrue(material)
 
-        usdex.core.bindMaterial(cube, material)
+        result = usdex.core.bindMaterial(cube, material)
+        self.assertTrue(result)
         self.assertTrue(cube.HasAPI(UsdShade.MaterialBindingAPI))
         self.assertIsValidUsd(stage)
 
         # An invalid material will fail to bind
         invalidMaterial = UsdShade.Material(materials.GetChild("InvalidPath"))
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdShadeMaterial.*is not valid, cannot bind material")]):
-            usdex.core.bindMaterial(cube2, invalidMaterial)
+            result = usdex.core.bindMaterial(cube2, invalidMaterial)
+        self.assertFalse(result)
         self.assertFalse(cube2.HasAPI(UsdShade.MaterialBindingAPI))
 
         # An invalid target prim will fail to be bound
         invalidTarget = UsdGeom.Cube(geometry.GetChild("InvalidPath")).GetPrim()
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdPrim.*is not valid, cannot bind material")]):
-            usdex.core.bindMaterial(invalidTarget, material)
-        with self.assertRaises(RuntimeError):
-            invalidTarget.HasAPI(UsdShade.MaterialBindingAPI)
+            result = usdex.core.bindMaterial(invalidTarget, material)
+        self.assertFalse(result)
 
         # If both are invalid it cannot bind either
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*are not valid, cannot bind material")]):
-            usdex.core.bindMaterial(invalidTarget, invalidMaterial)
-        with self.assertRaises(RuntimeError):
-            invalidTarget.HasAPI(UsdShade.MaterialBindingAPI)
+            result = usdex.core.bindMaterial(invalidTarget, invalidMaterial)
+        self.assertFalse(result)
 
     def testComputeEffectiveSurfaceShader(self):
         stage = Usd.Stage.CreateInMemory()

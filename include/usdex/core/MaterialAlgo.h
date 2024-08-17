@@ -42,14 +42,18 @@ namespace usdex::core
 //! @returns The newly created `UsdShadeMaterial`. Returns an invalid material object on error.
 USDEX_API pxr::UsdShadeMaterial createMaterial(pxr::UsdPrim parent, const std::string& name);
 
-//! Binds a Material to a Prim
+//! Authors a direct binding to the given material on this prim.
 //!
 //! Validates both the prim and the material, applies the `UsdShadeMaterialBindingAPI` to the target prim,
 //! and binds the material to the target prim.
 //!
+//! @note The material is bound with the default "all purpose" used for both full and preview rendering, and with the default "fallback strength"
+//! meaning descendant prims can override with a different material. If alternate behavior is desired, use the `UsdShadeMaterialBindingAPI` directly.
+//!
 //! @param prim The prim that the material will affect
 //! @param material The material to bind to the prim
-USDEX_API void bindMaterial(pxr::UsdPrim prim, const pxr::UsdShadeMaterial& material);
+//! @returns Whether the material was successfully bound to the target prim.
+USDEX_API bool bindMaterial(pxr::UsdPrim prim, const pxr::UsdShadeMaterial& material);
 
 //! Get the effective surface Shader of a Material for the universal render context.
 //!

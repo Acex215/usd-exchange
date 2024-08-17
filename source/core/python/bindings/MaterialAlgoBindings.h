@@ -38,7 +38,7 @@ void bindMaterialAlgo(module& m)
                 parent: Parent prim of the material
                 name: Name of the material to be created
             Returns:
-                The newly created `UsdShade.Material`. Returns an invalid material object on error.
+                The newly created ``UsdShade.Material``. Returns an invalid material object on error.
         )"
     );
 
@@ -48,14 +48,22 @@ void bindMaterialAlgo(module& m)
         arg("prim"),
         arg("material"),
         R"(
-            Binds a Material to a Prim
+            Authors a direct binding to the given material on this prim.
 
-            Validates both the prim and the material, applies the `UsdShadeMaterialBindingAPI` to the target prim,
+            Validates both the prim and the material, applies the ``UsdShade.MaterialBindingAPI`` to the target prim,
             and binds the material to the target prim.
+
+            Note:
+                The material is bound with the default "all purpose" used for both full and preview rendering, and with the default "fallback strength"
+                meaning descendant prims can override with a different material. If alternate behavior is desired, use the
+                ``UsdShade.MaterialBindingAPI`` directly.
 
             Args:
                 prim: The prim that the material will affect
                 material: The material to bind to the prim
+
+            Returns:
+                Whether the material was successfully bound to the target prim.
         )"
     );
 

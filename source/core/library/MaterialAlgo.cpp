@@ -66,7 +66,7 @@ UsdShadeMaterial usdex::core::createMaterial(UsdPrim parent, const std::string& 
     return material;
 }
 
-void usdex::core::bindMaterial(UsdPrim prim, const UsdShadeMaterial& material)
+bool usdex::core::bindMaterial(UsdPrim prim, const UsdShadeMaterial& material)
 {
     UsdPrim matPrim = material.GetPrim();
     if (!matPrim && !prim)
@@ -76,20 +76,20 @@ void usdex::core::bindMaterial(UsdPrim prim, const UsdShadeMaterial& material)
             prim.GetPath().GetAsString().c_str(),
             material.GetPath().GetAsString().c_str()
         );
-        return;
+        return false;
     }
     if (!matPrim)
     {
         TF_WARN("UsdShadeMaterial <%s> is not valid, cannot bind material to prim", matPrim.GetPath().GetAsString().c_str());
-        return;
+        return false;
     }
     if (!prim)
     {
         TF_WARN("UsdPrim <%s> is not valid, cannot bind material to prim", prim.GetPath().GetAsString().c_str());
-        return;
+        return false;
     }
     UsdShadeMaterialBindingAPI materialBinding = UsdShadeMaterialBindingAPI::Apply(prim);
-    materialBinding.Bind(material);
+    return materialBinding.Bind(material);
 }
 
 UsdShadeShader usdex::core::computeEffectivePreviewSurfaceShader(const UsdShadeMaterial& material)
