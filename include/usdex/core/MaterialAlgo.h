@@ -61,6 +61,50 @@ USDEX_API bool bindMaterial(pxr::UsdPrim prim, const pxr::UsdShadeMaterial& mate
 //! @returns The connected Shader. Returns an invalid shader object on error.
 USDEX_API pxr::UsdShadeShader computeEffectivePreviewSurfaceShader(const pxr::UsdShadeMaterial& material);
 
+//! Defines a PBR `UsdShadeMaterial` driven by a `UsdPreviewSurface` shader network for the universal render context.
+//!
+//! The input parameters reflect a subset of the [UsdPreviewSurface specification](https://openusd.org/release/spec_usdpreviewsurface.html) commonly
+//! used when authoring materials using the metallic/metalness workflow (as opposed to the specular workflow). Many other inputs are available and
+//! can be authored after calling this function (including switching to the specular workflow).
+//!
+//! @param stage The stage on which to define the Material
+//! @param path The absolute prim path at which to define the Material
+//! @param color The diffuse color of the Material
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+//! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+//! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid object on error.
+USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
+    pxr::UsdStagePtr stage,
+    const pxr::SdfPath& path,
+    const pxr::GfVec3f& color,
+    const float opacity = 1.0f,
+    const float roughness = 0.5f,
+    const float metallic = 0.0f
+);
+
+//! Defines a PBR `UsdShadeMaterial` driven by a `UsdPreviewSurface` shader network for the universal render context.
+//!
+//! The input parameters reflect a subset of the [UsdPreviewSurface specification](https://openusd.org/release/spec_usdpreviewsurface.html) commonly
+//! used when authoring materials using the metallic/metalness workflow (as opposed to the specular workflow). Many other inputs are available and
+//! can be authored after calling this function (including switching to the specular workflow).
+//!
+//! @param parent Prim below which to define the Material
+//! @param name Name of the Material
+//! @param color The diffuse color of the Material
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+//! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+//! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid object on error.
+USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
+    pxr::UsdPrim parent,
+    const std::string& name,
+    const pxr::GfVec3f& color,
+    const float opacity = 1.0f,
+    const float roughness = 0.5f,
+    const float metallic = 0.0f
+);
+
 //! Texture color space (encoding) types
 // clang-format off
 enum class ColorSpace

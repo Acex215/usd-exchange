@@ -174,3 +174,109 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertVecAlmostEqual(roundTripGreenSrgb, lightGreenSrgb, places=6)
         self.assertVecAlmostEqual(roundTripPurpleSrgb, purpleSrgb, places=6)
         self.assertVecAlmostEqual(roundTripBlackSrgb, blackSrgb, places=6)
+
+
+class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
+
+    # Configure the DefineFunctionTestCase
+    defineFunc = usdex.core.definePreviewMaterial
+    requiredArgs = tuple([Gf.Vec3f(1.0, 1.0, 1.0)])
+    typeName = "Material"
+    schema = UsdShade.Material
+    requiredPropertyNames = set()
+
+    def testPreviewMaterialShaders(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # the material is created successfully
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.0, 0.5, 1.0), opacity=0.2, roughness=0.3, metallic=0.4)
+        self.assertTrue(material)
+
+        # the shader is now in place
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(shader)
+        self.assertEqual(shader.GetPrim().GetName(), "PreviewSurface")
+        self.assertEqual(shader.GetShaderId(), "UsdPreviewSurface")
+
+        # the shader should include a Color named "diffuseColor" that has the effective specified value
+        shaderInput = shader.GetInput("diffuseColor")
+        self.assertTrue(shaderInput)
+        self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Color3f)
+        self.assertVecAlmostEqual(shaderInput.GetValueProducingAttributes()[0].Get(), Gf.Vec3f(0.0, 0.5, 1.0))
+
+        # the shader should include a Float named "opacity" that has the effective specified value
+        shaderInput = shader.GetInput("opacity")
+        self.assertTrue(shaderInput)
+        self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
+        self.assertAlmostEqual(shaderInput.GetValueProducingAttributes()[0].Get(), 0.2)
+
+        # the shader should include a Float named "roughness" that has the effective specified value
+        shaderInput = shader.GetInput("roughness")
+        self.assertTrue(shaderInput)
+        self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
+        self.assertAlmostEqual(shaderInput.GetValueProducingAttributes()[0].Get(), 0.3)
+
+        # the shader should include a Float named "metallic" that has the effective specified value
+        shaderInput = shader.GetInput("metallic")
+        self.assertTrue(shaderInput)
+        self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
+        self.assertAlmostEqual(shaderInput.GetValueProducingAttributes()[0].Get(), 0.4)
+
+        # the shader is driving the surface of the material for the universal render context
+        surfaceOutput = material.GetSurfaceOutput()
+        self.assertTrue(surfaceOutput.HasConnectedSource())
+        surface = surfaceOutput.GetConnectedSource()[0]
+        self.assertEqual(surface.GetOutput(UsdShade.Tokens.surface).GetAttr(), shader.GetOutput(UsdShade.Tokens.surface).GetAttr())
+
+        # the shader is driving the surface of the material for the universal render context
+        displacementOutput = material.GetDisplacementOutput()
+        self.assertTrue(displacementOutput.HasConnectedSource())
+        displacement = displacementOutput.GetConnectedSource()[0]
+        self.assertEqual(displacement.GetOutput(UsdShade.Tokens.displacement).GetAttr(), shader.GetOutput(UsdShade.Tokens.displacement).GetAttr())
+
+        # the volume output was not setup as this is not a volumetric material
+        volumeOutput = material.GetVolumeOutput()
+        self.assertFalse(volumeOutput.HasConnectedSource())
+        self.assertFalse(shader.GetOutput(UsdShade.Tokens.volume))
+
+        # all authored data is valid
+        self.assertIsValidUsd(stage)
+
+    def testInvalidInputs(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # An out-of-range opacity will prevent authoring a material
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value -0.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadOpacity", Gf.Vec3f(1, 0, 0), opacity=-0.000001)
+        self.assertFalse(material)
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value 1.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadOpacity", Gf.Vec3f(1, 0, 0), opacity=1.000001)
+        self.assertFalse(material)
+
+        # An out-of-range roughness will prevent authoring a material
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value -0.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadRoughness", Gf.Vec3f(1, 0, 0), roughness=-0.000001)
+        self.assertFalse(material)
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value 1.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadRoughness", Gf.Vec3f(1, 0, 0), roughness=1.000001)
+        self.assertFalse(material)
+
+        # An out-of-range metallic will prevent authoring a material
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value -0.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadMetallic", Gf.Vec3f(1, 0, 0), metallic=-0.000001)
+        self.assertFalse(material)
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value 1.000001 is outside range")]):
+            material = usdex.core.definePreviewMaterial(materials, "BadMetallic", Gf.Vec3f(1, 0, 0), metallic=1.000001)
+        self.assertFalse(material)
+
+        material = usdex.core.definePreviewMaterial(materials, "LowestValidInputs", Gf.Vec3f(0, 0, 0), opacity=0, roughness=0, metallic=0)
+        self.assertTrue(material)
+        self.assertIsValidUsd(stage)
+
+        material = usdex.core.definePreviewMaterial(materials, "HighestValidInputs", Gf.Vec3f(1, 1, 1), opacity=1, roughness=1, metallic=1)
+        self.assertTrue(material)
+        self.assertIsValidUsd(stage)
