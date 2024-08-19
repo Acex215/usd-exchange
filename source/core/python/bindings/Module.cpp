@@ -14,6 +14,7 @@
 #include "DiagnosticsBindings.h"
 #include "LayerAlgoBindings.h"
 #include "LightAlgoBindings.h"
+#include "MaterialAlgoBindings.h"
 #include "MeshAlgoBindings.h"
 #include "NameAlgoBindings.h"
 #include "PointsAlgoBindings.h"
@@ -43,6 +44,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindCurvesAlgo(m);
     bindCameraAlgo(m);
     bindLightAlgo(m);
+    bindMaterialAlgo(m);
 }
 
 } // namespace

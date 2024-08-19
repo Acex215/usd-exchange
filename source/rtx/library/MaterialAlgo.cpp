@@ -113,19 +113,19 @@ TF_DEFINE_PRIVATE_TOKENS(
 #pragma warning(pop)
 #endif
 
-TfToken colorSpaceEnumToToken(const usdex::rtx::ColorSpace& colorSpace)
+TfToken colorSpaceEnumToToken(const usdex::core::ColorSpace& colorSpace)
 {
     switch (colorSpace)
     {
-        case usdex::rtx::ColorSpace::eAuto:
+        case usdex::core::ColorSpace::eAuto:
         {
             return _tokens->colorSpaceAuto;
         }
-        case usdex::rtx::ColorSpace::eRaw:
+        case usdex::core::ColorSpace::eRaw:
         {
             return _tokens->colorSpaceRaw;
         }
-        case usdex::rtx::ColorSpace::eSrgb:
+        case usdex::core::ColorSpace::eSrgb:
         {
             return _tokens->colorSpacesRBG;
         }
@@ -147,36 +147,6 @@ void setFractionalOpacity(UsdStagePtr stage, bool isOn = true)
     renderSettings["rtx:raytracing:fractionalCutoutOpacity"] = isOn;
     cld.SetValueAtPath("renderSettings", VtValue(renderSettings));
     stage->GetRootLayer()->SetCustomLayerData(cld);
-}
-
-// reference for the conversion math https://ww2.mathworks.cn/help/images/understanding-color-spaces-and-color-space-conversion.html
-// process is known as 'gamma correction' and can be unique per implementation
-// MDL's linear color space uses most of the same constants, the only exception is the lower threshold of 0.04045 for MDL
-float toLinear(float value)
-{
-    if (value <= 0.04045f)
-    {
-        return value / 12.92f;
-    }
-    else
-    {
-        float adjusted = (value + 0.055f) / 1.055f;
-        return std::pow(adjusted, 2.4f);
-    }
-}
-
-float fromLinear(float value)
-{
-    float test = value * 12.92f;
-    if (test <= 0.04045f)
-    {
-        return test;
-    }
-    else
-    {
-        float scaled = std::pow(value, 1.0f / 2.4f);
-        return (scaled * 1.055f) - 0.055f;
-    }
 }
 
 UsdShadeShader createUsdPreviewSurfaceShader(UsdShadeMaterial& material, const std::string& name)
@@ -306,7 +276,7 @@ bool verifyValidOmniPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& 
         );
         return false;
     }
-    UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     if (!psShader)
     {
         TF_WARN(
@@ -448,38 +418,11 @@ bool addSingleChannelTextureToPbrMaterial(
     UsdShadeOutput output = texShader.CreateOutput(_tokens->usdPreviewSurfaceRedChannel, SdfValueTypeNames->Float);
 
     // Connect the PreviewSurface shader "opacity" to the opacity tex shader output
-    UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     psShader.CreateInput(usdShaderInputToken, SdfValueTypeNames->Float).ConnectToSource(output);
     return true;
 }
 } // namespace
-
-GfVec3f usdex::rtx::sRgbToLinear(const GfVec3f& color)
-{
-    return GfVec3f(toLinear(color[0]), toLinear(color[1]), toLinear(color[2]));
-}
-
-GfVec3f usdex::rtx::linearToSrgb(const GfVec3f& color)
-{
-    return GfVec3f(fromLinear(color[0]), fromLinear(color[1]), fromLinear(color[2]));
-}
-
-UsdShadeMaterial usdex::rtx::createMaterial(UsdPrim parent, const std::string& name)
-{
-    // Early out if the proposed prim location is invalid
-    std::string reason;
-    if (!usdex::core::isEditablePrimLocation(parent, name, &reason))
-    {
-        TF_WARN("Unable to create UsdShadeMaterial due to an invalid location: %s", reason.c_str());
-        return UsdShadeMaterial();
-    }
-
-    SdfPath materialPath = parent.GetPath().AppendChild(TfToken(name));
-    UsdStagePtr stage = parent.GetStage();
-
-    UsdShadeMaterial material = UsdShadeMaterial::Define(stage, materialPath);
-    return material;
-}
 
 UsdShadeShader usdex::rtx::createMdlShader(
     UsdShadeMaterial& material,
@@ -520,7 +463,7 @@ UsdShadeInput usdex::rtx::createMdlShaderInput(
     const TfToken& name,
     const VtValue& value,
     const SdfValueTypeName& typeName,
-    std::optional<const ColorSpace> colorSpace
+    std::optional<const usdex::core::ColorSpace> colorSpace
 )
 {
     if (!material)
@@ -578,33 +521,6 @@ UsdShadeInput usdex::rtx::createMdlShaderInput(
     return surfaceInput;
 }
 
-
-void usdex::rtx::bindMaterial(UsdPrim prim, const UsdShadeMaterial& material)
-{
-    UsdPrim matPrim = material.GetPrim();
-    if (!matPrim && !prim)
-    {
-        TF_WARN(
-            "UsdPrim <%s> and UsdShadeMaterial <%s> are not valid, cannot bind material to prim",
-            prim.GetPath().GetAsString().c_str(),
-            material.GetPath().GetAsString().c_str()
-        );
-        return;
-    }
-    if (!matPrim)
-    {
-        TF_WARN("UsdShadeMaterial <%s> is not valid, cannot bind material to prim", matPrim.GetPath().GetAsString().c_str());
-        return;
-    }
-    if (!prim)
-    {
-        TF_WARN("UsdPrim <%s> is not valid, cannot bind material to prim", prim.GetPath().GetAsString().c_str());
-        return;
-    }
-    UsdShadeMaterialBindingAPI materialBinding = UsdShadeMaterialBindingAPI::Apply(prim);
-    materialBinding.Bind(material);
-}
-
 UsdShadeShader usdex::rtx::computeEffectiveMdlSurfaceShader(const UsdShadeMaterial& material)
 {
     if (!material)
@@ -613,16 +529,6 @@ UsdShadeShader usdex::rtx::computeEffectiveMdlSurfaceShader(const UsdShadeMateri
     }
 
     return material.ComputeSurfaceSource({ _tokens->mdl });
-}
-
-UsdShadeShader usdex::rtx::computeEffectivePreviewSurfaceShader(const UsdShadeMaterial& material)
-{
-    if (!material)
-    {
-        return UsdShadeShader();
-    }
-
-    return material.ComputeSurfaceSource({ UsdShadeTokens->universalRenderContext });
 }
 
 UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
@@ -840,7 +746,7 @@ bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, cons
     UsdShadeOutput texShaderOutput = texShader.CreateOutput(_tokens->usdPreviewSurfaceRgb, SdfValueTypeNames->Float3);
 
     // Connect the PreviewSurface shader "diffuseColor" to the diffuse tex shader output
-    UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     UsdShadeInput diffuseColorInput = psShader.CreateInput(_tokens->usdPreviewSurfaceColor, SdfValueTypeNames->Color3f);
     diffuseColorInput.ConnectToSource(texShaderOutput);
     return true;
@@ -884,7 +790,7 @@ bool usdex::rtx::addNormalTextureToPbrMaterial(UsdShadeMaterial& material, const
     UsdShadeOutput normalShaderOutput = normalShader.CreateOutput(_tokens->usdPreviewSurfaceRgb, SdfValueTypeNames->Float3);
 
     // Connect the PreviewSurface shader "normal" to the normal tex shader output
-    UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     UsdShadeInput normalInput = psShader.CreateInput(_tokens->usdPreviewSurfaceNormal, SdfValueTypeNames->Normal3f);
     normalInput.ConnectToSource(normalShaderOutput);
     return true;
@@ -913,7 +819,7 @@ bool usdex::rtx::addOpacityTextureToPbrMaterial(UsdShadeMaterial& material, cons
 
     if (success)
     {
-        UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+        UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
         // IOR should be 1.0 for a PBR style material, it causes mask/opacity issues if not
         psShader.CreateInput(_tokens->usdPreviewSurfaceIor, SdfValueTypeNames->Float).Set(1.0f);
         // Geometric cutouts work better with opacity threshold set to above 0
@@ -1024,7 +930,7 @@ bool usdex::rtx::addOrmTextureToPbrMaterial(UsdShadeMaterial& material, const Sd
     UsdShadeOutput mOutput = ormShader.CreateOutput(_tokens->usdPreviewSurfaceBlueChannel, SdfValueTypeNames->Float);
 
     // Connect the PreviewSurface shader "occlusion", "roughness", "metallic" to the ORM tex shader outputs
-    UsdShadeShader psShader = usdex::rtx::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     psShader.CreateInput(_tokens->usdPreviewSurfaceOcclusion, SdfValueTypeNames->Float).ConnectToSource(oOutput);
     psShader.CreateInput(_tokens->usdPreviewSurfaceRoughness, SdfValueTypeNames->Float).ConnectToSource(rOutput);
     psShader.CreateInput(_tokens->usdPreviewSurfaceMetallic, SdfValueTypeNames->Float).ConnectToSource(mOutput);

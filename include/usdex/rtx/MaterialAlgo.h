@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "usdex/core/MaterialAlgo.h"
+
 #include "usdex/rtx/Api.h"
 
 #include <pxr/base/gf/vec3f.h>
@@ -25,49 +27,11 @@
 namespace usdex::rtx
 {
 
-//! @defgroup materials Usd Material and Usd Shader Utilities
+//! @defgroup materials UsdShade Material and Shader Utilities for use with the RTX Renderer
 //!
-//! Utility functions for creating, editing, and querying UsdShadeMaterial and UsdShadeShader objects
+//! Utility functions for creating, editing, and querying MDL Materials and Shaders for use with the RTX Renderer.
 //!
 //! @{
-
-//! Texture color space (encoding) types
-// clang-format off
-enum class ColorSpace
-{
-    eAuto, //!< Check for gamma or metadata in the texture itself
-    eRaw,  //!< Use linear sampling (used for Normal, Roughness, Metallic, Opacity textures)
-    eSrgb, //!< Use sRGB sampling (typically used for Diffuse textures)
-};
-// clang-format on
-
-
-//! Translate an sRGB color value to linear color space
-//!
-//! - Many 3D modeling applications define colors in RGB (0-255) or sRGB (0-1) color space
-//! - MDL uses a linear color space that aligns with how light and color behave in the natural world
-//! - Color is a complex topic in 3D rendering and providing utilities covering the full breadth of color science is out of the scope of this module
-//!
-//! @param color sRGB representation of a color to be translated to linear color space
-//! @returns The translated color in linear color space
-USDEX_RTX_API pxr::GfVec3f sRgbToLinear(const pxr::GfVec3f& color);
-
-//! Translate a linear color value to sRGB color space
-//!
-//! - Many 3D modeling applications define colors in RGB (0-255) or sRGB (0-1) color space
-//! - MDL uses a linear color space that aligns with how light and color behave in the natural world
-//! - Color is a complex topic in 3D rendering and providing utilities covering the full breadth of color science is out of the scope of this module
-//!
-//! @param color linear representation of a color to be translated to sRGB color space
-//! @returns The color in sRGB color space
-USDEX_RTX_API pxr::GfVec3f linearToSrgb(const pxr::GfVec3f& color);
-
-//! Create a UsdShadeMaterial as a child of the UsdPrim argument
-//!
-//! @param parent Parent UsdPrim for the material to be created
-//! @param name Name of the material to be created
-//! @returns The newly created UsdShadeMaterial.  Returns an Invalid prim on error.
-USDEX_RTX_API pxr::UsdShadeMaterial createMaterial(pxr::UsdPrim parent, const std::string& name);
 
 //! Create a UsdShadeShader as a child of the UsdShadeMaterial argument with the specified MDL
 //!
@@ -106,26 +70,14 @@ USDEX_RTX_API pxr::UsdShadeInput createMdlShaderInput(
     const pxr::TfToken& name,
     const pxr::VtValue& value,
     const pxr::SdfValueTypeName& typeName,
-    std::optional<const ColorSpace> colorSpace = std::nullopt
+    std::optional<const usdex::core::ColorSpace> colorSpace = std::nullopt
 );
-
-//! Binds a UsdShadeMaterial to a UsdPrim
-//!
-//! @param prim UsdPrim to bind the material to
-//! @param material UsdShadeMaterial to bind to the prim
-USDEX_RTX_API void bindMaterial(pxr::UsdPrim prim, const pxr::UsdShadeMaterial& material);
 
 //! Get the effective surface Shader of a Material for the MDL render context.
 //!
 //! @param material The Material to consider
 //! @returns The connected Shader. Returns an invalid object on error.
 USDEX_RTX_API pxr::UsdShadeShader computeEffectiveMdlSurfaceShader(const pxr::UsdShadeMaterial& material);
-
-//! Get the effective surface Shader of a Material for the universal render context.
-//!
-//! @param material The Material to consider
-//! @returns The connected Shader. Returns an invalid object on error.
-USDEX_RTX_API pxr::UsdShadeShader computeEffectivePreviewSurfaceShader(const pxr::UsdShadeMaterial& material);
 
 //! Defines an OmniPBR UsdShadeMaterial interface that drives both an RTX render context and a UsdPreviewSurface context
 //!

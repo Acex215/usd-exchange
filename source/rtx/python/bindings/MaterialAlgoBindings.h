@@ -26,57 +26,6 @@ namespace usdex::rtx::bindings
 
 void bindMaterialAlgo(module& m)
 {
-    ::enum_<ColorSpace>(m, "ColorSpace", "Texture color space (encoding) types")
-        .value("eAuto", ColorSpace::eAuto, "Check for gamma or metadata in the texture itself")
-        .value("eRaw", ColorSpace::eRaw, "Use linear sampling (used for Normal, Roughness, Metallic, Opacity textures)")
-        .value("eSrgb", ColorSpace::eSrgb, "Use sRGB sampling (typically used for Diffuse textures)");
-    m.def(
-        "sRgbToLinear",
-        &sRgbToLinear,
-        arg("color"),
-        R"(
-            Translate an sRGB color value to linear color space
-
-            Many 3D modeling applications define colors in RGB (0-255) or sRGB (0-1) color space
-            MDL uses a linear color space that aligns with how light and color behave in the natural world
-
-            Args:
-                color: sRGB representation of a color to be translated to linear color space
-            Returns:
-                The translated color in linear color space
-        )"
-    );
-    m.def(
-        "linearToSrgb",
-        &linearToSrgb,
-        arg("color"),
-        R"(
-            Translate a linear color value to sRGB color space
-
-            Many 3D modeling applications define colors in RGB (0-255) or sRGB (0-1) color space
-            MDL uses a linear color space that aligns with how light and color behave in the natural world
-
-            Args:
-                color: linear representation of a color to be translated to sRGB color space
-            Returns:
-                The translated color in sRGB color space
-        )"
-    );
-    m.def(
-        "createMaterial",
-        &createMaterial,
-        arg("parent"),
-        arg("name"),
-        R"(
-            Create a UsdShade.Material as the child of the Usd.Prim argument
-
-            Args:
-                parent: Parent Usd.Prim for the material to be created
-                name: Name of the material to be created
-            Returns:
-                The newly created UsdShade.Material. Returns an Invalid prim on error.
-        )"
-    );
     m.def(
         "createMdlShader",
         &createMdlShader,
@@ -98,13 +47,14 @@ void bindMaterialAlgo(module& m)
                 the newly created UsdShade.Shader. Returns an Invalid prim on error.
         )"
     );
+
     m.def(
         "createMdlShaderInput",
         [](UsdShadeMaterial& material,
            const TfToken& name,
            const VtValue& value,
            const SdfValueTypeName& typeName,
-           std::optional<const ColorSpace> colorSpace)
+           std::optional<const usdex::core::ColorSpace> colorSpace)
         {
             VtValue castValue = value;
             // Cast some types because Python doesn't map string-Token/SdfAssetPath and double/float values properly
@@ -150,19 +100,6 @@ void bindMaterialAlgo(module& m)
                 The newly created Usd.Shade.Input input.  Returns an Invalid Usd.Shade.Input on error.
         )"
     );
-    m.def(
-        "bindMaterial",
-        &bindMaterial,
-        arg("prim"),
-        arg("material"),
-        R"(
-            Binds a UsdShade.Material to a Usd.Prim
-
-            Args:
-                prim: Usd.Prim to hind the material to
-                material: UsdShade.Material to bind to the prim
-        )"
-    );
 
     m.def(
         "computeEffectiveMdlSurfaceShader",
@@ -172,21 +109,6 @@ void bindMaterialAlgo(module& m)
             Get the effective surface Shader of a Material for the MDL render context.
 
             If no valid Shader is connected to the MDL render context then the universal render context will be considered.
-
-            Args:
-                material: The Material to consider
-
-            Returns:
-                The connected Shader. Returns an invalid object on error.
-        )"
-    );
-
-    m.def(
-        "computeEffectivePreviewSurfaceShader",
-        &computeEffectivePreviewSurfaceShader,
-        arg("material"),
-        R"(
-            Get the effective surface Shader of a Material for the universal render context.
 
             Args:
                 material: The Material to consider

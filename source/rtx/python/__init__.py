@@ -9,13 +9,6 @@
 # its affiliates is strictly prohibited.
 
 __all__ = [
-    # general material utils that could move to usdex.core
-    "ColorSpace",
-    "sRgbToLinear",
-    "linearToSrgb",
-    "createMaterial",
-    "bindMaterial",
-    "computeEffectivePreviewSurfaceShader",
     # MDL shader utils
     "createMdlShader",
     "createMdlShaderInput",
