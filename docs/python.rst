@@ -8,6 +8,13 @@ usdex.core
     :members:
     :imported-members:
 
+usdex.rtx
+-----------------
+.. automodule:: usdex.rtx
+    :platform: Windows-x86_64, Linux-x86_64
+    :members:
+    :imported-members:
+
 usdex.test
 -----------------
 .. automodule:: usdex.test
