@@ -138,6 +138,25 @@ void bindMaterialAlgo(module& m)
         )"
     );
 
+    m.def(
+        "addDiffuseTextureToPreviewMaterial",
+        &addDiffuseTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a diffuse texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
     ::enum_<ColorSpace>(m, "ColorSpace", "Texture color space (encoding) types")
         .value("eAuto", ColorSpace::eAuto, "Check for gamma or metadata in the texture itself")
         .value(

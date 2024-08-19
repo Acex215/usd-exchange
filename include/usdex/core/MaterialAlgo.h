@@ -105,6 +105,15 @@ USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
     const float metallic = 0.0f
 );
 
+//! Adds a diffuse texture to a preview material
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
 //! Texture color space (encoding) types
 // clang-format off
 enum class ColorSpace

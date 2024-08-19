@@ -185,6 +185,12 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
     schema = UsdShade.Material
     requiredPropertyNames = set()
 
+    def assertIsSurfaceShader(self, material: UsdShade.Material, shader: UsdShade.Shader):
+        surfaceOutput = material.GetSurfaceOutput()
+        self.assertTrue(surfaceOutput.HasConnectedSource())
+        surface = surfaceOutput.GetConnectedSource()[0]
+        self.assertEqual(surface.GetOutput(UsdShade.Tokens.surface).GetAttr(), shader.GetOutput(UsdShade.Tokens.surface).GetAttr())
+
     def testPreviewMaterialShaders(self):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
@@ -225,10 +231,7 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         self.assertAlmostEqual(shaderInput.GetValueProducingAttributes()[0].Get(), 0.4)
 
         # the shader is driving the surface of the material for the universal render context
-        surfaceOutput = material.GetSurfaceOutput()
-        self.assertTrue(surfaceOutput.HasConnectedSource())
-        surface = surfaceOutput.GetConnectedSource()[0]
-        self.assertEqual(surface.GetOutput(UsdShade.Tokens.surface).GetAttr(), shader.GetOutput(UsdShade.Tokens.surface).GetAttr())
+        self.assertIsSurfaceShader(material, shader)
 
         # the shader is driving the surface of the material for the universal render context
         displacementOutput = material.GetDisplacementOutput()
@@ -280,3 +283,64 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         material = usdex.core.definePreviewMaterial(materials, "HighestValidInputs", Gf.Vec3f(1, 1, 1), opacity=1, roughness=1, metallic=1)
         self.assertTrue(material)
         self.assertIsValidUsd(stage)
+
+    def testAddDiffuseTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # an invalid material will error gracefully
+        texture = Sdf.AssetPath(self.tmpFile(name="BaseColor", ext="png"))
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(UsdShade.Material(), texture)
+        self.assertFalse(result)
+
+        # an invalid surface shader will error gracefully
+        badMaterial = UsdShade.Material.Define(stage, materials.GetPath().AppendChild("BadMaterial"))
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+        # a surface shader without an ID will error gracefully
+        otherShader = UsdShade.Shader.Define(stage, badMaterial.GetPath().AppendChild("NoShaderId"))
+        badMaterial.CreateSurfaceOutput().ConnectToSource(otherShader.CreateOutput(UsdShade.Tokens.surface, Sdf.ValueTypeNames.Token))
+        self.assertIsSurfaceShader(badMaterial, otherShader)
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+        # an surface shader that is not a UPS will error gracefully
+        otherShader.SetShaderId("UsdUvTexture")
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+        # a valid preview material will successfully add a diffuse texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.0, 0.5, 1.0))
+        result = usdex.core.addDiffuseTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+
+        # verify the texture shader network is now in place
+        uvReader = UsdShade.Shader(material.GetPrim().GetChild("TexCoordReader"))
+        self.assertTrue(uvReader)
+        self.assertEqual(uvReader.GetShaderId(), "UsdPrimvarReader_float2")
+        self.assertEqual(uvReader.GetInput("varname").GetAttr().Get(), UsdUtils.GetPrimaryUVSetName())
+
+        textureReader = UsdShade.Shader(material.GetPrim().GetChild("DiffuseTexture"))
+        self.assertTrue(textureReader)
+        self.assertEqual(textureReader.GetShaderId(), "UsdUVTexture")
+        self.assertEqual(textureReader.GetInput("file").GetAttr().Get().path, texture)
+        self.assertEqual(textureReader.GetInput("sourceColorSpace").GetAttr().Get(), "auto")
+        # fallback is a float4 with an alpha channel, but rgb match what we had defined as the original color
+        self.assertEqual(textureReader.GetInput("fallback").GetAttr().Get(), Gf.Vec4f(0.0, 0.5, 1.0, 1.0))
+        # tex coord input is driven by the tex coord reader
+        self.assertTrue(textureReader.GetInput("st").HasConnectedSource())
+        self.assertEqual(textureReader.GetInput("st").GetConnectedSource()[0].GetOutputs()[0].GetAttr(), uvReader.GetOutput("result").GetAttr())
+
+        surface = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(surface)
+        self.assertEqual(surface.GetPrim().GetName(), "PreviewSurface")
+        self.assertEqual(surface.GetShaderId(), "UsdPreviewSurface")
+        # diffuse color input is driven by the texture reader color output
+        self.assertTrue(surface.GetInput("diffuseColor").HasConnectedSource())
+        self.assertEqual(surface.GetInput("diffuseColor").GetConnectedSource()[0].GetOutputs()[0].GetAttr(), textureReader.GetOutput("rgb").GetAttr())

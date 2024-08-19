@@ -79,6 +79,7 @@ __all__ = [
     "bindMaterial",
     "computeEffectivePreviewSurfaceShader",
     "definePreviewMaterial",
+    "addDiffuseTextureToPreviewMaterial",
     "ColorSpace",
     "sRgbToLinear",
     "linearToSrgb",
