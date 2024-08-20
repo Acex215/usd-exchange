@@ -39,21 +39,21 @@ void bindStageAlgo(module& m)
             Configure a stage so that the defining metadata is explicitly authored.
 
             The default prim will be used as the target of a Reference or Payload to this layer when no explicit prim path is specified.
-            A root prim with the given `defaultPrimName` will be defined on the stage.
-            If a new prim is defined then the type name will be set to `Scope`.
+            A root prim with the given ``defaultPrimName`` will be defined on the stage.
+            If a new prim is defined then the type name will be set to ``Scope``.
 
             The stage metrics of `Up Axis <https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details>`_ and
             `Linear Units <https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details>`_ will be authored.
 
             The root layer will be annotated with authoring metadata, unless previously annotated. This is to preserve
-            authoring metadata on referenced layers that came from other applications. See `setLayerAuthoringMetadata` for more details.
+            authoring metadata on referenced layers that came from other applications. See ``setLayerAuthoringMetadata`` for more details.
 
             Args:
                 stage: The stage to be configured.
                 defaultPrimName: Name of the default root prim.
                 upAxis: The up axis for all the geometry contained in the stage.
                 linearUnits: The meters per unit for all linear measurements in the stage.
-                authoringMetadata: The provenance information from the host application. See `setLayerAuthoringMetadata` for details.
+                authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
                     If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 
             Returns:
@@ -70,7 +70,7 @@ void bindStageAlgo(module& m)
         arg("authoringMetadata"),
         arg("comment") = nullptr,
         R"(
-            Save the given `Usd.Stage` with metadata applied to all dirty layers.
+            Save the given ``Usd.Stage`` with metadata applied to all dirty layers.
 
             Save all dirty layers and sublayers contributing to this stage.
 
@@ -81,9 +81,9 @@ void bindStageAlgo(module& m)
 
             Args:
                 stage: The stage to be saved.
-                authoringMetadata: The provenance information from the host application. See `setLayerAuthoringMetadata` for details.
+                authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
                     If the "creator" key already exists, it will not be overwritten & this data will be ignored.
-                comment: The comment will be authored in all dirty layers as the `Sdf.Layer` comment.
+                comment: The comment will be authored in all dirty layers as the ``Sdf.Layer`` comment.
         )"
     );
 
@@ -100,10 +100,10 @@ void bindStageAlgo(module& m)
         R"(
             Validate that prim opinions could be authored at this path on the stage
 
-            This validates that the `stage` and `path` are valid, and that the path is absolute.
+            This validates that the ``stage`` and ``path`` are valid, and that the path is absolute.
             If a prim already exists at the given path it must not be an instance proxy.
 
-            If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+            If the location is invalid and ``reason`` is non-null, an error message describing the validation error will be set.
 
             Parameters:
                 - **stage** - The stage to consider.
@@ -127,10 +127,10 @@ void bindStageAlgo(module& m)
         R"(
             Validate that prim opinions could be authored for a child prim with the given name
 
-            This validates that the `prim` is valid, and that the `name` is a valid identifier.
+            This validates that the ``prim`` is valid, and that the ``name`` is a valid identifier.
             If a prim already exists at the given path it must not be an instance proxy.
 
-            If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+            If the location is invalid and ``reason`` is non-null, an error message describing the validation error will be set.
 
             Parameters:
                 - **parent** - The UsdPrim which would be the parent of the proposed location.

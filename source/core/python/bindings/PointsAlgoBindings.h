@@ -45,9 +45,9 @@ void bindPointsAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a `UsdGeom.Points` prim on the stage.
+            Defines a ``UsdGeom.Points`` prim on the stage.
 
-            Attribute values will be validated and in the case of invalid data the Points will not be defined. An invalid `UsdGeom.Points`
+            Attribute values will be validated and in the case of invalid data the Points will not be defined. An invalid ``UsdGeom.Points``
             object will be returned in this case.
 
             Values will be authored for all attributes required to completely describe the Points, even if weaker matching opinions already exist.
@@ -56,9 +56,9 @@ void bindPointsAlgo(module& m)
                 - Points
                 - Extent
 
-            The "extent" of the Points will be computed and authored based on the `points` and `widths` provided.
+            The "extent" of the Points will be computed and authored based on the ``points`` and ``widths`` provided.
 
-            The following common primvars can optionally be authored at the same time using a `PrimvarData` to specify interpolation, data,
+            The following common primvars can optionally be authored at the same time using a ``PrimvarData`` to specify interpolation, data,
             and optionally indices or elementSize.
 
                 - Ids
@@ -67,7 +67,7 @@ void bindPointsAlgo(module& m)
                 - Display Color
                 - Display Opacity
 
-            For both widths and normals, if they are provided, they are authored as `primvars:widths` and `primvars:normals`, so that indexing is
+            For both widths and normals, if they are provided, they are authored as ``primvars:widths`` and ``primvars:normals``, so that indexing is
             possible and to ensure that the value takes precedence in cases where both the non-primvar and primvar attributes are authored.
 
             Parameters:
@@ -81,7 +81,7 @@ void bindPointsAlgo(module& m)
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.Points` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.Points`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 
@@ -105,7 +105,7 @@ void bindPointsAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a `UsdGeom.Points` prim on the stage.
+            Defines a ``UsdGeom.Points`` prim on the stage.
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
@@ -120,7 +120,7 @@ void bindPointsAlgo(module& m)
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.Points` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.Points`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 }

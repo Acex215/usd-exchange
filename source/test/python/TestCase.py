@@ -37,18 +37,18 @@ class TestCase(unittest.TestCase):
     validFileIdentifierRegex = r"[^A-Za-z0-9_-]"
 
     defaultPrimName = "Root"
-    "The default prim name to be used when configuring a `Usd.Stage`"
+    "The default prim name to be used when configuring a ``Usd.Stage``"
 
     defaultUpAxis = UsdGeom.Tokens.y
-    "The default Up Axis to be used when configuring a `Usd.Stage`"
+    "The default Up Axis to be used when configuring a ``Usd.Stage``"
 
     defaultLinearUnits = UsdGeom.LinearUnits.meters
-    "The default Linear Units to be used when configuring a `Usd.Stage`"
+    "The default Linear Units to be used when configuring a ``Usd.Stage``"
 
     defaultAuthoringMetadata = (
         f"usdex unittests: {usdex.core.version()}, usd_ver: {Usd.GetVersion()}, python_ver: {sys.version_info.major}.{sys.version_info.minor}"
     )
-    "The default authoring metadata to be used when configuring a `Usd.Stage`"
+    "The default authoring metadata to be used when configuring a ``Usd.Stage``"
 
     @classmethod
     def setUpClass(cls):
@@ -65,7 +65,7 @@ class TestCase(unittest.TestCase):
 
         Args:
             asset: The Asset to validate. Either a Usd.Stage object or a path to a USD Layer.
-            issuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+            issuePredicates: Optional List of additional callables - ``func(issue)`` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
             msg: Optional message to report while validation failed.
         """
@@ -119,7 +119,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(expected, returned)
 
     def assertAttributeHasAuthoredValue(self, attr: Usd.Attribute, time=Usd.TimeCode.Default()):
-        """Asserts that a `Usd.Attribute` has a value authored at a given time"""
+        """Asserts that a ``Usd.Attribute`` has a value authored at a given time"""
         if time == Usd.TimeCode.Default():
             self.assertIsNotNone(attr.Get(time))
         else:
@@ -144,12 +144,12 @@ class TestCase(unittest.TestCase):
         """
         Create a temporary Sdf.Layer on the local filesystem
 
-            Args:
-                name: an optional identifier prefix. If not provided the test name will be used
-                ext: an optional file extension (excluding `.`) which must match a registered Sdf.FileFormatPlugin
+        Args:
+            name: an optional identifier prefix. If not provided the test name will be used
+            ext: an optional file extension (excluding ``.``) which must match a registered Sdf.FileFormatPlugin
 
-            Returns:
-                The Sdf.Layer object
+        Returns:
+            The ``Sdf.Layer`` object
         """
         return Sdf.Layer.CreateNew(self.tmpFile(name=name, ext="usda"))
 
@@ -157,12 +157,12 @@ class TestCase(unittest.TestCase):
         """
         Create a temporary file on the local filesystem
 
-            Args:
-                name: an optional filename prefix. If not provided the test name will be used
-                ext: an optional file extension (excluding `.`)
+        Args:
+            name: an optional filename prefix. If not provided the test name will be used
+            ext: an optional file extension (excluding ``.``)
 
-            Returns:
-                The filesystem path
+        Returns:
+            The filesystem path
         """
         tempDir = self.tmpBaseDir()
         if not os.path.exists(tempDir):
@@ -234,7 +234,7 @@ class TestCase(unittest.TestCase):
 
         Kwargs:
             engine: ValidationEngine for running Rules on a given Asset.
-            issuePredicates: Optional List of additional callables - `func(issue)` that are used to check if the issue can be bypassed.
+            issuePredicates: Optional List of additional callables - ``func(issue)`` that are used to check if the issue can be bypassed.
                 The default list of IssuePredicates will always be enabled.
 
         Return:

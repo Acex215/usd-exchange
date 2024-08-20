@@ -47,9 +47,9 @@ void bindCurvesAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a batched Linear `UsdGeom.BasisCurves` prim on the stage.
+            Defines a batched Linear ``UsdGeom.BasisCurves`` prim on the stage.
 
-            Attribute values will be validated and in the case of invalid data the Curves will not be defined. An invalid `UsdGeom.BasisCurves`
+            Attribute values will be validated and in the case of invalid data the Curves will not be defined. An invalid ``UsdGeom.BasisCurves``
             object will be returned in this case.
 
             Values will be authored for all attributes required to completely describe the Curves, even if weaker matching opinions already exist.
@@ -60,9 +60,9 @@ void bindCurvesAlgo(module& m)
                 - Wrap
                 - Extent
 
-            The "extent" of the Curves will be computed and authored based on the `points` and `widths` provided.
+            The "extent" of the Curves will be computed and authored based on the ``points`` and ``widths`` provided.
 
-            The following common primvars can optionally be authored at the same time using a `PrimvarData` to specify interpolation, data,
+            The following common primvars can optionally be authored at the same time using a ``PrimvarData`` to specify interpolation, data,
             and optionally indices or elementSize.
 
                 - Widths
@@ -70,7 +70,7 @@ void bindCurvesAlgo(module& m)
                 - Display Color
                 - Display Opacity
 
-            For both widths and normals, if they are provided, they are authored as `primvars:widths` and `primvars:normals`, so that indexing is
+            For both widths and normals, if they are provided, they are authored as ``primvars:widths`` and ``primvars:normals``, so that indexing is
             possible and to ensure that the value takes precedence in cases where both the non-primvar and primvar attributes are authored.
 
             Parameters:
@@ -79,14 +79,14 @@ void bindCurvesAlgo(module& m)
                 - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
                 - **points** Vertex/CV positions for the curves described in local space.
                 - **wrap** Determines how the start and end points of the curve behave. Accepted values for linear curves are
-                    `UsdGeom.Tokens.nonperiodic` and `UsdGeom.Tokens.periodic`.
+                    ``UsdGeom.Tokens.nonperiodic`` and ``UsdGeom.Tokens.periodic``.
                 - **widths** Values for the width specification for the curves.
                 - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
                 - **displayColor** Values to be authored for the display color primvar.
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.BasisCurves` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 
@@ -112,7 +112,7 @@ void bindCurvesAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a batched Linear `UsdGeom.BasisCurves` prim on the stage.
+            Defines a batched Linear ``UsdGeom.BasisCurves`` prim on the stage.
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
@@ -122,14 +122,14 @@ void bindCurvesAlgo(module& m)
                 - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
                 - **points** Vertex/CV positions for the curves described in local space.
                 - **wrap** Determines how the start and end points of the curve behave. Accepted values for linear curves are
-                    `UsdGeom.Tokens.nonperiodic` and `UsdGeom.Tokens.periodic`.
+                    ``UsdGeom.Tokens.nonperiodic`` and ``UsdGeom.Tokens.periodic``.
                 - **widths** Values for the width specification for the curves.
                 - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
                 - **displayColor** Values to be authored for the display color primvar.
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.BasisCurves` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 
@@ -157,9 +157,9 @@ void bindCurvesAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a batched Cubic `UsdGeom.BasisCurves` prim on the stage.
+            Defines a batched Cubic ``UsdGeom.BasisCurves`` prim on the stage.
 
-            Attribute values will be validated and in the case of invalid data the Curves will not be defined. An invalid `UsdGeom.BasisCurves`
+            Attribute values will be validated and in the case of invalid data the Curves will not be defined. An invalid ``UsdGeom.BasisCurves``
             object will be returned in this case.
 
             Values will be authored for all attributes required to completely describe the Curves, even if weaker matching opinions already exist.
@@ -171,9 +171,9 @@ void bindCurvesAlgo(module& m)
                 - Wrap
                 - Extent
 
-            The "extent" of the Curves will be computed and authored based on the `points` and `widths` provided.
+            The "extent" of the Curves will be computed and authored based on the ``points`` and ``widths`` provided.
 
-            The following common primvars can optionally be authored at the same time using a `PrimvarData` to specify interpolation, data,
+            The following common primvars can optionally be authored at the same time using a ``PrimvarData`` to specify interpolation, data,
             and optionally indices or elementSize.
 
                 - Widths
@@ -181,7 +181,7 @@ void bindCurvesAlgo(module& m)
                 - Display Color
                 - Display Opacity
 
-            For both widths and normals, if they are provided, they are authored as `primvars:widths` and `primvars:normals`, so that indexing is
+            For both widths and normals, if they are provided, they are authored as ``primvars:widths`` and ``primvars:normals``, so that indexing is
             possible and to ensure that the value takes precedence in cases where both the non-primvar and primvar attributes are authored.
 
             Parameters:
@@ -190,16 +190,16 @@ void bindCurvesAlgo(module& m)
                 - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
                 - **points** Vertex/CV positions for the curves described in local space.
                 - **basis** The basis specifies the vstep and matrix used for cubic interpolation. Accepted values for cubic curves are
-                    `UsdGeom.Tokens.bezier`, `UsdGeom.Tokens.bspline`, or `UsdGeom.Tokens.catmullRom`.
-                - **wrap** Determines how the start and end points of the curve behave. Accepted values are `UsdGeom.Tokens.nonperiodic`,
-                    `UsdGeom.Tokens.periodic`, and `UsdGeom.Tokens.pinned` (bspline and catmullRom only).
+                    ``UsdGeom.Tokens.bezier``, ``UsdGeom.Tokens.bspline``, or ``UsdGeom.Tokens.catmullRom``.
+                - **wrap** Determines how the start and end points of the curve behave. Accepted values are ``UsdGeom.Tokens.nonperiodic``,
+                    ``UsdGeom.Tokens.periodic``, and ``UsdGeom.Tokens.pinned`` (bspline and catmullRom only).
                 - **widths** Values for the width specification for the curves.
                 - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
                 - **displayColor** Values to be authored for the display color primvar.
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.BasisCurves` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 
@@ -227,7 +227,7 @@ void bindCurvesAlgo(module& m)
         arg("displayColor") = nullptr,
         arg("displayOpacity") = nullptr,
         R"(
-            Defines a batched Cubic `UsdGeom.BasisCurves` prim on the stage.
+            Defines a batched Cubic ``UsdGeom.BasisCurves`` prim on the stage.
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
@@ -237,16 +237,16 @@ void bindCurvesAlgo(module& m)
                 - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
                 - **points** Vertex/CV positions for the curves described in local space.
                 - **basis** The basis specifies the vstep and matrix used for cubic interpolation. Accepted values for cubic curves are
-                    `UsdGeom.Tokens.bezier`, `UsdGeom.Tokens.bspline`, or `UsdGeom.Tokens.catmullRom`.
-                - **wrap** Determines how the start and end points of the curve behave. Accepted values are `UsdGeom.Tokens.nonperiodic`,
-                    `UsdGeom.Tokens.periodic`, and `UsdGeom.Tokens.pinned` (bspline and catmullRom only).
+                    ``UsdGeom.Tokens.bezier``, ``UsdGeom.Tokens.bspline``, or ``UsdGeom.Tokens.catmullRom``.
+                - **wrap** Determines how the start and end points of the curve behave. Accepted values are ``UsdGeom.Tokens.nonperiodic``,
+                    ``UsdGeom.Tokens.periodic``, and ``UsdGeom.Tokens.pinned`` (bspline and catmullRom only).
                 - **widths** Values for the width specification for the curves.
                 - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
                 - **displayColor** Values to be authored for the display color primvar.
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
-                `UsdGeom.BasisCurves` schema wrapping the defined `Usd.Prim`
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
         )"
     );
 }
