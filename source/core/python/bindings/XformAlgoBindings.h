@@ -45,10 +45,10 @@ void bindXformAlgo(module& m)
         R"(
             Set the local transform of a prim.
 
-            Args:
-                prim: The prim to set local transform on.
-                transform: The transform value to set.
-                time: Time at which to write the value.
+            Parameters:
+                - **prim** - The prim to set local transform on.
+                - **transform** - The transform value to set.
+                - **time** - Time at which to write the value.
 
             Returns:
                 A bool indicating if the local transform was set.
@@ -66,10 +66,10 @@ void bindXformAlgo(module& m)
         R"(
             Set the local transform of a prim from a 4x4 matrix.
 
-            Args:
-                prim: The prim to set local transform on.
-                matrix: The matrix value to set.
-                time: Time at which to write the value.
+            Parameters:
+                - **prim** - The prim to set local transform on.
+                - **matrix** - The matrix value to set.
+                - **time** - Time at which to write the value.
 
             Returns:
                 A bool indicating if the local transform was set.
@@ -91,14 +91,14 @@ void bindXformAlgo(module& m)
         R"(
             Set the local transform of a prim from common transform components.
 
-            Args:
-                prim: The prim to set local transform on.
-                translation: The translation value to set.
-                pivot: The pivot position value to set.
-                rotation: The rotation value to set in degrees.
-                rotationOrder: The rotation order of the rotation value.
-                scale: The scale value to set.
-                time: Time at which to write the value.
+            Parameters:
+                - **prim** - The prim to set local transform on.
+                - **translation** - The translation value to set.
+                - **pivot** - The pivot position value to set.
+                - **rotation** - The rotation value to set in degrees.
+                - **rotationOrder** - The rotation order of the rotation value.
+                - **scale** - The scale value to set.
+                - **time** - Time at which to write the value.
 
             Returns:
                 A bool indicating if the local transform was set.

@@ -63,7 +63,7 @@ void bindMeshAlgo(module& m)
                 - **stage** - The stage on which to define the mesh
                 - **path** - The absolute prim path at which to define the mesh
                 - **faceVertexCounts** - The number of vertices in each face of the mesh
-                - **faceVertexIndices** - Indices of the positions from the `points` to use for each face vertex
+                - **faceVertexIndices** - Indices of the positions from the ``points`` to use for each face vertex
                 - **points** - Vertex positions for the mesh described points in local space
                 - **normals** - Values to be authored for the normals primvar
                 - **uvs** - Values to be authored for the uv primvar
@@ -71,7 +71,7 @@ void bindMeshAlgo(module& m)
                 - **displayOpacity** - Value to be authored for the display opacity primvar
 
             Returns:
-                UsdGeomMesh schema wrapping the defined UsdPrim.
+                ``UsdGeom.Mesh`` schema wrapping the defined ``Usd.Prim``.
 
         )"
     );
@@ -108,7 +108,7 @@ void bindMeshAlgo(module& m)
                 - **parent** - Prim below which to define the mesh
                 - **name** - Name of the mesh
                 - **faceVertexCounts** - The number of vertices in each face of the mesh
-                - **faceVertexIndices** - Indices of the positions from the `points` to use for each face vertex
+                - **faceVertexIndices** - Indices of the positions from the ``points`` to use for each face vertex
                 - **points** - Vertex positions for the mesh described points in local space
                 - **normals** - Values to be authored for the normals primvar
                 - **uvs** - Values to be authored for the uv primvar
@@ -116,7 +116,7 @@ void bindMeshAlgo(module& m)
                 - **displayOpacity** - Value to be authored for the display opacity primvar
 
             Returns:
-                UsdGeomMesh schema wrapping the defined UsdPrim.
+                ``UsdGeom.Mesh`` schema wrapping the defined ``Usd.Prim``.
 
         )"
     );

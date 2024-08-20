@@ -34,8 +34,8 @@ void bindCameraAlgo(module& m)
         R"(
             Defines a basic 3d camera on the stage.
 
-            Note that `Gf.Camera` is a simplified form of 3d camera data that does not account for time-sampled data, shutter window,
-            stereo role, or exposure. If you need to author those properties, do so after defining the `UsdGeom.Camera`.
+            Note that ``Gf.Camera`` is a simplified form of 3d camera data that does not account for time-sampled data, shutter window,
+            stereo role, or exposure. If you need to author those properties, do so after defining the ``UsdGeom.Camera``.
 
             An invalid UsdGeomCamera will be returned if camera attributes could not be authored successfully.
 
@@ -45,7 +45,7 @@ void bindCameraAlgo(module& m)
                 - **cameraData** - The camera data to set, including the world space transform matrix
 
             Returns:
-                A `UsdGeom.Camera` schema wrapping the defined `Usd.Prim`.
+                A ``UsdGeom.Camera`` schema wrapping the defined ``Usd.Prim``.
 
         )"
     );
@@ -67,7 +67,7 @@ void bindCameraAlgo(module& m)
                 - **cameraData** - The camera data to set, including the world space transform matrix
 
             Returns:
-                A `UsdGeom.Camera` schema wrapping the defined `Usd.Prim`.
+                A ``UsdGeom.Camera`` schema wrapping the defined ``Usd.Prim``.
 
         )"
     );

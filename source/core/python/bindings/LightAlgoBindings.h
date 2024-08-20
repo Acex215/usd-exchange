@@ -88,7 +88,7 @@ void bindLightAlgo(module& m)
                     - ``angular`` - Similar to mirroredBall but the radial dimension is mapped linearly to the angle, for better sampling at the edges.
                     - ``cubeMapVerticalCross`` - Set to "automatic" by default.
 
-                Note:
+                **Note:**
 
                     The DomeLight schema requires the
                     `dome's top pole to be aligned with the world's +Y axis <https://openusd.org/release/api/class_usd_lux_dome_light.html#details>`_.
