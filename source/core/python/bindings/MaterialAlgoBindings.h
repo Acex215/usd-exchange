@@ -167,6 +167,23 @@ void bindMaterialAlgo(module& m)
         .value("eSrgb", ColorSpace::eSrgb, "Use sRGB sampling (typically used for Diffuse textures when using PNG files)");
 
     m.def(
+        "getColorSpaceToken",
+        &getColorSpaceToken,
+        arg("value"),
+        R"(
+            Get the `str` matching a given `ColorSpace`
+
+            The string representation is typically used when setting shader inputs, such as ``inputs:sourceColorSpace`` on ``UsdUVTexture``.
+
+            Args:
+                value: The ``ColorSpace``
+
+            Returns:
+                The `str` for the given ``ColorSpace`` value
+        )"
+    );
+
+    m.def(
         "sRgbToLinear",
         &sRgbToLinear,
         arg("color"),

@@ -114,6 +114,11 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertNotEqual(shader.GetPrim(), otherShader.GetPrim())
         self.assertEqual(shader.GetPrim(), previewShader.GetPrim())
 
+    def testColorSpaceToken(self):
+        self.assertEqual(usdex.core.getColorSpaceToken(usdex.core.ColorSpace.eAuto), "auto")
+        self.assertEqual(usdex.core.getColorSpaceToken(usdex.core.ColorSpace.eRaw), "raw")
+        self.assertEqual(usdex.core.getColorSpaceToken(usdex.core.ColorSpace.eSrgb), "sRGB")
+
     def testColorSpaceConversions(self):
         greySrgb = Gf.Vec3f(0.5, 0.5, 0.5)
         darkRedSrgb = Gf.Vec3f(0.33, 0.1, 0.1)

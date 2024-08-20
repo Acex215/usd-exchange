@@ -81,6 +81,7 @@ __all__ = [
     "definePreviewMaterial",
     "addDiffuseTextureToPreviewMaterial",
     "ColorSpace",
+    "getColorSpaceToken",
     "sRgbToLinear",
     "linearToSrgb",
 ]

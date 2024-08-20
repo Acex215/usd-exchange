@@ -935,18 +935,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
                 self.assertEqual(computeEffectiveShaderInputValue(shaderInput), value)
             self.assertEqual(shaderInput.GetBaseName(), name)
             self.assertEqual(shaderInput.GetTypeName(), typeName)
-
-            def colorSpaceEnumToString(colorSpace):
-                if colorSpace == usdex.core.ColorSpace.eAuto:
-                    return "auto"
-                elif colorSpace == usdex.core.ColorSpace.eRaw:
-                    return "raw"
-                elif colorSpace == usdex.core.ColorSpace.eSrgb:
-                    return "sRGB"
-                else:
-                    return ""
-
-            self.assertEqual(attr.GetColorSpace(), colorSpaceEnumToString(colorSpace))
+            self.assertEqual(attr.GetColorSpace(), "" if colorSpace is None else usdex.core.getColorSpaceToken(colorSpace))
 
         checkMdlShaderInput(material, "project_uvw", True, Sdf.ValueTypeNames.Bool)
         checkMdlShaderInput(material, "diffuse_texture", normalTexture, Sdf.ValueTypeNames.Asset, usdex.core.ColorSpace.eSrgb)

@@ -29,6 +29,7 @@ namespace
 // clang-format off
 TF_DEFINE_PRIVATE_TOKENS(
     _tokens,
+    ((invalid, ""))
     ((colorSpaceAuto, "auto"))
     ((colorSpaceRaw, "raw"))
     ((colorSpacesRBG, "sRGB"))
@@ -317,7 +318,7 @@ bool usdex::core::addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& mate
         texShader.CreateInput(_tokens->fallback, SdfValueTypeNames->Float4).Set(GfVec4f(color[0], color[1], color[2], 1.0f));
     }
     texShader.CreateInput(_tokens->file, SdfValueTypeNames->Asset).Set(texturePath);
-    texShader.CreateInput(_tokens->sourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceAuto);
+    texShader.CreateInput(_tokens->sourceColorSpace, SdfValueTypeNames->Token).Set(getColorSpaceToken(usdex::core::ColorSpace::eAuto));
     texShader.CreateInput(_tokens->st, SdfValueTypeNames->Float2).ConnectToSource(uvReader.GetOutput(_tokens->result));
 
     // Connect the PreviewSurface shader "diffuseColor" to the diffuse texture shader output
@@ -325,6 +326,30 @@ bool usdex::core::addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& mate
     surface.CreateInput(_tokens->color, SdfValueTypeNames->Color3f).ConnectToSource(texShaderOutput);
 
     return true;
+}
+
+const pxr::TfToken& usdex::core::getColorSpaceToken(ColorSpace value)
+{
+    switch (value)
+    {
+        case usdex::core::ColorSpace::eAuto:
+        {
+            return _tokens->colorSpaceAuto;
+        }
+        case usdex::core::ColorSpace::eRaw:
+        {
+            return _tokens->colorSpaceRaw;
+        }
+        case usdex::core::ColorSpace::eSrgb:
+        {
+            return _tokens->colorSpacesRBG;
+        }
+        default:
+        {
+            TF_CODING_ERROR("Invalid ColorSpace value: %d", value);
+            return _tokens->invalid;
+        }
+    }
 }
 
 GfVec3f usdex::core::sRgbToLinear(const GfVec3f& color)

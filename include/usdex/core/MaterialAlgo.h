@@ -124,6 +124,14 @@ enum class ColorSpace
 };
 // clang-format on
 
+//! Get the `TfToken` matching a given `ColorSpace`
+//!
+//! The token representation is typically used when setting shader inputs, such as `inputs:sourceColorSpace` on `UsdUVTexture`.
+//!
+//! @param value The `ColorSpace`
+//! @returns The token for the given ``ColorSpace`` value
+USDEX_API const pxr::TfToken& getColorSpaceToken(ColorSpace value);
+
 //! Translate an sRGB color value to linear color space
 //!
 //! Many 3D modeling applications define colors in sRGB (0-1) color space. Many others use a linear color space that aligns with how light and color

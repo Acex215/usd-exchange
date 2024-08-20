@@ -113,29 +113,6 @@ TF_DEFINE_PRIVATE_TOKENS(
 #pragma warning(pop)
 #endif
 
-TfToken colorSpaceEnumToToken(const usdex::core::ColorSpace& colorSpace)
-{
-    switch (colorSpace)
-    {
-        case usdex::core::ColorSpace::eAuto:
-        {
-            return _tokens->colorSpaceAuto;
-        }
-        case usdex::core::ColorSpace::eRaw:
-        {
-            return _tokens->colorSpaceRaw;
-        }
-        case usdex::core::ColorSpace::eSrgb:
-        {
-            return _tokens->colorSpacesRBG;
-        }
-        default:
-        {
-            return TfToken();
-        }
-    }
-}
-
 void setFractionalOpacity(UsdStagePtr stage, bool isOn = true)
 {
     VtDictionary cld = stage->GetRootLayer()->GetCustomLayerData();
@@ -492,7 +469,7 @@ UsdShadeInput usdex::rtx::createMdlShaderInput(
     const UsdAttribute& attr = surfaceInput.GetAttr();
     if (colorSpace.has_value())
     {
-        attr.SetColorSpace(colorSpaceEnumToToken(colorSpace.value()));
+        attr.SetColorSpace(usdex::core::getColorSpaceToken(colorSpace.value()));
     }
     return surfaceInput;
 }
