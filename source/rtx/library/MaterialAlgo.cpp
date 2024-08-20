@@ -149,30 +149,6 @@ void setFractionalOpacity(UsdStagePtr stage, bool isOn = true)
     stage->GetRootLayer()->SetCustomLayerData(cld);
 }
 
-UsdShadeShader createUsdPreviewSurfaceShader(UsdShadeMaterial& material, const std::string& name)
-{
-    UsdPrim prim = material.GetPrim();
-
-    // Early out if the proposed prim location is invalid
-    std::string reason;
-    if (!usdex::core::isEditablePrimLocation(prim, name, &reason))
-    {
-        TF_WARN("Unable to create UsdShadeShader due to an invalid location: %s", reason.c_str());
-        return UsdShadeShader();
-    }
-
-    SdfPath path = prim.GetPath().AppendChild(TfToken(name));
-    UsdStagePtr stage = prim.GetStage();
-
-    UsdShadeShader shader = UsdShadeShader::Define(stage, path);
-    shader.SetShaderId(_tokens->usdPreviewSurface);
-
-    material.CreateSurfaceOutput().ConnectToSource(shader.CreateOutput(UsdShadeTokens->surface, SdfValueTypeNames->Token));
-    material.CreateDisplacementOutput().ConnectToSource(shader.CreateOutput(UsdShadeTokens->displacement, SdfValueTypeNames->Token));
-
-    return shader;
-}
-
 // Remove a property from a prim within the current edit target
 // This is used for removing input properties from shaders and materials
 bool removeProperty(UsdStageRefPtr stage, const SdfPath& primPath, const TfToken& propName)
@@ -540,82 +516,21 @@ UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
     const float metallic
 )
 {
-    // Early out if the proposed prim location is invalid
-    std::string reason;
-    if (!usdex::core::isEditablePrimLocation(stage, path, &reason))
-    {
-        TF_RUNTIME_ERROR("Unable to define UsdShadeMaterial due to an invalid location: %s", reason.c_str());
-        return UsdShadeMaterial();
-    }
-
-    // The opacity value must be within the defined min/max range
-    if (opacity < 0.0 || opacity > 1.0)
-    {
-        reason = TfStringPrintf("Opacity value %g is outside range [0.0 - 1.0].", opacity);
-        TF_RUNTIME_ERROR(
-            "Unable to define UsdShadeMaterial at \"%s\" due to an invalid shader parameter value: %s",
-            path.GetAsString().c_str(),
-            reason.c_str()
-        );
-        return UsdShadeMaterial();
-    }
-
-    // The roughness value must be within the defined min/max range
-    if (roughness < 0.0 || roughness > 1.0)
-    {
-        reason = TfStringPrintf("Roughness value %g is outside range [0.0 - 1.0].", roughness);
-        TF_RUNTIME_ERROR(
-            "Unable to define UsdShadeMaterial at \"%s\" due to an invalid shader parameter value: %s",
-            path.GetAsString().c_str(),
-            reason.c_str()
-        );
-        return UsdShadeMaterial();
-    }
-
-    // The metallic value must be within the defined min/max range
-    if (metallic < 0.0 || metallic > 1.0)
-    {
-        reason = TfStringPrintf("Metallic value %g is outside range [0.0 - 1.0].", metallic);
-        TF_RUNTIME_ERROR(
-            "Unable to define UsdShadeMaterial at \"%s\" due to an invalid shader parameter value: %s",
-            path.GetAsString().c_str(),
-            reason.c_str()
-        );
-        return UsdShadeMaterial();
-    }
-
-    // Define the material
-    // We do not use usdex::rtx::createMaterial here to avoid double validations
-    UsdShadeMaterial material = UsdShadeMaterial::Define(stage, path);
+    // Define the Preview Material first, as it validates the same set of criteria
+    UsdShadeMaterial material = usdex::core::definePreviewMaterial(stage, path, color, opacity, roughness, metallic);
     if (!material)
     {
-        TF_RUNTIME_ERROR("Unable to define UsdShadeMaterial at \"%s\"", path.GetAsString().c_str());
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
         return UsdShadeMaterial();
     }
-
-    // Explicitly author the specifier and type name
-    UsdPrim prim = material.GetPrim();
-    prim.SetSpecifier(SdfSpecifierDef);
-    prim.SetTypeName(prim.GetTypeName());
 
     // Define the surface shader to be used in the "mdl" rendering context
-    static const std::string mdlShaderName = "MDLShader";
-    static const SdfAssetPath mdlAssetPath = SdfAssetPath(g_omniPbrAssetPath);
-    UsdShadeShader mdlShader = usdex::rtx::createMdlShader(material, mdlShaderName, mdlAssetPath, _tokens->omniPbr);
+    static constexpr const char* s_mdlShaderName = "MDLShader";
+    static const SdfAssetPath s_mdlAssetPath = SdfAssetPath(g_omniPbrAssetPath);
+    UsdShadeShader mdlShader = usdex::rtx::createMdlShader(material, s_mdlShaderName, s_mdlAssetPath, _tokens->omniPbr);
     if (!mdlShader)
     {
-        TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", mdlShaderName.c_str(), path.GetAsString().c_str());
-        // TODO: OM-109366 - Cleanup any authored prims before returning a failure
-        return UsdShadeMaterial();
-    }
-
-    // Define the surface shader to be used in the "default" rendering context
-    // The shader parameters will produce a low fidelity approximation of the "mdl" rendering context for use with non-RTX renderers
-    static const std::string previewShaderName = "PreviewSurface";
-    UsdShadeShader previewShader = createUsdPreviewSurfaceShader(material, previewShaderName);
-    if (!previewShader)
-    {
-        TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", previewShaderName.c_str(), path.GetAsString().c_str());
+        TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", s_mdlShaderName, path.GetAsString().c_str());
         // TODO: OM-109366 - Cleanup any authored prims before returning a failure
         return UsdShadeMaterial();
     }
@@ -664,8 +579,10 @@ UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
         setFractionalOpacity(stage);
     }
 
-    // Create default shader inputs to produce a physically based rendering result with the supplied values
-    // Inputs are either set or connected to the material interface
+    // Create default shader inputs to produce a physically based rendering result with the supplied values. Note these will have already been
+    // created when we called `definePreviewMaterial`. Since `CreateInput` will Get if it already exists, it is safe to call here, and protects
+    // us incase the underlying implementation stops creating these directly.
+    UsdShadeShader previewShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
     previewShader.CreateInput(_tokens->usdPreviewSurfaceColor, SdfValueTypeNames->Color3f).ConnectToSource(materialColorInput);
     previewShader.CreateInput(_tokens->usdPreviewSurfaceOpacity, SdfValueTypeNames->Float).ConnectToSource(materialOpacityInput);
     previewShader.CreateInput(_tokens->usdPreviewSurfaceRoughness, SdfValueTypeNames->Float).ConnectToSource(materialRoughnessInput);
@@ -704,6 +621,12 @@ bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, cons
         return false;
     }
 
+    if (!usdex::core::addDiffuseTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     // Because we have a texture, remove this "Color" material input that USDEX created
     // Copy the value and set it to the MDL color input
     GfVec3f color(1.0f);
@@ -722,33 +645,12 @@ bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, cons
         _tokens->colorSpaceAuto
     );
 
-    // USD Preview Surface
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader stShader = ::findOrCreateStPrimvarReader(material);
-    if (!stShader)
-    {
-        return false;
-    }
+    // Connect the texture shader to the material interface. Note this makes unchecked assumptions about the behavior of `definePreviewMaterial`
+    // and `addDiffuseTextureToPreviewMaterial` in the core library. If those implementations change, this code needs to be adjusted to match.
+    UsdShadeShader previewSurface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeConnectionSourceInfo info = previewSurface.GetInput(_tokens->usdPreviewSurfaceColor).GetConnectedSources()[0];
+    info.source.GetInput(_tokens->usdPreviewSurfaceFile).ConnectToSource(matTextureInput);
 
-    // Create the "Diffuse Color Tex" shader
-    SdfPath shaderPath = material.GetPath().AppendChild(_tokens->usdPreviewSurfaceDiffuseColorTex);
-    UsdShadeShader texShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    texShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfaceUvTexture));
-    if (!texShader.GetInput(_tokens->usdPreviewSurfaceFallback))
-    {
-        texShader.CreateInput(_tokens->usdPreviewSurfaceFallback, SdfValueTypeNames->Float4).Set(GfVec4f(color[0], color[1], color[2], 1.0f));
-    }
-    texShader.CreateInput(_tokens->usdPreviewSurfaceFile, SdfValueTypeNames->Asset).ConnectToSource(matTextureInput);
-    texShader.CreateInput(_tokens->usdPreviewSurfaceSourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceAuto);
-    texShader.CreateInput(UsdUtilsGetPrimaryUVSetName(), SdfValueTypeNames->Float2)
-        .ConnectToSource(stShader.GetOutput(_tokens->usdPreviewSurfaceResult));
-
-    UsdShadeOutput texShaderOutput = texShader.CreateOutput(_tokens->usdPreviewSurfaceRgb, SdfValueTypeNames->Float3);
-
-    // Connect the PreviewSurface shader "diffuseColor" to the diffuse tex shader output
-    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    UsdShadeInput diffuseColorInput = psShader.CreateInput(_tokens->usdPreviewSurfaceColor, SdfValueTypeNames->Color3f);
-    diffuseColorInput.ConnectToSource(texShaderOutput);
     return true;
 }
 
@@ -995,15 +897,18 @@ UsdShadeMaterial usdex::rtx::defineOmniGlassMaterial(UsdStagePtr stage, const Sd
         return UsdShadeMaterial();
     }
 
-    // Define the surface shader to be used in the "default" rendering context
+    // Define the surface shader to be used in the universal rendering context
     // The shader parameters will produce a low fidelity approximation of the "mdl" rendering context for use with non-RTX renderers
-    static const std::string previewShaderName = "PreviewSurface";
-    UsdShadeShader previewShader = createUsdPreviewSurfaceShader(material, previewShaderName);
-    if (!previewShader)
+    static constexpr const char* s_previewShaderName = "PreviewSurface";
+    if (!usdex::core::isEditablePrimLocation(prim, s_previewShaderName, &reason))
     {
-        TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", previewShaderName.c_str(), path.GetAsString().c_str());
+        TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", s_previewShaderName, path.GetAsString().c_str());
         return UsdShadeMaterial();
     }
+    UsdShadeShader previewShader = UsdShadeShader::Define(stage, prim.GetPath().AppendChild(TfToken(s_previewShaderName)));
+    previewShader.SetShaderId(_tokens->usdPreviewSurface);
+    material.CreateSurfaceOutput().ConnectToSource(previewShader.CreateOutput(UsdShadeTokens->surface, SdfValueTypeNames->Token));
+    material.CreateDisplacementOutput().ConnectToSource(previewShader.CreateOutput(UsdShadeTokens->displacement, SdfValueTypeNames->Token));
 
     // Expose inputs on the material that will be connected to the corresponding inputs on the surface shaders
     // This acts as a Material interface from which value changes will be reflected across multiple renderers

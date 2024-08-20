@@ -82,6 +82,81 @@ void bindMaterialAlgo(module& m)
         )"
     );
 
+    m.def(
+        "definePreviewMaterial",
+        overload_cast<UsdStagePtr, const SdfPath&, const GfVec3f&, const float, const float, const float>(&definePreviewMaterial),
+        arg("stage"),
+        arg("path"),
+        arg("color"),
+        arg("opacity") = 1.0f,
+        arg("roughness") = 0.5f,
+        arg("metallic") = 0.0f,
+        R"(
+            Defines a PBR ``UsdShade.Material`` driven by a ``UsdPreviewSurface`` shader network for the universal render context.
+
+            The input parameters reflect a subset of the `UsdPreviewSurface specification <https://openusd.org/release/spec_usdpreviewsurface.html>`_
+            commonly used when authoring materials using the metallic/metalness workflow (as opposed to the specular workflow). Many other inputs are
+            available and can be authored after calling this function (including switching to the specular workflow).
+
+            Parameters:
+                - **stage** - The stage on which to define the Material
+                - **path** - The absolute prim path at which to define the Material
+                - **color** - The diffuse color of the Material
+                - **opacity** - The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+                - **roughness** - The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+                - **metallic** - The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+
+            Returns:
+                The newly defined ``UsdShade.Material``. Returns an Invalid prim on error
+        )"
+    );
+
+    m.def(
+        "definePreviewMaterial",
+        overload_cast<UsdPrim, const std::string&, const GfVec3f&, const float, const float, const float>(&definePreviewMaterial),
+        arg("parent"),
+        arg("name"),
+        arg("color"),
+        arg("opacity") = 1.0f,
+        arg("roughness") = 0.5f,
+        arg("metallic") = 0.0f,
+        R"(
+            Defines a PBR ``UsdShade.Material`` driven by a ``UsdPreviewSurface`` shader network for the universal render context.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **parent** - Prim below which to define the Material
+                - **name** - Name of the Material
+                - **color** - The diffuse color of the Material
+                - **opacity** - The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+                - **roughness** - The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+                - **metallic** - The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+
+            Returns:
+                The newly defined ``UsdShade.Material``. Returns an Invalid prim on error
+        )"
+    );
+
+    m.def(
+        "addDiffuseTextureToPreviewMaterial",
+        &addDiffuseTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a diffuse texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
     ::enum_<ColorSpace>(m, "ColorSpace", "Texture color space (encoding) types")
         .value("eAuto", ColorSpace::eAuto, "Check for gamma or metadata in the texture itself")
         .value(

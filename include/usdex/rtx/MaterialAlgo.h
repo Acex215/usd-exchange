@@ -80,20 +80,19 @@ USDEX_RTX_API pxr::UsdShadeInput createMdlShaderInput(
 //! @returns The connected Shader. Returns an invalid object on error.
 USDEX_RTX_API pxr::UsdShadeShader computeEffectiveMdlSurfaceShader(const pxr::UsdShadeMaterial& material);
 
-//! Defines an OmniPBR UsdShadeMaterial interface that drives both an RTX render context and a UsdPreviewSurface context
+//! Defines an OmniPBR `UsdShadeMaterial` interface that drives both an RTX render context and the universal render context.
 //!
-//! MDL and UsdPreviewSurface use a linear color space, please convert RGB and sRGB values to linear
-//!
-//! Note: The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
+//! @note The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
 //! Once the RTX Renderer supports OpenPBR or MaterialX shaders we may change the implementation to author those shaders instead of MDL.
 //!
 //! @param stage The stage on which to define the Material
 //! @param path The absolute prim path at which to define the Material
 //! @param color The diffuse color of the Material
-//! @param opacity The Opacity Amount to set. When less than 1.0, Enable Opacity is set to true and Fractional Opacity is enabled in the RT renderer
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible.
+//! Enable Opacity will be set to true and Fractional Opacity will be enabled in the RT renderer.
 //! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
 //! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
-//! @returns The newly defined UsdShadeMaterial. Returns an Invalid prim on error
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid prim on error
 USDEX_RTX_API pxr::UsdShadeMaterial defineOmniPbrMaterial(
     pxr::UsdStagePtr stage,
     const pxr::SdfPath& path,
@@ -103,20 +102,19 @@ USDEX_RTX_API pxr::UsdShadeMaterial defineOmniPbrMaterial(
     const float metallic = 0.0f
 );
 
-//! Defines an OmniPBR UsdShadeMaterial interface that drives both an RTX render context and a UsdPreviewSurface context
+//! Defines an OmniPBR `UsdShadeMaterial` interface that drives both an RTX render context and the universal render context.
 //!
-//! MDL and UsdPreviewSurface use a linear color space, please convert RGB and sRGB values to linear
-//!
-//! Note: The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
+//! @note The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
 //! Once the RTX Renderer supports OpenPBR or MaterialX shaders we may change the implementation to author those shaders instead of MDL.
 //!
 //! @param parent Prim below which to define the Material
 //! @param name Name of the Material
 //! @param color The diffuse color of the Material
-//! @param opacity The Opacity Amount to set. When less than 1.0, Enable Opacity is set to true and Fractional Opacity is enabled in the RT renderer
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible.
+//! Enable Opacity will be set to true and Fractional Opacity will be enabled in the RT renderer.
 //! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
 //! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
-//! @returns The newly defined UsdShadeMaterial. Returns an Invalid prim on error
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid prim on error
 USDEX_RTX_API pxr::UsdShadeMaterial defineOmniPbrMaterial(
     pxr::UsdPrim parent,
     const std::string& name,

@@ -130,9 +130,8 @@ void bindMaterialAlgo(module& m)
         R"(
             Defines an OmniPBR ``UsdShade.Material`` interface that drives both an RTX render context and a UsdPreviewSurface context
 
-            MDL and UsdPreviewSurface use a linear color space, please convert RGB and sRGB values to linear
-
             Note:
+
                 The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
                 Once the RTX Renderer supports OpenPBR or MaterialX shaders we may change the implementation to author those shaders instead of MDL.
 
@@ -140,7 +139,8 @@ void bindMaterialAlgo(module& m)
                 - **stage** - The stage on which to define the Material
                 - **path** - The absolute prim path at which to define the Material
                 - **color** - The diffuse color of the Material
-                - **opacity** - The Opacity Amount to set. When less than 1.0, Enable Opacity is set to true and Fractional Opacity is enabled in the RT renderer
+                - **opacity** - The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible.
+                  Enable Opacity is set to true and Fractional Opacity is enabled in the RT renderer
                 - **roughness** - The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
                 - **metallic** - The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
 
@@ -158,7 +158,7 @@ void bindMaterialAlgo(module& m)
         arg("roughness") = 0.5f,
         arg("metallic") = 0.0f,
         R"(
-            Defines an OmniPBR ``UsdShade.Material`` interface that drives both an RTX render context and a UsdPreviewSurface context
+            Defines an OmniPBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
