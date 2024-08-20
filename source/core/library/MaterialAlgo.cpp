@@ -41,17 +41,31 @@ TF_DEFINE_PRIVATE_TOKENS(
     ((upsName, "PreviewSurface"))
     ((uvReaderName, "TexCoordReader"))
     ((uvTexDiffuseName, "DiffuseTexture"))
+    ((uvTexNormalsName, "NormalTexture"))
+    ((uvTexORMName, "ORMTexture"))
+    ((uvTexRoughnessName, "RoughnessTexture"))
+    ((uvTexMetallicName, "MetallicTexture"))
+    ((uvTexOpacityName, "OpacityTexture"))
     // UsdPreviewSurface I/O
     ((color, "diffuseColor"))
+    ((normal, "normal"))
+    ((occlusion, "occlusion"))
     ((metallic, "metallic"))
-    ((opacity, "opacity"))
     ((roughness, "roughness"))
+    ((opacity, "opacity"))
+    ((opacityThreshold, "opacityThreshold"))
+    ((ior, "ior"))
     // UsdUVTexture I/O
     ((file, "file"))
     ((sourceColorSpace, "sourceColorSpace"))
     ((st, "st"))
     ((fallback, "fallback"))
+    ((scale, "scale"))
+    ((bias, "bias"))
     ((rgb, "rgb"))
+    ((r, "r"))
+    ((g, "g"))
+    ((b, "b"))
     // UsdPrimvarReader_float2 I/O
     ((varname, "varname"))
     ((result, "result"))
@@ -61,6 +75,12 @@ TF_DEFINE_PRIVATE_TOKENS(
 #if defined(ARCH_OS_WINDOWS) && PXR_VERSION < 2405
 #pragma warning(pop)
 #endif
+
+bool isShaderType(const UsdShadeShader& shader, const TfToken& shaderId)
+{
+    TfToken test;
+    return shader && shader.GetShaderId(&test) && test == shaderId;
+}
 
 // Find or create a float2 texture coordinate primvar reader
 UsdShadeShader acquireTexCoordReader(UsdShadeMaterial& material)
@@ -88,6 +108,34 @@ UsdShadeShader acquireTexCoordReader(UsdShadeMaterial& material)
     uvReader.CreateOutput(_tokens->result, SdfValueTypeNames->Float2);
 
     return uvReader;
+}
+
+// Find or create the appropriate TextureReader
+UsdShadeShader acquireTextureReader(
+    UsdShadeMaterial& material,
+    const TfToken& shaderName,
+    const SdfAssetPath& texture,
+    usdex::core::ColorSpace colorSpace,
+    const GfVec4f& fallback
+)
+{
+    // Make sure there is a primvar reader for the UV data ("st")
+    UsdShadeShader uvReader = ::acquireTexCoordReader(material);
+    if (!uvReader)
+    {
+        return UsdShadeShader();
+    }
+
+    // Create the texture shader
+    SdfPath shaderPath = material.GetPath().AppendChild(shaderName);
+    UsdShadeShader texShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
+    texShader.SetShaderId(_tokens->uvTexId);
+    texShader.CreateInput(_tokens->fallback, SdfValueTypeNames->Float4).Set(fallback);
+    texShader.CreateInput(_tokens->file, SdfValueTypeNames->Asset).Set(texture);
+    texShader.CreateInput(_tokens->sourceColorSpace, SdfValueTypeNames->Token).Set(getColorSpaceToken(colorSpace));
+    texShader.CreateInput(_tokens->st, SdfValueTypeNames->Float2).ConnectToSource(uvReader.GetOutput(_tokens->result));
+
+    return texShader;
 }
 
 float toLinear(float value)
@@ -291,39 +339,215 @@ UsdShadeMaterial usdex::core::definePreviewMaterial(
 
 bool usdex::core::addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath)
 {
-    TfToken test;
     UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    if (!surface || !surface.GetShaderId(&test) || test != _tokens->upsId)
+    if (!isShaderType(surface, _tokens->upsId))
     {
         TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
         return false;
     }
 
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader uvReader = ::acquireTexCoordReader(material);
-    if (!uvReader)
+    // read the current color to use as the fallback for when the texture is missing
+    // it should have been created by `definePreviewMaterial()` but just incase someone decides
+    // to call this function with their own UsdPreviewSurface wired in, we can accommodate
+    GfVec3f color(0.0f, 0.0f, 0.0f);
+    UsdShadeInput colorInput = surface.GetInput(_tokens->color);
+    if (!colorInput)
+    {
+        colorInput = surface.CreateInput(_tokens->color, SdfValueTypeNames->Color3f);
+        colorInput.Set(color);
+    }
+    colorInput.Get(&color);
+    GfVec4f fallback(color[0], color[1], color[2], 1.0f);
+
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexDiffuseName, texturePath, ColorSpace::eAuto, fallback);
+    if (!textureReader)
     {
         return false;
     }
 
-    // Create the "Diffuse Color Tex" shader
-    SdfPath shaderPath = material.GetPath().AppendChild(_tokens->uvTexDiffuseName);
-    UsdShadeShader texShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    texShader.SetShaderId(_tokens->uvTexId);
-    if (!texShader.GetInput(_tokens->fallback))
-    {
-        // read the current color to use as the fallback for when the texture is missing
-        GfVec3f color;
-        surface.GetInput(_tokens->color).Get(&color);
-        texShader.CreateInput(_tokens->fallback, SdfValueTypeNames->Float4).Set(GfVec4f(color[0], color[1], color[2], 1.0f));
-    }
-    texShader.CreateInput(_tokens->file, SdfValueTypeNames->Asset).Set(texturePath);
-    texShader.CreateInput(_tokens->sourceColorSpace, SdfValueTypeNames->Token).Set(getColorSpaceToken(usdex::core::ColorSpace::eAuto));
-    texShader.CreateInput(_tokens->st, SdfValueTypeNames->Float2).ConnectToSource(uvReader.GetOutput(_tokens->result));
-
     // Connect the PreviewSurface shader "diffuseColor" to the diffuse texture shader output
-    UsdShadeOutput texShaderOutput = texShader.CreateOutput(_tokens->rgb, SdfValueTypeNames->Float3);
-    surface.CreateInput(_tokens->color, SdfValueTypeNames->Color3f).ConnectToSource(texShaderOutput);
+    colorInput.ConnectToSource(textureReader.CreateOutput(_tokens->rgb, SdfValueTypeNames->Float3));
+
+    return true;
+}
+
+bool usdex::core::addNormalTextureToPreviewMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
+{
+    UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    if (!isShaderType(surface, _tokens->upsId))
+    {
+        TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    GfVec4f fallback(0.0f, 0.0f, 1.0f, 1.0f);
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexNormalsName, texturePath, ColorSpace::eRaw, fallback);
+    if (!textureReader)
+    {
+        return false;
+    }
+
+    // Connect the PreviewSurface shader "normal" to the normals texture shader output
+    UsdShadeOutput texShaderOutput = textureReader.CreateOutput(_tokens->rgb, SdfValueTypeNames->Float3);
+    surface.CreateInput(_tokens->normal, SdfValueTypeNames->Normal3f).ConnectToSource(texShaderOutput);
+
+    // set the scale and bias to adjust normals into tangent space
+    // note we are assuming the texture is an 8-bit channel that requires adjustment,
+    // since we can't directly access the texture (it might not even exist yet).
+    textureReader.CreateInput(_tokens->scale, SdfValueTypeNames->Float4).Set(GfVec4f(2, 2, 2, 1));
+    textureReader.CreateInput(_tokens->bias, SdfValueTypeNames->Float4).Set(GfVec4f(-1, -1, -1, 0));
+
+    return true;
+}
+
+bool usdex::core::addOrmTextureToPreviewMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
+{
+    UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    if (!isShaderType(surface, _tokens->upsId))
+    {
+        TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    // read the current roughness and metallic to use as the fallback for when the texture is missing
+    // they should have been created by `definePreviewMaterial()` but just incase someone decides
+    // to call this function with their own UsdPreviewSurface wired in, we can accommodate
+    float roughness = 0.5f;
+    float metallic = 0.0f;
+    UsdShadeInput occlusionInput = surface.CreateInput(_tokens->occlusion, SdfValueTypeNames->Float);
+    UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
+    if (!roughnessInput)
+    {
+        roughnessInput = surface.CreateInput(_tokens->roughness, SdfValueTypeNames->Float);
+        roughnessInput.Set(roughness);
+    }
+    UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
+    if (!metallicInput)
+    {
+        metallicInput = surface.CreateInput(_tokens->metallic, SdfValueTypeNames->Float);
+        metallicInput.Set(metallic);
+    }
+    surface.GetInput(_tokens->roughness).Get(&roughness);
+    surface.GetInput(_tokens->metallic).Get(&metallic);
+    GfVec4f fallback(1.0f, roughness, metallic, /* unused */ 1.0f);
+
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexORMName, texturePath, ColorSpace::eRaw, fallback);
+    if (!textureReader)
+    {
+        return false;
+    }
+
+    // Connect the PreviewSurface shader "occlusion", "roughness", "metallic" to the ORM tex shader outputs
+    // unlike most textures, ORM needs to drive multiple floats on the surface
+    occlusionInput.ConnectToSource(textureReader.CreateOutput(_tokens->r, SdfValueTypeNames->Float));
+    roughnessInput.ConnectToSource(textureReader.CreateOutput(_tokens->g, SdfValueTypeNames->Float));
+    metallicInput.ConnectToSource(textureReader.CreateOutput(_tokens->b, SdfValueTypeNames->Float));
+
+    return true;
+}
+
+bool usdex::core::addRoughnessTextureToPreviewMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
+{
+    UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    if (!isShaderType(surface, _tokens->upsId))
+    {
+        TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    // read the current roughness to use as the fallback for when the texture is missing
+    // it should have been created by `definePreviewMaterial()` but just incase someone decides to call this function
+    // with their own UsdPreviewSurface wired in, we can accommodate
+    float roughness = 0.5f;
+    UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
+    if (!roughnessInput)
+    {
+        roughnessInput = surface.CreateInput(_tokens->roughness, SdfValueTypeNames->Float);
+        roughnessInput.Set(roughness);
+    }
+    surface.GetInput(_tokens->roughness).Get(&roughness);
+    GfVec4f fallback(roughness, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
+
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexRoughnessName, texturePath, ColorSpace::eRaw, fallback);
+    if (!textureReader)
+    {
+        return false;
+    }
+
+    // Connect the PreviewSurface shader "roughness" to the roughness tex shader output
+    roughnessInput.ConnectToSource(textureReader.CreateOutput(_tokens->r, SdfValueTypeNames->Float));
+
+    return true;
+}
+
+bool usdex::core::addMetallicTextureToPreviewMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
+{
+    UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    if (!isShaderType(surface, _tokens->upsId))
+    {
+        TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    // read the current metallic to use as the fallback for when the texture is missing
+    // it should have been created by `definePreviewMaterial()` but just incase someone decides
+    // to call this function with their own UsdPreviewSurface wired in, we can accommodate
+    float metallic = 0.0f;
+    UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
+    if (!metallicInput)
+    {
+        metallicInput = surface.CreateInput(_tokens->metallic, SdfValueTypeNames->Float);
+        metallicInput.Set(metallic);
+    }
+    surface.GetInput(_tokens->metallic).Get(&metallic);
+    GfVec4f fallback(metallic, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
+
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexMetallicName, texturePath, ColorSpace::eRaw, fallback);
+    if (!textureReader)
+    {
+        return false;
+    }
+
+    // Connect the PreviewSurface "metallic" to the metallic tex shader output
+    metallicInput.ConnectToSource(textureReader.CreateOutput(_tokens->r, SdfValueTypeNames->Float));
+
+    return true;
+}
+
+
+bool usdex::core::addOpacityTextureToPreviewMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
+{
+    UsdShadeShader surface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    if (!isShaderType(surface, _tokens->upsId))
+    {
+        TF_WARN("Material <%s> must first be defined using definePreviewMaterial()", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    // read the current opacity to use as the fallback for when the texture is missing
+    float opacity = 1.0f;
+    UsdShadeInput opacityInput = surface.GetInput(_tokens->opacity);
+    if (!opacityInput)
+    {
+        opacityInput = surface.CreateInput(_tokens->opacity, SdfValueTypeNames->Float);
+        opacityInput.Set(opacity);
+    }
+    surface.GetInput(_tokens->opacity).Get(&opacity);
+    GfVec4f fallback(opacity, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
+
+    UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexOpacityName, texturePath, ColorSpace::eRaw, fallback);
+    if (!textureReader)
+    {
+        return false;
+    }
+
+    // Connect the PreviewSurface "opacity" to the opacity tex shader output
+    opacityInput.ConnectToSource(textureReader.CreateOutput(_tokens->r, SdfValueTypeNames->Float));
+
+    // IOR should be 1.0 for a PBR style material, it causes mask/opacity issues if not
+    surface.CreateInput(_tokens->ior, SdfValueTypeNames->Float).Set(1.0f);
+    // Geometric cutouts work better with opacity threshold set to above 0
+    surface.CreateInput(_tokens->opacityThreshold, SdfValueTypeNames->Float).Set(std::numeric_limits<float>::epsilon());
 
     return true;
 }

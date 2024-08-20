@@ -109,10 +109,80 @@ USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
 //!
 //! It is expected that the material was created by `definePreviewMaterial()`
 //!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
 USDEX_API bool addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds a normals texture to a preview material
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! @note The UsdPreviewSurface specification requires that the texture reader needs to provide data that is properly scaled and ready to be
+//! consumed as a tangent space normal. This function assumes the texture is an 8-bit channel that requires scale and bias adjustment to
+//! transform the normals into tangent space. Similarly, it assumes that the raw normals data was written into the file, regardless of any
+//! file format specific color space metadata. If either of these assumptions is incorrect for your source data, you will need to adjust the
+//! `scale`, `bias`, and `sourceColorSpace` settings after calling this function.
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addNormalTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds an ORM (occlusion, roughness, metallic) texture to a preview material
+//!
+//! An ORM texture is a normal 3-channel image asset, where the R channel represents occlusion, the G channel represents roughness,
+//! and the B channel represents metallic/metallness.
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addOrmTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds a single channel roughness texture to a preview material
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addRoughnessTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds a single channel metallic texture to a preview material
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addMetallicTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds a single channel opacity texture to a preview material
+//!
+//! It is expected that the material was created by `definePreviewMaterial()`
+//!
+//! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! In addition to driving the `opacity` input, these additional shader inputs will be set explicitly, to produce better masked geometry:
+//! - UsdPreviewSurface: `ior = 1.0`
+//! - UsdPreviewSurface: `opacityThreshold = float_epsilon` (just greater than zero)
+//!
+//! @param material The material prim
+//! @param texturePath The `SdfAssetPath` to the texture file
+//! @returns Whether or not the texture was added to the material
+USDEX_API bool addOpacityTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
 
 //! Texture color space (encoding) types
 // clang-format off

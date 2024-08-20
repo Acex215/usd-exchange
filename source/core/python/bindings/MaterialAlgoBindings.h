@@ -148,6 +148,123 @@ void bindMaterialAlgo(module& m)
 
             It is expected that the material was created by ``definePreviewMaterial()``
 
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
+    m.def(
+        "addNormalTextureToPreviewMaterial",
+        &addNormalTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a normals texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
+            Note:
+                The UsdPreviewSurface specification requires that the texture reader needs to provide data that is properly scaled and ready to be
+                consumed as a tangent space normal. This function assumes the texture is an 8-bit channel that requires scale and bias adjustment to
+                transform the normals into tangent space. Similarly, it assumes that the raw normals data was written into the file, regardless of
+                any file format specific color space metadata. If either of these assumptions is incorrect for your source data, you will need to
+                adjust the ``scale``, ``bias``, and ``sourceColorSpace`` settings after calling this function.
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
+    m.def(
+        "addOrmTextureToPreviewMaterial",
+        &addOrmTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds an ORM (occlusion, roughness, metallic) texture to a preview material
+
+            An ORM texture is a normal 3-channel image asset, where the R channel represents occlusion, the G channel represents roughness,
+            and the B channel represents metallic/metallness.
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
+    m.def(
+        "addRoughnessTextureToPreviewMaterial",
+        &addRoughnessTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a single channel roughness texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
+    m.def(
+        "addMetallicTextureToPreviewMaterial",
+        &addMetallicTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a single channel metallic texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
+            Args:
+                material: The material prim
+                texturePath: The ``Sdf.AssetPath`` for the texture
+
+            Returns:
+                Whether or not the texture was added to the material
+        )"
+    );
+
+    m.def(
+        "addOpacityTextureToPreviewMaterial",
+        &addOpacityTextureToPreviewMaterial,
+        arg("material"),
+        arg("texturePath"),
+        R"(
+            Adds a single channel opacity texture to a preview material
+
+            It is expected that the material was created by ``definePreviewMaterial()``
+
+            The texture will be sampled using texture coordinates from the default UV set (generally named ``primvars:st``).
+
             Args:
                 material: The material prim
                 texturePath: The ``Sdf.AssetPath`` for the texture

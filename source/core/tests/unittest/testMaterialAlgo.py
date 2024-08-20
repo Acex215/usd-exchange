@@ -8,6 +8,8 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+from typing import List, Tuple
+
 import usdex.core
 import usdex.test
 from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdShade, UsdUtils
@@ -196,6 +198,74 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         surface = surfaceOutput.GetConnectedSource()[0]
         self.assertEqual(surface.GetOutput(UsdShade.Tokens.surface).GetAttr(), shader.GetOutput(UsdShade.Tokens.surface).GetAttr())
 
+    def assertInvalidPreviewMaterialForTextureFunctions(self, parent: Usd.Prim, texture: Sdf.AssetPath):
+        # an invalid material will error gracefully
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(UsdShade.Material(), texture)
+        self.assertFalse(result)
+
+        # an invalid surface shader will error gracefully
+        badMaterial = UsdShade.Material.Define(parent.GetStage(), parent.GetPath().AppendChild("BadMaterial"))
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+        # a surface shader without an ID will error gracefully
+        otherShader = UsdShade.Shader.Define(parent.GetStage(), badMaterial.GetPath().AppendChild("NoShaderId"))
+        badMaterial.CreateSurfaceOutput().ConnectToSource(otherShader.CreateOutput(UsdShade.Tokens.surface, Sdf.ValueTypeNames.Token))
+        self.assertIsSurfaceShader(badMaterial, otherShader)
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+        # an surface shader that is not a UPS will error gracefully
+        otherShader.SetShaderId("UsdUvTexture")
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
+        self.assertFalse(result)
+
+    def assertValidPreviewMaterialTextureNetwork(
+        self,
+        material: UsdShade.Material,
+        texture: Sdf.AssetPath,
+        textureReaderName: str,
+        colorSpace: usdex.core.ColorSpace,
+        fallbackColor: Gf.Vec3f,
+        connectionInfo: List[Tuple[str, Sdf.ValueTypeName, str]],
+    ):
+        uvReader = UsdShade.Shader(material.GetPrim().GetChild("TexCoordReader"))
+        self.assertTrue(uvReader)
+        self.assertEqual(uvReader.GetShaderId(), "UsdPrimvarReader_float2")
+        self.assertEqual(uvReader.GetInput("varname").GetAttr().Get(), UsdUtils.GetPrimaryUVSetName())
+
+        textureReader = UsdShade.Shader(material.GetPrim().GetChild(textureReaderName))
+        self.assertTrue(textureReader)
+        self.assertEqual(textureReader.GetShaderId(), "UsdUVTexture")
+        self.assertEqual(textureReader.GetInput("file").GetAttr().Get().path, texture)
+        self.assertEqual(textureReader.GetInput("sourceColorSpace").GetAttr().Get(), usdex.core.getColorSpaceToken(colorSpace))
+        # fallback is a float4 with a solid alpha channel
+        self.assertEqual(textureReader.GetInput("fallback").GetAttr().Get(), Gf.Vec4f(fallbackColor[0], fallbackColor[1], fallbackColor[2], 1.0))
+        # tex coord input is driven by the tex coord reader
+        self.assertTrue(textureReader.GetInput("st").HasConnectedSource())
+        self.assertEqual(textureReader.GetInput("st").GetConnectedSource()[0].GetOutputs()[0].GetAttr(), uvReader.GetOutput("result").GetAttr())
+
+        surface = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(surface)
+        self.assertEqual(surface.GetPrim().GetName(), "PreviewSurface")
+        self.assertEqual(surface.GetShaderId(), "UsdPreviewSurface")
+
+        # verify the connectionInfo
+        for inputName, inputTypeName, outputName in connectionInfo:
+            self.assertTrue(surface.GetInput(inputName).HasConnectedSource())
+            self.assertEqual(surface.GetInput(inputName).GetTypeName(), inputTypeName)
+            source, sourceAttr, sourceType = surface.GetInput(inputName).GetConnectedSource()
+            self.assertEqual(sourceType, UsdShade.AttributeType.Output)
+            self.assertEqual(
+                source.GetOutput(sourceAttr).GetAttr(),
+                textureReader.GetOutput(outputName).GetAttr(),
+                msg=f"Incorrect connection for {inputName} ({inputTypeName}) -> {outputName}",
+            )
+
     def testPreviewMaterialShaders(self):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
@@ -293,59 +363,226 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
-
-        # an invalid material will error gracefully
         texture = Sdf.AssetPath(self.tmpFile(name="BaseColor", ext="png"))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
-            result = usdex.core.addDiffuseTextureToPreviewMaterial(UsdShade.Material(), texture)
-        self.assertFalse(result)
 
-        # an invalid surface shader will error gracefully
-        badMaterial = UsdShade.Material.Define(stage, materials.GetPath().AppendChild("BadMaterial"))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
-            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
-        self.assertFalse(result)
-
-        # a surface shader without an ID will error gracefully
-        otherShader = UsdShade.Shader.Define(stage, badMaterial.GetPath().AppendChild("NoShaderId"))
-        badMaterial.CreateSurfaceOutput().ConnectToSource(otherShader.CreateOutput(UsdShade.Tokens.surface, Sdf.ValueTypeNames.Token))
-        self.assertIsSurfaceShader(badMaterial, otherShader)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
-            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
-        self.assertFalse(result)
-
-        # an surface shader that is not a UPS will error gracefully
-        otherShader.SetShaderId("UsdUvTexture")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
-            result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
-        self.assertFalse(result)
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
 
         # a valid preview material will successfully add a diffuse texture
         material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.0, 0.5, 1.0))
         result = usdex.core.addDiffuseTextureToPreviewMaterial(material, texture)
         self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="DiffuseTexture",
+            colorSpace=usdex.core.ColorSpace.eAuto,
+            fallbackColor=Gf.Vec3f(0.0, 0.5, 1.0),
+            connectionInfo=[("diffuseColor", Sdf.ValueTypeNames.Color3f, "rgb")],
+        )
 
-        # verify the texture shader network is now in place
-        uvReader = UsdShade.Shader(material.GetPrim().GetChild("TexCoordReader"))
-        self.assertTrue(uvReader)
-        self.assertEqual(uvReader.GetShaderId(), "UsdPrimvarReader_float2")
-        self.assertEqual(uvReader.GetInput("varname").GetAttr().Get(), UsdUtils.GetPrimaryUVSetName())
+    def testAddNormalTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        texture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
 
-        textureReader = UsdShade.Shader(material.GetPrim().GetChild("DiffuseTexture"))
-        self.assertTrue(textureReader)
-        self.assertEqual(textureReader.GetShaderId(), "UsdUVTexture")
-        self.assertEqual(textureReader.GetInput("file").GetAttr().Get().path, texture)
-        self.assertEqual(textureReader.GetInput("sourceColorSpace").GetAttr().Get(), "auto")
-        # fallback is a float4 with an alpha channel, but rgb match what we had defined as the original color
-        self.assertEqual(textureReader.GetInput("fallback").GetAttr().Get(), Gf.Vec4f(0.0, 0.5, 1.0, 1.0))
-        # tex coord input is driven by the tex coord reader
-        self.assertTrue(textureReader.GetInput("st").HasConnectedSource())
-        self.assertEqual(textureReader.GetInput("st").GetConnectedSource()[0].GetOutputs()[0].GetAttr(), uvReader.GetOutput("result").GetAttr())
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
 
+        # a valid preview material will successfully add a normals texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addNormalTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="NormalTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.0, 0.0, 1.0),
+            connectionInfo=[("normal", Sdf.ValueTypeNames.Normal3f, "rgb")],
+        )
+        textureReader = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture"))
+        self.assertEqual(textureReader.GetInput("scale").GetAttr().Get(), Gf.Vec4f(2, 2, 2, 1))
+        self.assertEqual(textureReader.GetInput("bias").GetAttr().Get(), Gf.Vec4f(-1, -1, -1, 0))
+
+    def testAddOrmTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        texture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
+
+        # a valid preview material will successfully add a ORM texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addOrmTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="ORMTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(1.0, 0.5, 0.0),
+            connectionInfo=[
+                ("occlusion", Sdf.ValueTypeNames.Float, "r"),
+                ("roughness", Sdf.ValueTypeNames.Float, "g"),
+                ("metallic", Sdf.ValueTypeNames.Float, "b"),
+            ],
+        )
+
+        # the originally defined roughness and metallic values are used in the fallback (opacity is not relevant)
+        material = usdex.core.definePreviewMaterial(materials, "InitialValues", Gf.Vec3f(0.8, 0.8, 0.8), opacity=0.8, roughness=0.25, metallic=0.9)
+        result = usdex.core.addOrmTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="ORMTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(1.0, 0.25, 0.9),
+            connectionInfo=[
+                ("occlusion", Sdf.ValueTypeNames.Float, "r"),
+                ("roughness", Sdf.ValueTypeNames.Float, "g"),
+                ("metallic", Sdf.ValueTypeNames.Float, "b"),
+            ],
+        )
+
+    def testAddRoughnessTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        texture = Sdf.AssetPath(self.tmpFile(name="roughness", ext="png"))
+
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
+
+        # a valid preview material will successfully add a ORM texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addRoughnessTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="RoughnessTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.5, 0.0, 0.0),
+            connectionInfo=[("roughness", Sdf.ValueTypeNames.Float, "r")],
+        )
+
+        # the originally defined roughness value is used in the fallback
+        material = usdex.core.definePreviewMaterial(materials, "InitialValues", Gf.Vec3f(0.8, 0.8, 0.8), roughness=0.1)
+        result = usdex.core.addRoughnessTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="RoughnessTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.1, 0.0, 0.0),
+            connectionInfo=[("roughness", Sdf.ValueTypeNames.Float, "r")],
+        )
+
+    def testAddMetallicTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        texture = Sdf.AssetPath(self.tmpFile(name="metallic", ext="png"))
+
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
+
+        # a valid preview material will successfully add a ORM texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addMetallicTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="MetallicTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.0, 0.0, 0.0),
+            connectionInfo=[("metallic", Sdf.ValueTypeNames.Float, "r")],
+        )
+
+        # the originally defined metallic value is used in the fallback
+        material = usdex.core.definePreviewMaterial(materials, "InitialValues", Gf.Vec3f(0.8, 0.8, 0.8), metallic=0.1)
+        result = usdex.core.addMetallicTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="MetallicTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.1, 0.0, 0.0),
+            connectionInfo=[("metallic", Sdf.ValueTypeNames.Float, "r")],
+        )
+
+    def testAddOpacityTexture(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        texture = Sdf.AssetPath(self.tmpFile(name="opacity", ext="png"))
+
+        self.assertInvalidPreviewMaterialForTextureFunctions(parent=materials, texture=texture)
+
+        # a valid preview material will successfully add a ORM texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addOpacityTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="OpacityTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(1.0, 0.0, 0.0),
+            connectionInfo=[("opacity", Sdf.ValueTypeNames.Float, "r")],
+        )
         surface = usdex.core.computeEffectivePreviewSurfaceShader(material)
-        self.assertTrue(surface)
-        self.assertEqual(surface.GetPrim().GetName(), "PreviewSurface")
-        self.assertEqual(surface.GetShaderId(), "UsdPreviewSurface")
-        # diffuse color input is driven by the texture reader color output
-        self.assertTrue(surface.GetInput("diffuseColor").HasConnectedSource())
-        self.assertEqual(surface.GetInput("diffuseColor").GetConnectedSource()[0].GetOutputs()[0].GetAttr(), textureReader.GetOutput("rgb").GetAttr())
+        self.assertEqual(surface.GetInput("ior").GetAttr().Get(), 1.0)
+        # rather than try to assert the exact epsilon between c++ and python we
+        # assert that the threshold is a very small non-zero number
+        self.assertGreater(surface.GetInput("opacityThreshold").GetAttr().Get(), 0)
+        self.assertLess(surface.GetInput("opacityThreshold").GetAttr().Get(), 1e-6)
+
+    def testTexturesShareTexCoordReader(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        diffuseTexture = Sdf.AssetPath(self.tmpFile(name="BaseColor", ext="png"))
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+
+        # a valid preview material will successfully add a diffuse texture
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.0, 0.5, 1.0))
+        result = usdex.core.addDiffuseTextureToPreviewMaterial(material, diffuseTexture)
+        self.assertTrue(result)
+        result = usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        self.assertTrue(result)
+
+        # both inputs are driven by the expected textures
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            diffuseTexture,
+            textureReaderName="DiffuseTexture",
+            colorSpace=usdex.core.ColorSpace.eAuto,
+            fallbackColor=Gf.Vec3f(0.0, 0.5, 1.0),
+            connectionInfo=[("diffuseColor", Sdf.ValueTypeNames.Color3f, "rgb")],
+        )
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            normalTexture,
+            textureReaderName="NormalTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.0, 0.0, 1.0),
+            connectionInfo=[("normal", Sdf.ValueTypeNames.Normal3f, "rgb")],
+        )
+
+        # the primvar reader for tex coords is shared
+        def findTextureReaders(stage):
+            textureReaders = []
+            for prim in stage.Traverse():
+                shader = UsdShade.Shader(prim)
+                if shader and shader.GetShaderId() == "UsdPrimvarReader_float2":
+                    textureReaders.append(shader)
+            return textureReaders
+
+        textureReaders = findTextureReaders(stage)
+        self.assertEqual(len(textureReaders), 1)
+        # assertValidPreviewMaterialTextureNetwork will have already ensured both textures are driven by TexCoordReader
+        self.assertEqual(textureReaders[0].GetPrim(), material.GetPrim().GetChild("TexCoordReader"))
