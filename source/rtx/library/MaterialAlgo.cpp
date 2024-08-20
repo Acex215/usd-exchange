@@ -621,6 +621,12 @@ bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, cons
         return false;
     }
 
+    if (!usdex::core::addDiffuseTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     // Because we have a texture, remove this "Color" material input that USDEX created
     // Copy the value and set it to the MDL color input
     GfVec3f color(1.0f);
@@ -639,33 +645,12 @@ bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, cons
         _tokens->colorSpaceAuto
     );
 
-    // USD Preview Surface
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader stShader = ::findOrCreateStPrimvarReader(material);
-    if (!stShader)
-    {
-        return false;
-    }
+    // Connect the texture shader to the material interface. Note this makes unchecked assumptions about the behavior of `definePreviewMaterial`
+    // and `addDiffuseTextureToPreviewMaterial` in the core library. If those implementations change, this code needs to be adjusted to match.
+    UsdShadeShader previewSurface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeConnectionSourceInfo info = previewSurface.GetInput(_tokens->usdPreviewSurfaceColor).GetConnectedSources()[0];
+    info.source.GetInput(_tokens->usdPreviewSurfaceFile).ConnectToSource(matTextureInput);
 
-    // Create the "Diffuse Color Tex" shader
-    SdfPath shaderPath = material.GetPath().AppendChild(_tokens->usdPreviewSurfaceDiffuseColorTex);
-    UsdShadeShader texShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    texShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfaceUvTexture));
-    if (!texShader.GetInput(_tokens->usdPreviewSurfaceFallback))
-    {
-        texShader.CreateInput(_tokens->usdPreviewSurfaceFallback, SdfValueTypeNames->Float4).Set(GfVec4f(color[0], color[1], color[2], 1.0f));
-    }
-    texShader.CreateInput(_tokens->usdPreviewSurfaceFile, SdfValueTypeNames->Asset).ConnectToSource(matTextureInput);
-    texShader.CreateInput(_tokens->usdPreviewSurfaceSourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceAuto);
-    texShader.CreateInput(UsdUtilsGetPrimaryUVSetName(), SdfValueTypeNames->Float2)
-        .ConnectToSource(stShader.GetOutput(_tokens->usdPreviewSurfaceResult));
-
-    UsdShadeOutput texShaderOutput = texShader.CreateOutput(_tokens->usdPreviewSurfaceRgb, SdfValueTypeNames->Float3);
-
-    // Connect the PreviewSurface shader "diffuseColor" to the diffuse tex shader output
-    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    UsdShadeInput diffuseColorInput = psShader.CreateInput(_tokens->usdPreviewSurfaceColor, SdfValueTypeNames->Color3f);
-    diffuseColorInput.ConnectToSource(texShaderOutput);
     return true;
 }
 

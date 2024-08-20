@@ -649,9 +649,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
             else:
                 self.assertFalse(matPrim.GetInput("Color"))
             # Check that many other inputs were modified and set
-            primStShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("PrimST")))
+            primStShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("TexCoordReader")))
             self.assertTrue(isinstance(primStShader, UsdShade.Shader))
-            diffuseTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("DiffuseColorTex")))
+            diffuseTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("DiffuseTexture")))
             self.assertTrue(isinstance(diffuseTexShader, UsdShade.Shader))
             self.assertEqual(computeEffectiveShaderInputValue(matPrim.GetInput("DiffuseTexture")).path, tex)
             self.assertEqual(matPrim.GetInput("DiffuseTexture").GetAttr().GetColorSpace(), "auto")
