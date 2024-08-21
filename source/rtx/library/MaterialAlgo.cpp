@@ -62,35 +62,14 @@ TF_DEFINE_PRIVATE_TOKENS(
     ((omniGlassColor, "glass_color"))
     ((omniGlassIor, "glass_ior"))
     ((usdPreviewSurface, "UsdPreviewSurface"))
-    ((usdPreviewSurfaceUvTexture, "UsdUVTexture"))
-    ((usdPreviewSurfacePrimvarReader, "UsdPrimvarReader_float2"))
-    ((usdPreviewSurfaceBias, "bias"))
     ((usdPreviewSurfaceColor, "diffuseColor"))
-    ((usdPreviewSurfaceSourceColorSpace, "sourceColorSpace"))
-    ((usdPreviewSurfaceFallback, "fallback"))
     ((usdPreviewSurfaceFile, "file"))
     ((usdPreviewSurfaceIor, "ior"))
     ((usdPreviewSurfaceMetallic, "metallic"))
     ((usdPreviewSurfaceNormal, "normal"))
     ((usdPreviewSurfaceOcclusion, "occlusion"))
     ((usdPreviewSurfaceOpacity, "opacity"))
-    ((usdPreviewSurfaceOpacityThreshold, "opacityThreshold"))
-    ((usdPreviewSurfaceResult, "result"))
     ((usdPreviewSurfaceRoughness, "roughness"))
-    ((usdPreviewSurfaceScale, "scale"))
-    ((usdPreviewSurfaceVarname, "varname"))
-    ((usdPreviewSurfaceRedChannel, "r"))
-    ((usdPreviewSurfaceGreenChannel, "g"))
-    ((usdPreviewSurfaceBlueChannel, "b"))
-    ((usdPreviewSurfaceAlphaChannel, "a"))
-    ((usdPreviewSurfaceRgb, "rgb"))
-    ((usdPreviewSurfaceDiffuseColorTex, "DiffuseColorTex"))
-    ((usdPreviewSurfaceNormalTex, "NormalTex"))
-    ((usdPreviewSurfaceOpacityTex, "OpacityTex"))
-    ((usdPreviewSurfaceOrmTex, "ORMTex"))
-    ((usdPreviewSurfaceRoughnessTex, "RoughnessTex"))
-    ((usdPreviewSurfaceMetallicTex, "MetallicTex"))
-    ((usdPreviewSurfacePrimST, "PrimST"))
     ((materialColor, "Color"))
     ((materialColorInputs, "inputs:Color"))
     ((materialOpacity, "Opacity"))
@@ -188,35 +167,6 @@ UsdShadeInput createMaterialLinkedMdlFileInput(
     return matTextureInput;
 }
 
-// Find or create a float2 texture coordinate primvar reader
-UsdShadeShader findOrCreateStPrimvarReader(UsdShadeMaterial& material)
-{
-    SdfPath primvarReaderShaderPath = material.GetPath().AppendChild(_tokens->usdPreviewSurfacePrimST);
-    UsdShadeShader stShader = UsdShadeShader::Get(material.GetPrim().GetStage(), primvarReaderShaderPath);
-    if (!stShader)
-    {
-        // Create the "USD Primvar reader for float2" shader
-        stShader = UsdShadeShader::Define(material.GetPrim().GetStage(), primvarReaderShaderPath);
-        if (!stShader)
-        {
-            TF_RUNTIME_ERROR(
-                "Cannot add USD Preview Surface Primvar Reader shader <%s> to <%s>",
-                primvarReaderShaderPath.GetAsString().c_str(),
-                material.GetPath().GetAsString().c_str()
-            );
-
-            return stShader;
-        }
-    }
-
-    // Whether the shader already existed or not, make sure that the attributes work for the primvar reader
-    stShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfacePrimvarReader));
-    stShader.CreateOutput(_tokens->usdPreviewSurfaceResult, SdfValueTypeNames->Float2);
-    stShader.CreateInput(_tokens->usdPreviewSurfaceVarname, SdfValueTypeNames->Token).Set(UsdUtilsGetPrimaryUVSetName());
-
-    return stShader;
-}
-
 // Common function to check that a material has an OmniPBR-based MDL & USD Preview Surface shaders
 bool verifyValidOmniPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
 {
@@ -300,7 +250,6 @@ struct TfTokenValuePair
 //! @param omniPbrFallbackValueToken The MDL shader input that was formally connected to the matValueToken input
 //! @param omniPbrInputValues A list of inputs that will be set on the MDL shader (enable, influence, etc.)
 //! @param omniPbrTextureToken The MDL Shader input name for the texture
-//! @param usdTextureShaderToken The USD Preview Surface texture shader name
 //! @param usdShaderInputToken The USD Preview Surface input to connect to the texture shader
 //!
 //! @returns Whether or not the texture was added to the material
@@ -313,15 +262,9 @@ bool addSingleChannelTextureToPbrMaterial(
     const TfToken& omniPbrFallbackValueToken,
     std::vector<TfTokenValuePair> omniPbrInputValues,
     const TfToken& omniPbrTextureToken,
-    const TfToken& usdTextureShaderToken,
     const TfToken& usdShaderInputToken
 )
 {
-    if (!verifyValidOmniPbrMaterial(material, texturePath))
-    {
-        return false;
-    }
-
     // Because we have a texture, remove the material input that USDEX created
     // Copy the value first and set it to the MDL shader inputs
     float channelValue = 1.0f;
@@ -347,34 +290,15 @@ bool addSingleChannelTextureToPbrMaterial(
         _tokens->colorSpaceRaw
     );
 
-    // USD Preview Surface
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader stShader = ::findOrCreateStPrimvarReader(material);
-    if (!stShader)
-    {
-        return false;
-    }
+    // Connect the texture shader to the material interface. Note this makes unchecked assumptions about the behavior of `definePreviewMaterial`
+    // and `add*TextureToPreviewMaterial` in the core library. If those implementations change, this code needs to be adjusted to match.
+    UsdShadeShader previewSurface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeConnectionSourceInfo info = previewSurface.GetInput(usdShaderInputToken).GetConnectedSources()[0];
+    info.source.GetInput(_tokens->usdPreviewSurfaceFile).ConnectToSource(matTextureInput);
 
-    // Create the single channel texture shader
-    SdfPath shaderPath = material.GetPath().AppendChild(usdTextureShaderToken);
-    UsdShadeShader texShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    texShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfaceUvTexture));
-    if (!texShader.GetInput(_tokens->usdPreviewSurfaceFallback))
-    {
-        texShader.CreateInput(_tokens->usdPreviewSurfaceFallback, SdfValueTypeNames->Float4).Set(GfVec4f(channelValue, 0.0f, 0.0f, 1.0f));
-    }
-    texShader.CreateInput(_tokens->usdPreviewSurfaceFile, SdfValueTypeNames->Asset).ConnectToSource(matTextureInput);
-    texShader.CreateInput(_tokens->usdPreviewSurfaceSourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceRaw);
-    texShader.CreateInput(UsdUtilsGetPrimaryUVSetName(), SdfValueTypeNames->Float2)
-        .ConnectToSource(stShader.GetOutput(_tokens->usdPreviewSurfaceResult));
-
-    UsdShadeOutput output = texShader.CreateOutput(_tokens->usdPreviewSurfaceRedChannel, SdfValueTypeNames->Float);
-
-    // Connect the PreviewSurface shader "opacity" to the opacity tex shader output
-    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    psShader.CreateInput(usdShaderInputToken, SdfValueTypeNames->Float).ConnectToSource(output);
     return true;
 }
+
 } // namespace
 
 UsdShadeShader usdex::rtx::createMdlShader(
@@ -638,6 +562,12 @@ bool usdex::rtx::addNormalTextureToPbrMaterial(UsdShadeMaterial& material, const
         return false;
     }
 
+    if (!usdex::core::addNormalTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     UsdShadeInput matTextureInput = ::createMaterialLinkedMdlFileInput(
         material,
         _tokens->materialNormalTexture,
@@ -646,44 +576,35 @@ bool usdex::rtx::addNormalTextureToPbrMaterial(UsdShadeMaterial& material, const
         _tokens->colorSpaceRaw
     );
 
-    // USD Preview Surface
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader stShader = ::findOrCreateStPrimvarReader(material);
-    if (!stShader)
-    {
-        return false;
-    }
+    // Connect the texture shader to the material interface. Note this makes unchecked assumptions about the behavior of `definePreviewMaterial`
+    // and `addNormalTextureToPreviewMaterial` in the core library. If those implementations change, this code needs to be adjusted to match.
+    UsdShadeShader previewSurface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeConnectionSourceInfo info = previewSurface.GetInput(_tokens->usdPreviewSurfaceNormal).GetConnectedSources()[0];
+    info.source.GetInput(_tokens->usdPreviewSurfaceFile).ConnectToSource(matTextureInput);
 
-    // Create the "Normal Tex" shader
-    SdfPath shaderPath = material.GetPath().AppendChild(_tokens->usdPreviewSurfaceNormalTex);
-    UsdShadeShader normalShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    normalShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfaceUvTexture));
-    normalShader.CreateInput(_tokens->usdPreviewSurfaceFallback, SdfValueTypeNames->Float4).Set(GfVec4f(0.0f, 0.0f, 1.0f, 1.0f));
-    normalShader.CreateInput(_tokens->usdPreviewSurfaceFile, SdfValueTypeNames->Asset).ConnectToSource(matTextureInput);
-    normalShader.CreateInput(_tokens->usdPreviewSurfaceSourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceRaw);
-    normalShader.CreateInput(_tokens->usdPreviewSurfaceScale, SdfValueTypeNames->Float4).Set(GfVec4f(2, 2, 2, 1));
-    normalShader.CreateInput(_tokens->usdPreviewSurfaceBias, SdfValueTypeNames->Float4).Set(GfVec4f(-1, -1, -1, 0));
-    normalShader.CreateInput(UsdUtilsGetPrimaryUVSetName(), SdfValueTypeNames->Float2)
-        .ConnectToSource(stShader.GetOutput(_tokens->usdPreviewSurfaceResult));
-
-    UsdShadeOutput normalShaderOutput = normalShader.CreateOutput(_tokens->usdPreviewSurfaceRgb, SdfValueTypeNames->Float3);
-
-    // Connect the PreviewSurface shader "normal" to the normal tex shader output
-    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    UsdShadeInput normalInput = psShader.CreateInput(_tokens->usdPreviewSurfaceNormal, SdfValueTypeNames->Normal3f);
-    normalInput.ConnectToSource(normalShaderOutput);
     return true;
 }
 
 bool usdex::rtx::addOpacityTextureToPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
 {
+    if (!verifyValidOmniPbrMaterial(material, texturePath))
+    {
+        return false;
+    }
+
+    if (!usdex::core::addOpacityTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     std::vector<TfTokenValuePair> tokenValuePairs = {
         { _tokens->omniPbrOpacityEnabled, VtValue(true), SdfValueTypeNames->Bool },
         { _tokens->omniPbrOpacityTextureEnabled, VtValue(true), SdfValueTypeNames->Bool },
         { _tokens->omniPbrOpacityThreshold, VtValue(std::numeric_limits<float>::epsilon()), SdfValueTypeNames->Float }
     };
 
-    bool success = addSingleChannelTextureToPbrMaterial(
+    return addSingleChannelTextureToPbrMaterial(
         material,
         texturePath,
         _tokens->materialOpacity,
@@ -692,24 +613,23 @@ bool usdex::rtx::addOpacityTextureToPbrMaterial(UsdShadeMaterial& material, cons
         _tokens->omniPbrOpacity,
         tokenValuePairs,
         _tokens->omniPbrOpacityTexture,
-        _tokens->usdPreviewSurfaceOpacityTex,
         _tokens->usdPreviewSurfaceOpacity
     );
-
-    if (success)
-    {
-        UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-        // IOR should be 1.0 for a PBR style material, it causes mask/opacity issues if not
-        psShader.CreateInput(_tokens->usdPreviewSurfaceIor, SdfValueTypeNames->Float).Set(1.0f);
-        // Geometric cutouts work better with opacity threshold set to above 0
-        psShader.CreateInput(_tokens->usdPreviewSurfaceOpacityThreshold, SdfValueTypeNames->Float).Set(std::numeric_limits<float>::epsilon());
-    }
-
-    return success;
 }
 
 bool usdex::rtx::addRoughnessTextureToPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
 {
+    if (!verifyValidOmniPbrMaterial(material, texturePath))
+    {
+        return false;
+    }
+
+    if (!usdex::core::addRoughnessTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     std::vector<TfTokenValuePair> tokenValuePairs = { { _tokens->omniPbrRoughnessTextureInfluence, VtValue(1.0f), SdfValueTypeNames->Float } };
 
     return addSingleChannelTextureToPbrMaterial(
@@ -721,13 +641,23 @@ bool usdex::rtx::addRoughnessTextureToPbrMaterial(UsdShadeMaterial& material, co
         _tokens->omniPbrRoughness,
         tokenValuePairs,
         _tokens->omniPbrRoughnessTexture,
-        _tokens->usdPreviewSurfaceRoughnessTex,
         _tokens->usdPreviewSurfaceRoughness
     );
 }
 
 bool usdex::rtx::addMetallicTextureToPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
 {
+    if (!verifyValidOmniPbrMaterial(material, texturePath))
+    {
+        return false;
+    }
+
+    if (!usdex::core::addMetallicTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
+        return false;
+    }
+
     std::vector<TfTokenValuePair> tokenValuePairs = { { _tokens->omniPbrMetallicTextureInfluence, VtValue(1.0f), SdfValueTypeNames->Float } };
 
     return addSingleChannelTextureToPbrMaterial(
@@ -739,7 +669,6 @@ bool usdex::rtx::addMetallicTextureToPbrMaterial(UsdShadeMaterial& material, con
         _tokens->omniPbrMetallic,
         tokenValuePairs,
         _tokens->omniPbrMetallicTexture,
-        _tokens->usdPreviewSurfaceMetallicTex,
         _tokens->usdPreviewSurfaceMetallic
     );
 }
@@ -748,6 +677,12 @@ bool usdex::rtx::addOrmTextureToPbrMaterial(UsdShadeMaterial& material, const Sd
 {
     if (!verifyValidOmniPbrMaterial(material, texturePath))
     {
+        return false;
+    }
+
+    if (!usdex::core::addOrmTextureToPreviewMaterial(material, texturePath))
+    {
+        // Do not report the reason as the function we called will have already logged the diagnostic for us.
         return false;
     }
 
@@ -783,36 +718,12 @@ bool usdex::rtx::addOrmTextureToPbrMaterial(UsdShadeMaterial& material, const Sd
         _tokens->colorSpaceRaw
     );
 
-    // USD Preview Surface
-    // Make sure there is a primvar reader for the UV data ("st")
-    UsdShadeShader stShader = ::findOrCreateStPrimvarReader(material);
-    if (!stShader)
-    {
-        return false;
-    }
+    // Connect the texture shader to the material interface. Note this makes unchecked assumptions about the behavior of `definePreviewMaterial`
+    // and `addOrmTextureToPreviewMaterial` in the core library. If those implementations change, this code needs to be adjusted to match.
+    UsdShadeShader previewSurface = usdex::core::computeEffectivePreviewSurfaceShader(material);
+    UsdShadeConnectionSourceInfo info = previewSurface.GetInput(_tokens->usdPreviewSurfaceOcclusion).GetConnectedSources()[0];
+    info.source.GetInput(_tokens->usdPreviewSurfaceFile).ConnectToSource(matTextureInput);
 
-    // Create the "ORM Color Tex" shader
-    SdfPath shaderPath = material.GetPath().AppendChild(_tokens->usdPreviewSurfaceOrmTex);
-    UsdShadeShader ormShader = UsdShadeShader::Define(material.GetPrim().GetStage(), shaderPath);
-    ormShader.CreateIdAttr(VtValue(_tokens->usdPreviewSurfaceUvTexture));
-    if (!ormShader.GetInput(_tokens->usdPreviewSurfaceFallback))
-    {
-        ormShader.CreateInput(_tokens->usdPreviewSurfaceFallback, SdfValueTypeNames->Float4).Set(GfVec4f(1.0f, roughness, metallic, 0.0f));
-    }
-    ormShader.CreateInput(_tokens->usdPreviewSurfaceFile, SdfValueTypeNames->Asset).ConnectToSource(matTextureInput);
-    ormShader.CreateInput(_tokens->usdPreviewSurfaceSourceColorSpace, SdfValueTypeNames->Token).Set(_tokens->colorSpaceRaw);
-    ormShader.CreateInput(UsdUtilsGetPrimaryUVSetName(), SdfValueTypeNames->Float2)
-        .ConnectToSource(stShader.GetOutput(_tokens->usdPreviewSurfaceResult));
-
-    UsdShadeOutput oOutput = ormShader.CreateOutput(_tokens->usdPreviewSurfaceRedChannel, SdfValueTypeNames->Float);
-    UsdShadeOutput rOutput = ormShader.CreateOutput(_tokens->usdPreviewSurfaceGreenChannel, SdfValueTypeNames->Float);
-    UsdShadeOutput mOutput = ormShader.CreateOutput(_tokens->usdPreviewSurfaceBlueChannel, SdfValueTypeNames->Float);
-
-    // Connect the PreviewSurface shader "occlusion", "roughness", "metallic" to the ORM tex shader outputs
-    UsdShadeShader psShader = usdex::core::computeEffectivePreviewSurfaceShader(material);
-    psShader.CreateInput(_tokens->usdPreviewSurfaceOcclusion, SdfValueTypeNames->Float).ConnectToSource(oOutput);
-    psShader.CreateInput(_tokens->usdPreviewSurfaceRoughness, SdfValueTypeNames->Float).ConnectToSource(rOutput);
-    psShader.CreateInput(_tokens->usdPreviewSurfaceMetallic, SdfValueTypeNames->Float).ConnectToSource(mOutput);
     return true;
 }
 
