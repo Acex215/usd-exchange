@@ -119,8 +119,8 @@ void bindMaterialAlgo(module& m)
     );
 
     m.def(
-        "defineOmniPbrMaterial",
-        overload_cast<UsdStagePtr, const SdfPath&, const GfVec3f&, const float, const float, const float>(&defineOmniPbrMaterial),
+        "definePbrMaterial",
+        overload_cast<UsdStagePtr, const SdfPath&, const GfVec3f&, const float, const float, const float>(&definePbrMaterial),
         arg("stage"),
         arg("path"),
         arg("color"),
@@ -128,7 +128,7 @@ void bindMaterialAlgo(module& m)
         arg("roughness") = 0.5f,
         arg("metallic") = 0.0f,
         R"(
-            Defines an OmniPBR ``UsdShade.Material`` interface that drives both an RTX render context and a UsdPreviewSurface context
+            Defines a PBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
 
             Note:
 
@@ -149,8 +149,8 @@ void bindMaterialAlgo(module& m)
         )"
     );
     m.def(
-        "defineOmniPbrMaterial",
-        overload_cast<UsdPrim, const std::string&, const GfVec3f&, const float, const float, const float>(&defineOmniPbrMaterial),
+        "definePbrMaterial",
+        overload_cast<UsdPrim, const std::string&, const GfVec3f&, const float, const float, const float>(&definePbrMaterial),
         arg("parent"),
         arg("name"),
         arg("color"),
@@ -158,7 +158,7 @@ void bindMaterialAlgo(module& m)
         arg("roughness") = 0.5f,
         arg("metallic") = 0.0f,
         R"(
-            Defines an OmniPBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context
+            Defines a PBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
@@ -182,7 +182,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add a diffuse texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Note:
                 The material prim's "Color" input will be removed and replaced with "DiffuseTexture".
@@ -204,7 +204,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add a normal texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Args:
                 material: The UsdShade.Material prim to add the texture
@@ -223,7 +223,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add an ORM texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Note:
                 The material prim's "Roughness" and "Metallic" inputs will be removed and replaced with "ORMTexture".
@@ -245,7 +245,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add a roughness texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Note:
                 The material prim's "Roughness" input will be removed and replaced with "RoughnessTexture".
@@ -267,7 +267,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add a metallic texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Note:
                 The material prim's "Metallic" input will be removed and replaced with "MetallicTexture".
@@ -289,7 +289,7 @@ void bindMaterialAlgo(module& m)
         R"(
             Add an Opacity texture to a PBR material
 
-            It is expected that the material was created by the Connect SDK's defineOmniPbrMaterial() function.
+            It is expected that the material was created by ``usdex.rtx.definePbrMaterial()``.
 
             Note:
                 The material prim's "Opacity" input will be removed and replaced with "OpacityTexture".
@@ -309,14 +309,14 @@ void bindMaterialAlgo(module& m)
         )"
     );
     m.def(
-        "defineOmniGlassMaterial",
-        overload_cast<UsdStagePtr, const SdfPath&, const GfVec3f&, const float>(&defineOmniGlassMaterial),
+        "defineGlassMaterial",
+        overload_cast<UsdStagePtr, const SdfPath&, const GfVec3f&, const float>(&defineGlassMaterial),
         arg("stage"),
         arg("path"),
         arg("color"),
         arg("indexOfRefraction") = 1.491f,
         R"(
-            Defines an OmniGlass ``UsdShade.Material`` interface that drives both an RTX render context and a UsdPreviewSurface context
+            Defines a Glass ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
 
             MDL and UsdPreviewSurface use a linear color space, please convert RGB and sRGB values to linear
 
@@ -335,14 +335,14 @@ void bindMaterialAlgo(module& m)
         )"
     );
     m.def(
-        "defineOmniGlassMaterial",
-        overload_cast<UsdPrim, const std::string&, const GfVec3f&, const float>(&defineOmniGlassMaterial),
+        "defineGlassMaterial",
+        overload_cast<UsdPrim, const std::string&, const GfVec3f&, const float>(&defineGlassMaterial),
         arg("parent"),
         arg("name"),
         arg("color"),
         arg("indexOfRefraction") = 1.491f,
         R"(
-            Defines an OmniGlass ``UsdShade.Material`` interface that drives both an RTX render context and a UsdPreviewSurface context
+            Defines a Glass ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
 
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 

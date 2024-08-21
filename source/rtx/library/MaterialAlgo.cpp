@@ -507,7 +507,7 @@ UsdShadeShader usdex::rtx::computeEffectiveMdlSurfaceShader(const UsdShadeMateri
     return material.ComputeSurfaceSource({ _tokens->mdl });
 }
 
-UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
+UsdShadeMaterial usdex::rtx::definePbrMaterial(
     UsdStagePtr stage,
     const SdfPath& path,
     const GfVec3f& color,
@@ -591,7 +591,7 @@ UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
     return material;
 }
 
-UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
+UsdShadeMaterial usdex::rtx::definePbrMaterial(
     UsdPrim parent,
     const std::string& name,
     const GfVec3f& color,
@@ -611,7 +611,7 @@ UsdShadeMaterial usdex::rtx::defineOmniPbrMaterial(
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
-    return usdex::rtx::defineOmniPbrMaterial(stage, path, color, opacity, roughness, metallic);
+    return usdex::rtx::definePbrMaterial(stage, path, color, opacity, roughness, metallic);
 }
 
 bool usdex::rtx::addDiffuseTextureToPbrMaterial(UsdShadeMaterial& material, const SdfAssetPath& texturePath)
@@ -839,7 +839,7 @@ bool usdex::rtx::addOrmTextureToPbrMaterial(UsdShadeMaterial& material, const Sd
     return true;
 }
 
-UsdShadeMaterial usdex::rtx::defineOmniGlassMaterial(UsdStagePtr stage, const SdfPath& path, const GfVec3f& color, const float indexOfRefraction)
+UsdShadeMaterial usdex::rtx::defineGlassMaterial(UsdStagePtr stage, const SdfPath& path, const GfVec3f& color, const float indexOfRefraction)
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
@@ -945,7 +945,7 @@ UsdShadeMaterial usdex::rtx::defineOmniGlassMaterial(UsdStagePtr stage, const Sd
     return material;
 }
 
-UsdShadeMaterial usdex::rtx::defineOmniGlassMaterial(UsdPrim parent, const std::string& name, const GfVec3f& color, const float indexOfRefraction)
+UsdShadeMaterial usdex::rtx::defineGlassMaterial(UsdPrim parent, const std::string& name, const GfVec3f& color, const float indexOfRefraction)
 {
     // Early out if the proposed prim location is invalid
     std::string reason;
@@ -958,5 +958,5 @@ UsdShadeMaterial usdex::rtx::defineOmniGlassMaterial(UsdPrim parent, const std::
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
-    return usdex::rtx::defineOmniGlassMaterial(stage, path, color, indexOfRefraction);
+    return usdex::rtx::defineGlassMaterial(stage, path, color, indexOfRefraction);
 }

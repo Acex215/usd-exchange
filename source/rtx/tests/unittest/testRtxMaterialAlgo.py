@@ -489,7 +489,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("TestMaterial")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, red)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, red)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self._validateMaterial(material)
@@ -503,7 +503,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("TestMaterial2")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniPbrMaterial(materialScope, "TestMaterial2", blue, 0.2, 0.2, 0.8)
+        material = usdex.rtx.definePbrMaterial(materialScope, "TestMaterial2", blue, 0.2, 0.2, 0.8)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self._validateMaterial(material)
@@ -517,7 +517,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("TestGlassMaterial")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniGlassMaterial(stage, materialPath, green)
+        material = usdex.rtx.defineGlassMaterial(stage, materialPath, green)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self._validateMaterial(material)
@@ -531,7 +531,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("TestGlassMaterial2")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniGlassMaterial(materialScope, "TestGlassMaterial2", blue, 2.2)
+        material = usdex.rtx.defineGlassMaterial(materialScope, "TestGlassMaterial2", blue, 2.2)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self._validateMaterial(material)
@@ -546,7 +546,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
-            material = usdex.rtx.defineOmniPbrMaterial(badStage, materialPath, red)
+            material = usdex.rtx.definePbrMaterial(badStage, materialPath, red)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self.assertFalse(material)
@@ -557,7 +557,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
-            material = usdex.rtx.defineOmniGlassMaterial(badStage, materialPath, green)
+            material = usdex.rtx.defineGlassMaterial(badStage, materialPath, green)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self.assertFalse(material)
@@ -569,7 +569,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
-            material = usdex.rtx.defineOmniPbrMaterial(badPrim, "badMaterial3", red)
+            material = usdex.rtx.definePbrMaterial(badPrim, "badMaterial3", red)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self.assertFalse(material)
@@ -580,7 +580,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
         with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
-            material = usdex.rtx.defineOmniGlassMaterial(badPrim, "badGlassMaterial2", green)
+            material = usdex.rtx.defineGlassMaterial(badPrim, "badGlassMaterial2", green)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
         self.assertFalse(material)
@@ -628,7 +628,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         opacity = 1.0
         roughness = 0.77
         metallic = 0.33
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
         usdex.core.bindMaterial(cylinder, material)
         usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
@@ -717,7 +717,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("RM_Material")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
         usdex.core.bindMaterial(cylinder, material)
         usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
@@ -820,7 +820,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("RootLayer_Material")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=red, roughness=roughness, metallic=metallic)
         usdex.core.bindMaterial(cylinder, material)
         usdex.core.bindMaterial(plane, material)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
@@ -869,20 +869,20 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
         # different MDL
         # "Cannot add texture <%s>, the MDL UsdShadShader <%s> does not have the correct source asset <OmniPBR.mdl>. It is using <OmniGlass.mdl>"
-        material = usdex.rtx.defineOmniGlassMaterial(stage, materialPath, color=Gf.Vec3f(0.2))
+        material = usdex.rtx.defineGlassMaterial(stage, materialPath, color=Gf.Vec3f(0.2))
         checkNoTextureAdds(material)
         self.assertTrue(stage.RemovePrim(materialPath))
 
         # Missing MDL shader
         # "Cannot add texture <%s>, UsdShadeMaterial <%s> does not have a valid MDL Shader"
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=red)
         self.assertTrue(stage.RemovePrim(mdlShaderPath))
         checkNoTextureAdds(material)
         self.assertTrue(stage.RemovePrim(materialPath))
 
         # Missing USD Preview Surface shader
         # "Cannot add texture <%s>, UsdShadeMaterial <%s> does not have a valid USD Preview Surface Shader"
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=red)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=red)
         self.assertTrue(stage.RemovePrim(previewShaderPath))
         checkNoTextureAdds(material)
         self.assertTrue(stage.RemovePrim(materialPath))
@@ -919,7 +919,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertFalse(shaderInput)
 
         # OmniPBR test stage overload
-        material = usdex.rtx.defineOmniPbrMaterial(stage, materialPath, color=color)
+        material = usdex.rtx.definePbrMaterial(stage, materialPath, color=color)
         self.assertTrue(usdex.rtx.addDiffuseTextureToPbrMaterial(material, diffuseTexture))
         usdex.core.bindMaterial(cylinder, material)
         usdex.core.bindMaterial(plane, material)
@@ -987,20 +987,20 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
 
-class DefineOmniPbrMaterialTestCase(usdex.test.DefineFunctionTestCase):
+class definePbrMaterialTestCase(usdex.test.DefineFunctionTestCase):
 
     # Configure the DefineFunctionTestCaseMixin
-    defineFunc = usdex.rtx.defineOmniPbrMaterial
+    defineFunc = usdex.rtx.definePbrMaterial
     requiredArgs = tuple([Gf.Vec3f(1.0, 1.0, 1.0)])
     typeName = "Material"
     schema = UsdShade.Material
     requiredPropertyNames = set()
 
 
-class DefineOmniGlassMaterialTestCase(usdex.test.DefineFunctionTestCase):
+class defineGlassMaterialTestCase(usdex.test.DefineFunctionTestCase):
 
     # Configure the DefineFunctionTestCaseMixin
-    defineFunc = usdex.rtx.defineOmniGlassMaterial
+    defineFunc = usdex.rtx.defineGlassMaterial
     requiredArgs = tuple([Gf.Vec3f(1.0, 1.0, 1.0)])
     typeName = "Material"
     schema = UsdShade.Material
