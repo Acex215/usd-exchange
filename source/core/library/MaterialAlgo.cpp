@@ -10,10 +10,12 @@
 
 #include "usdex/core/MaterialAlgo.h"
 
+#include "usdex/core/NameAlgo.h"
 #include "usdex/core/StageAlgo.h"
 
 #include <pxr/usd/ar/resolver.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
+#include <pxr/usd/usdShade/nodeGraph.h>
 #include <pxr/usd/usdShade/tokens.h>
 #include <pxr/usd/usdUtils/pipeline.h>
 
@@ -366,8 +368,15 @@ bool usdex::core::addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& mate
     UsdShadeInput colorInput = surface.GetInput(_tokens->color);
     if (colorInput)
     {
-        colorInput.Get(&color);
-        colorInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = colorInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&color);
+            if (valueAttrs[0] == colorInput.GetAttr())
+            {
+                colorInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -435,8 +444,15 @@ bool usdex::core::addOrmTextureToPreviewMaterial(UsdShadeMaterial& material, con
     UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
     if (roughnessInput)
     {
-        roughnessInput.Get(&roughness);
-        roughnessInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = roughnessInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&roughness);
+            if (valueAttrs[0] == roughnessInput.GetAttr())
+            {
+                roughnessInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -445,8 +461,15 @@ bool usdex::core::addOrmTextureToPreviewMaterial(UsdShadeMaterial& material, con
     UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
     if (metallicInput)
     {
-        metallicInput.Get(&metallic);
-        metallicInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = metallicInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&metallic);
+            if (valueAttrs[0] == metallicInput.GetAttr())
+            {
+                metallicInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -485,8 +508,15 @@ bool usdex::core::addRoughnessTextureToPreviewMaterial(UsdShadeMaterial& materia
     UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
     if (roughnessInput)
     {
-        roughnessInput.Get(&roughness);
-        roughnessInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = roughnessInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&roughness);
+            if (valueAttrs[0] == roughnessInput.GetAttr())
+            {
+                roughnessInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -522,8 +552,15 @@ bool usdex::core::addMetallicTextureToPreviewMaterial(UsdShadeMaterial& material
     UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
     if (metallicInput)
     {
-        metallicInput.Get(&metallic);
-        metallicInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = metallicInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&metallic);
+            if (valueAttrs[0] == metallicInput.GetAttr())
+            {
+                metallicInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -558,8 +595,15 @@ bool usdex::core::addOpacityTextureToPreviewMaterial(UsdShadeMaterial& material,
     UsdShadeInput opacityInput = surface.GetInput(_tokens->opacity);
     if (opacityInput)
     {
-        opacityInput.Get(&opacity);
-        opacityInput.GetAttr().Clear();
+        UsdShadeAttributeVector valueAttrs = opacityInput.GetValueProducingAttributes();
+        if (!valueAttrs.empty())
+        {
+            valueAttrs[0].Get(&opacity);
+            if (valueAttrs[0] == opacityInput.GetAttr())
+            {
+                opacityInput.GetAttr().Clear();
+            }
+        }
     }
     else
     {
@@ -583,6 +627,179 @@ bool usdex::core::addOpacityTextureToPreviewMaterial(UsdShadeMaterial& material,
     surface.CreateInput(_tokens->opacityThreshold, SdfValueTypeNames->Float).Set(std::numeric_limits<float>::epsilon());
 
     return true;
+}
+
+bool usdex::core::addPreviewMaterialInterface(pxr::UsdShadeMaterial& material)
+{
+    if (!material)
+    {
+        TF_RUNTIME_ERROR("UsdShadeMaterial <%s> is not valid.", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    UsdShadeShader previewSurface = computeEffectivePreviewSurfaceShader(material);
+    if (!previewSurface)
+    {
+        TF_RUNTIME_ERROR(
+            "UsdShadeMaterial <%s> does not have a valid surface shader for the universal render context.",
+            material.GetPath().GetAsString().c_str()
+        );
+        return false;
+    }
+
+    // Ensure this is the only surface shader. The implementation of this function is ill-suited for multi render context shader networks, as one
+    // of the primary goals of Material Interfaces are to be a common interface across all render contexts. This function will instead produce
+    // inputs that are uniquely named based on the UsdPreviewSurface specification, and may not map one-to-one with other contexts.
+    UsdShadeAttributeVector effectiveSurfaceOutputs;
+    for (const UsdShadeOutput& output : material.GetSurfaceOutputs())
+    {
+        for (const auto& outputAttr : output.GetValueProducingAttributes())
+        {
+            effectiveSurfaceOutputs.push_back(outputAttr);
+        }
+    }
+    if (effectiveSurfaceOutputs.size() > 1 || effectiveSurfaceOutputs.empty())
+    {
+        TF_RUNTIME_ERROR(
+            "UsdShadeMaterial <%s> has %d effective surface outputs. This function is not suitable for multi-context shader networks.",
+            material.GetPath().GetAsString().c_str(),
+            effectiveSurfaceOutputs.size()
+        );
+        return false;
+    }
+
+    std::vector<TfToken> inputNames;
+    std::vector<UsdShadeInput> inputsToPromote;
+    for (UsdShadeInput input : previewSurface.GetInputs(/* onlyAuthored */ true))
+    {
+        for (auto inputAttr : input.GetValueProducingAttributes())
+        {
+            // Direct value producing inputs with authored values should be promoted
+            if (UsdShadeUtils::GetType(inputAttr.GetName()) == UsdShadeAttributeType::Input && inputAttr.HasAuthoredValue())
+            {
+                TfToken baseName = UsdShadeUtils::GetBaseNameAndType(inputAttr.GetName()).first;
+                UsdShadeShader inputShader = UsdShadeShader(inputAttr.GetPrim());
+                inputsToPromote.push_back(inputShader.GetInput(baseName));
+                inputNames.push_back(baseName);
+            }
+            else if (UsdShadeUtils::GetType(inputAttr.GetName()) == UsdShadeAttributeType::Output)
+            {
+                // We can't generally determine which inputs on a shader are relevant to the given output. It may be be all inputs
+                // or may be some specific subset. We can make an exception for UsdUvTexture shaders, as we know the `file` input
+                // is the primary user-facing input.
+                // FUTURE: Consider a parameter to control this. Maybe we should cross the shader boundary for all shaders, or for
+                // some user specified subset.
+                UsdShadeShader inputShader = UsdShadeShader(inputAttr.GetPrim());
+                if (isShaderType(inputShader, _tokens->uvTexId))
+                {
+                    inputsToPromote.push_back(inputShader.GetInput(_tokens->file));
+                    inputNames.push_back(inputShader.GetPrim().GetName());
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < inputsToPromote.size(); ++i)
+    {
+        TfToken& sourceName = inputNames[i];
+        UsdShadeInput& destination = inputsToPromote[i];
+        // the source might already exist, because a previously promoted input could be listed multiple times
+        UsdShadeInput source = material.GetInput(sourceName);
+        if (!source)
+        {
+            // FUTURE: consider handling SdrMetadata
+            source = material.CreateInput(sourceName, destination.GetTypeName());
+        }
+
+        // transfer the current value from destination to source
+        VtValue value;
+        if (destination.Get(&value) && !source.Set(value))
+        {
+            TF_WARN(
+                "Failed to transfer value from <%s> to <%s>",
+                destination.GetAttr().GetPath().GetAsString().c_str(),
+                source.GetAttr().GetPath().GetAsString().c_str()
+            );
+        }
+
+        if (destination.ConnectToSource(source))
+        {
+            // remove the authored value from the destination, so the connection provides the only opinion
+            destination.GetAttr().Clear();
+        }
+        else
+        {
+            TF_WARN(
+                "Failed to connect <%s> to <%s>",
+                source.GetAttr().GetPath().GetAsString().c_str(),
+                destination.GetAttr().GetPath().GetAsString().c_str()
+            );
+        }
+    }
+
+    return true;
+}
+
+bool usdex::core::removeMaterialInterface(UsdShadeMaterial& material, bool bakeValues)
+{
+    if (!material)
+    {
+        TF_RUNTIME_ERROR("UsdShadeMaterial <%s> is not valid.", material.GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    bool overallStatus = true;
+    for (UsdShadeNodeGraph::InterfaceInputConsumersMap::value_type& pair : material.ComputeInterfaceInputConsumersMap())
+    {
+        bool status = true;
+        UsdShadeInput input = pair.first;
+        std::vector<UsdShadeInput>& destinations = pair.second;
+        for (UsdShadeInput& dest : destinations)
+        {
+            // first attempt to clear the source connection. in the simple case of a single layer / non-composed connection this will be sufficient.
+            dest.ClearSources();
+            // if the connection comes via composition, it may have survived the clear, and we need to explicitly disconnect it
+            if (!dest.GetConnectedSources().empty() && !dest.DisconnectSource(input.GetAttr()))
+            {
+                // if disconnecting failed, we need to track the result and warn the caller
+                status = false;
+                overallStatus = false;
+                TF_WARN(
+                    "Failed to disconnect <%s> from <%s>",
+                    dest.GetAttr().GetPath().GetAsString().c_str(),
+                    input.GetAttr().GetPath().GetAsString().c_str()
+                );
+            }
+
+            if (bakeValues)
+            {
+                VtValue value;
+                if (input.Get(&value) && !dest.Set(value))
+                {
+                    TF_WARN(
+                        "Failed to transfer value from <%s> to <%s>",
+                        input.GetAttr().GetPath().GetAsString().c_str(),
+                        dest.GetAttr().GetPath().GetAsString().c_str()
+                    );
+                }
+            }
+        }
+        if (!status)
+        {
+            // we shouldn't remove the input if there are still connected destinations
+            // we don't need to emit a diagnostic as the warning will have been emitted above
+            continue;
+        }
+
+        // finally, remove the input from the material
+        if (!input.GetPrim().RemoveProperty(input.GetFullName()))
+        {
+            // if the input comes from composition, the best we can do is block it
+            input.GetAttr().Block();
+        }
+    }
+
+    return overallStatus;
 }
 
 const pxr::TfToken& usdex::core::getColorSpaceToken(ColorSpace value)

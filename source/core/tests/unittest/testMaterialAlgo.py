@@ -13,6 +13,7 @@ import pathlib
 import tempfile
 from typing import List, Tuple
 
+import omni.asset_validator
 import usdex.core
 import usdex.test
 from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdShade, UsdUtils
@@ -184,6 +185,362 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertVecAlmostEqual(roundTripGreenSrgb, lightGreenSrgb, places=6)
         self.assertVecAlmostEqual(roundTripPurpleSrgb, purpleSrgb, places=6)
         self.assertVecAlmostEqual(roundTripBlackSrgb, blackSrgb, places=6)
+
+    def testAddPreviewMaterialInterface(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+        ormTexture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+        opacityTexture = Sdf.AssetPath(self.tmpFile(name="Opacity", ext="png"))
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.25, 0.5, 0.25))
+        usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        usdex.core.addOrmTextureToPreviewMaterial(material, ormTexture)
+        usdex.core.addOpacityTextureToPreviewMaterial(material, opacityTexture)
+
+        # the material starts with no inputs
+        self.assertEqual(material.GetInputs(), [])
+
+        # the material will gain 6 inputs based on the authored surface inputs
+        result = usdex.core.addPreviewMaterialInterface(material)
+        self.assertTrue(result)
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+
+        # the values are now exposed on the material inputs
+        self.assertEqual(material.GetInput("diffuseColor").GetAttr().Get(), Gf.Vec3f(0.25, 0.5, 0.25))
+        self.assertEqual(material.GetInput("ior").GetAttr().Get(), 1.0)
+        # rather than try to assert the exact epsilon between c++ and python we
+        # assert that the threshold is a very small non-zero number
+        self.assertGreater(material.GetInput("opacityThreshold").GetAttr().Get(), 0)
+        self.assertLess(material.GetInput("opacityThreshold").GetAttr().Get(), 1e-6)
+        self.assertEqual(material.GetInput("NormalTexture").GetAttr().Get().path, normalTexture)
+        self.assertEqual(material.GetInput("ORMTexture").GetAttr().Get().path, ormTexture)
+        self.assertEqual(material.GetInput("OpacityTexture").GetAttr().Get().path, opacityTexture)
+
+        # the material inputs are driving the shader inputs
+        consumers = material.ComputeInterfaceInputConsumersMap()
+        self.assertEqual(
+            sorted([x for x in consumers.keys()], key=lambda x: x.GetFullName()),
+            sorted([x for x in material.GetInterfaceInputs()], key=lambda x: x.GetFullName()),
+        )
+        for materialInput, destinations in consumers.items():
+            for dest in destinations:
+                # the destination has no opinion of its own
+                self.assertFalse(dest.GetAttr().HasAuthoredValue())
+                # the destination is properly connected to the source
+                source, sourceAttr, sourceType = dest.GetConnectedSource()
+                self.assertEqual(sourceType, UsdShade.AttributeType.Input)
+                self.assertEqual(source.GetInput(sourceAttr).GetAttr(), materialInput.GetAttr())
+                self.assertEqual(UsdShade.Utils.GetValueProducingAttributes(dest), [materialInput.GetAttr()])
+
+        # all authored data is valid
+        self.assertIsValidUsd(stage)
+
+    def testAddPreviewMaterialInterfaceFailures(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # an invalid material will error gracefully
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
+            result = usdex.core.addPreviewMaterialInterface(UsdShade.Material())
+        self.assertFalse(result)
+
+        # non-UPS render contexts will error gracefully
+        otherMaterial = UsdShade.Material.Define(stage, materials.GetPath().AppendChild("NonUniversal"))
+        otherShader = UsdShade.Shader.Define(stage, otherMaterial.GetPath().AppendChild("NonUniversalShader"))
+        otherMaterial.CreateSurfaceOutput("foo").ConnectToSource(otherShader.CreateOutput("out", Sdf.ValueTypeNames.Token))
+        with usdex.test.ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*does not have a valid surface shader for the universal render context."),
+            ],
+        ):
+            result = usdex.core.addPreviewMaterialInterface(otherMaterial)
+        self.assertFalse(result)
+
+        # a material with no surface outputs will error gracefully
+        badMaterial = usdex.core.definePreviewMaterial(materials, "NoSurface", Gf.Vec3f(0.25, 0.5, 0.25))
+        badMaterial.GetSurfaceOutput().ClearSources()
+        with usdex.test.ScopedTfDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*does not have a valid surface shader for the universal render context."),
+            ],
+        ):
+            result = usdex.core.addPreviewMaterialInterface(badMaterial)
+        self.assertFalse(result)
+
+        # multiple render contexts will error gracefully
+        multiContextMaterial = usdex.core.definePreviewMaterial(materials, "MultiContext", Gf.Vec3f(0.25, 0.5, 0.25))
+        otherShader = UsdShade.Shader.Define(stage, multiContextMaterial.GetPath().AppendChild("NonUniversalShader"))
+        multiContextMaterial.CreateSurfaceOutput("foo").ConnectToSource(otherShader.CreateOutput("out", Sdf.ValueTypeNames.Token))
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
+            result = usdex.core.addPreviewMaterialInterface(multiContextMaterial)
+        self.assertFalse(result)
+
+    def testAddPreviewMaterialInterfaceFromStrongerLayer(self):
+        # build a layered stage
+        weakerSubLayer = self.tmpLayer(name="Weaker")
+        strongerSubLayer = self.tmpLayer(name="Stronger")
+        rootLayer = Sdf.Layer.CreateAnonymous(tag="Root")
+        rootLayer.subLayerPaths.append(strongerSubLayer.identifier)
+        rootLayer.subLayerPaths.append(weakerSubLayer.identifier)
+        stage = Usd.Stage.Open(rootLayer)
+
+        # define the top level structure in the root layer
+        stage.SetEditTarget(Usd.EditTarget(rootLayer))
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # define the material in the weaker layer
+        stage.SetEditTarget(Usd.EditTarget(weakerSubLayer))
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+        ormTexture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+        opacityTexture = Sdf.AssetPath(self.tmpFile(name="Opacity", ext="png"))
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.25, 0.5, 0.25))
+        usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        usdex.core.addOrmTextureToPreviewMaterial(material, ormTexture)
+        usdex.core.addOpacityTextureToPreviewMaterial(material, opacityTexture)
+
+        # the material starts with no inputs
+        self.assertEqual(material.GetInterfaceInputs(), [])
+
+        # add the interface from the stronger layer
+        stage.SetEditTarget(Usd.EditTarget(strongerSubLayer))
+        result = usdex.core.addPreviewMaterialInterface(material)
+        self.assertTrue(result)
+
+        # the material will gain 6 inputs based on the authored surface inputs
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+
+        # the values are now exposed on the material inputs
+        self.assertEqual(material.GetInput("diffuseColor").GetAttr().Get(), Gf.Vec3f(0.25, 0.5, 0.25))
+        self.assertEqual(material.GetInput("ior").GetAttr().Get(), 1.0)
+        # rather than try to assert the exact epsilon between c++ and python we
+        # assert that the threshold is a very small non-zero number
+        self.assertGreater(material.GetInput("opacityThreshold").GetAttr().Get(), 0)
+        self.assertLess(material.GetInput("opacityThreshold").GetAttr().Get(), 1e-6)
+        self.assertEqual(material.GetInput("NormalTexture").GetAttr().Get().path, normalTexture)
+        self.assertEqual(material.GetInput("ORMTexture").GetAttr().Get().path, ormTexture)
+        self.assertEqual(material.GetInput("OpacityTexture").GetAttr().Get().path, opacityTexture)
+
+        # the material inputs are driving the shader inputs
+        consumers = material.ComputeInterfaceInputConsumersMap()
+        self.assertEqual(
+            sorted([x for x in consumers.keys()], key=lambda x: x.GetFullName()),
+            sorted([x for x in material.GetInterfaceInputs()], key=lambda x: x.GetFullName()),
+        )
+        for materialInput, destinations in consumers.items():
+            for dest in destinations:
+                # the destination still has its original opinion coming from the weaker layer
+                self.assertTrue(dest.GetAttr().HasAuthoredValue())
+                # since the destination is properly connected to the source, the interface input is still the value-providing attribute
+                source, sourceAttr, sourceType = dest.GetConnectedSource()
+                self.assertEqual(sourceType, UsdShade.AttributeType.Input)
+                self.assertEqual(source.GetInput(sourceAttr).GetAttr(), materialInput.GetAttr())
+                self.assertEqual(UsdShade.Utils.GetValueProducingAttributes(dest), [materialInput.GetAttr()])
+
+        # all authored data is valid
+        self.assertIsValidUsd(stage)
+
+    def testRemoveMaterialInterfaceAndBakeValues(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+        ormTexture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+        opacityTexture = Sdf.AssetPath(self.tmpFile(name="Opacity", ext="png"))
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.25, 0.5, 0.25))
+        usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        usdex.core.addOrmTextureToPreviewMaterial(material, ormTexture)
+        usdex.core.addOpacityTextureToPreviewMaterial(material, opacityTexture)
+        usdex.core.addPreviewMaterialInterface(material)
+
+        # the material starts with 6 inputs
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+
+        # removing the interface leaves no inputs on the material
+        result = usdex.core.removeMaterialInterface(material)
+        self.assertTrue(result)
+        self.assertEqual(material.GetInterfaceInputs(), [])
+
+        # the previously exposed values have been baked down onto the shaders
+        diffuseInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("diffuseColor")
+        self.assertEqual(diffuseInput.GetConnectedSources(), ([], []))
+        self.assertTrue(diffuseInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(diffuseInput.GetAttr().Get(), Gf.Vec3f(0.25, 0.5, 0.25))
+        iorInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("ior")
+        self.assertEqual(iorInput.GetConnectedSources(), ([], []))
+        self.assertTrue(iorInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(iorInput.GetAttr().Get(), 1.0)
+        opacityThresholdInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("opacityThreshold")
+        self.assertEqual(opacityThresholdInput.GetConnectedSources(), ([], []))
+        self.assertTrue(opacityThresholdInput.GetAttr().HasAuthoredValue())
+        # rather than try to assert the exact epsilon between c++ and python we
+        # assert that the threshold is a very small non-zero number
+        self.assertGreater(opacityThresholdInput.GetAttr().Get(), 0)
+        self.assertLess(opacityThresholdInput.GetAttr().Get(), 1e-6)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, normalTexture)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("ORMTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, ormTexture)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("OpacityTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, opacityTexture)
+
+        # all authored data remains valid
+        self.assertIsValidUsd(stage)
+
+        # an invalid material will error gracefully
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
+            result = usdex.core.removeMaterialInterface(UsdShade.Material())
+        self.assertFalse(result)
+
+    def testRemoveMaterialInterfaceAndDiscardValues(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+        ormTexture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+        opacityTexture = Sdf.AssetPath(self.tmpFile(name="Opacity", ext="png"))
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.25, 0.5, 0.25))
+        usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        usdex.core.addOrmTextureToPreviewMaterial(material, ormTexture)
+        usdex.core.addOpacityTextureToPreviewMaterial(material, opacityTexture)
+        usdex.core.addPreviewMaterialInterface(material)
+
+        # the material starts with 6 inputs
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+
+        # removing the interface leaves no inputs on the material
+        result = usdex.core.removeMaterialInterface(material, bakeValues=False)
+        self.assertTrue(result)
+        self.assertEqual(material.GetInterfaceInputs(), [])
+
+        # the previously exposed values have been discarded
+        diffuseInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("diffuseColor")
+        self.assertEqual(diffuseInput.GetConnectedSources(), ([], []))
+        self.assertFalse(diffuseInput.GetAttr().HasAuthoredValue())
+        iorInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("ior")
+        self.assertEqual(iorInput.GetConnectedSources(), ([], []))
+        self.assertFalse(iorInput.GetAttr().HasAuthoredValue())
+        opacityThresholdInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("opacityThreshold")
+        self.assertEqual(opacityThresholdInput.GetConnectedSources(), ([], []))
+        self.assertFalse(opacityThresholdInput.GetAttr().HasAuthoredValue())
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertFalse(fileInput.GetAttr().HasAuthoredValue())
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("ORMTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertFalse(fileInput.GetAttr().HasAuthoredValue())
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("OpacityTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertFalse(fileInput.GetAttr().HasAuthoredValue())
+
+        # all authored data remains valid
+        self.assertIsValidUsd(
+            stage,
+            issuePredicates=[
+                omni.asset_validator.IssuePredicates.And(
+                    omni.asset_validator.IssuePredicates.ContainsMessage("UsdUVTexture prim"),
+                    omni.asset_validator.IssuePredicates.ContainsMessage("has invalid or unresolvable inputs:file of @@"),
+                )
+            ],
+        )
+
+    def testRemoveMaterialInterfaceFromStrongerLayer(self):
+        # build a layered stage
+        weakerSubLayer = self.tmpLayer(name="Weaker")
+        strongerSubLayer = self.tmpLayer(name="Stronger")
+        rootLayer = Sdf.Layer.CreateAnonymous(tag="Root")
+        rootLayer.subLayerPaths.append(strongerSubLayer.identifier)
+        rootLayer.subLayerPaths.append(weakerSubLayer.identifier)
+        stage = Usd.Stage.Open(rootLayer)
+
+        # define the top level structure in the root layer
+        stage.SetEditTarget(Usd.EditTarget(rootLayer))
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        # define the material in the weaker layer
+        stage.SetEditTarget(Usd.EditTarget(weakerSubLayer))
+        normalTexture = Sdf.AssetPath(self.tmpFile(name="N", ext="png"))
+        ormTexture = Sdf.AssetPath(self.tmpFile(name="ORM", ext="png"))
+        opacityTexture = Sdf.AssetPath(self.tmpFile(name="Opacity", ext="png"))
+        material = usdex.core.definePreviewMaterial(materials, "Test", Gf.Vec3f(0.25, 0.5, 0.25))
+        usdex.core.addNormalTextureToPreviewMaterial(material, normalTexture)
+        usdex.core.addOrmTextureToPreviewMaterial(material, ormTexture)
+        usdex.core.addOpacityTextureToPreviewMaterial(material, opacityTexture)
+        usdex.core.addPreviewMaterialInterface(material)
+
+        # the material starts with 6 inputs
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+
+        # remove the interface from the stronger layer
+        stage.SetEditTarget(Usd.EditTarget(strongerSubLayer))
+        result = usdex.core.removeMaterialInterface(material)
+        self.assertTrue(result)
+
+        # the material inputs remain, as they cannot be removed via the current edit target, but their values are blocked
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["NormalTexture", "ORMTexture", "OpacityTexture", "diffuseColor", "ior", "opacityThreshold"],
+        )
+        for source in material.GetInterfaceInputs():
+            self.assertFalse(source.GetAttr().HasAuthoredValue())
+
+        # the previously exposed values have been baked down onto the shaders
+        diffuseInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("diffuseColor")
+        self.assertEqual(diffuseInput.GetConnectedSources(), ([], []))
+        self.assertTrue(diffuseInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(diffuseInput.GetAttr().Get(), Gf.Vec3f(0.25, 0.5, 0.25))
+        iorInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("ior")
+        self.assertEqual(iorInput.GetConnectedSources(), ([], []))
+        self.assertTrue(iorInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(iorInput.GetAttr().Get(), 1.0)
+        opacityThresholdInput = UsdShade.Shader(material.GetPrim().GetChild("PreviewSurface")).GetInput("opacityThreshold")
+        self.assertEqual(opacityThresholdInput.GetConnectedSources(), ([], []))
+        self.assertTrue(opacityThresholdInput.GetAttr().HasAuthoredValue())
+        # rather than try to assert the exact epsilon between c++ and python we
+        # assert that the threshold is a very small non-zero number
+        self.assertGreater(opacityThresholdInput.GetAttr().Get(), 0)
+        self.assertLess(opacityThresholdInput.GetAttr().Get(), 1e-6)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, normalTexture)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("ORMTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, ormTexture)
+        fileInput = UsdShade.Shader(material.GetPrim().GetChild("OpacityTexture")).GetInput("file")
+        self.assertEqual(fileInput.GetConnectedSources(), ([], []))
+        self.assertTrue(fileInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(fileInput.GetAttr().Get().path, opacityTexture)
+
+        # all authored data remains valid
+        self.assertIsValidUsd(stage)
 
 
 class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
