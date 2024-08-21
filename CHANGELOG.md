@@ -20,7 +20,7 @@
 
 - OpenUSD pxr-23_11
 - Omni Transcoding 0.1.0
-- Omni Asset Validator 0.11.1
+- Omni Asset Validator 0.13.1
 - fmt 7.0.3
 - pybind 2.11.1
 
