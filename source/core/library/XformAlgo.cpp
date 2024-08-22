@@ -229,7 +229,7 @@ void getXformVectorsByAccumulation(
     UsdGeomXformCommonAPI::RotationOrder rotOrder;
     xformCommonAPI.GetXformVectors(translation, rotation, scale, &pivotFloat, &rotOrder, time);
 
-    // Convert types to those expected by Connect SDK
+    // Convert types to those expected by usdex_core
     pivot->Set(pivotFloat[0], pivotFloat[1], pivotFloat[2]);
     *rotationOrder = convertRotationOrder(rotOrder);
 }

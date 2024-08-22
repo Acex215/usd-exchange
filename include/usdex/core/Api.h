@@ -25,17 +25,17 @@
 
 #if defined(_WIN32)
 //! This import tag will be used when including this header in other libraries.
-//! See omni_connect_core_EXPORTS below.
+//! See usdex_core_EXPORTS below.
 #define USDEX_IMPORT __declspec(dllimport)
-//! This export tag should only be used when tagging exported symbols from within omni_connect_core itself.
-//! See omni_connect_core_EXPORTS below.
+//! This export tag should only be used when tagging exported symbols from within usdex_core itself.
+//! See usdex_core_EXPORTS below.
 #define USDEX_EXPORT __declspec(dllexport)
 #else
 //! This import tag will be used when including this header in other libraries.
-//! See omni_connect_core_EXPORTS below.
+//! See usdex_core_EXPORTS below.
 #define USDEX_IMPORT
-//! This export tag should only be used when tagging exported symbols from within omni_connect_core itself.
-//! See omni_connect_core_EXPORTS below.
+//! This export tag should only be used when tagging exported symbols from within usdex_core itself.
+//! See usdex_core_EXPORTS below.
 #define USDEX_EXPORT __attribute__((visibility("default")))
 #endif
 
