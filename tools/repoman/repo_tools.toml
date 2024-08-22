@@ -13,9 +13,9 @@ staging_dir = "$root/_install"
 # Required runtime files will be assembled into this folder.
 install_dir = "$root/_install/$platform/$config"
 
-# Enable this to use an existing build of Connect SDK rather than download a package.
+# Enable this to use an existing build of OpenUSD Exchange SDK rather than download a package.
 #
-# The Connect SDK distro must already exist in the install_dir or the process will fail.
+# The OpenUSD Exchange SDK distro must already exist in the install_dir or the process will fail.
 use_existing_build = false
 
 # Sets the usd flavor (set 'usd' for stock pxr builds of OpenUSD)
@@ -34,7 +34,7 @@ enabled = false
 command = "stubgen"
 entry_point = "stubgen:setup_repo_tool"
 
-# The runtime location that `omni_connect_core` can be started from (eg `$CARB_APP_PATH`)
+# The runtime location where the modules can successfully import
 runtime_path = "$root/_build/$platform/$config"
 
 # Location of the `pybind11_stubgen.py` script

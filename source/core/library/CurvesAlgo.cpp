@@ -194,8 +194,8 @@ const TfTokenVector& allValidInterpolations(const TfToken& basis, const TfToken&
                                                             UsdGeomTokens->vertex };
 
     // There is a reported bug in both UsdGeomBasisCurves and HdBasisCurves with respect to varying primvars on pinned curves (see OpenUSD #2775).
-    // As these types of curves are an edge case for clients of Connect SDK, for now we are considering them invalid to prevent authoring incorrect
-    // data. Once the bug is addressed in OpenUSD we will revisit this decision.
+    // As these types of curves are an edge case for clients of OpenUSD Exchange SDK, for now we are considering them invalid to prevent authoring
+    // incorrect data. Once the bug is addressed in OpenUSD we will revisit this decision.
     static const TfTokenVector s_validPinnedInterpolations = { UsdGeomTokens->constant, UsdGeomTokens->uniform, UsdGeomTokens->vertex };
 
     // We consider constant normals to be invalid as well
