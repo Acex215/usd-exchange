@@ -142,6 +142,7 @@ def __install(
     clean: bool,
     version: str,
     installPythonLibs: bool,
+    installRtxModules: bool,
     installTestModules: bool,
     extraPlugins: List[str],
 ):
@@ -206,6 +207,9 @@ def __install(
             [usd_exchange_path + "/lib/${lib_prefix}usdex_core${lib_ext}", libInstallDir],
         ],
     }
+
+    if installRtxModules:
+        prebuild_dict["copy"].append([usd_exchange_path + "/lib/${lib_prefix}usdex_rtx${lib_ext}", libInstallDir])
 
     # usd
     usdLibMidfix, monolithic = __computeUsdMidfix(usd_path)
@@ -301,6 +305,8 @@ def __install(
     if python_ver != "0":
         # usdex core only
         __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/core", "_usdex_core")
+        if installRtxModules:
+            __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
         prebuild_dict["copy"].extend(
             [
@@ -435,6 +441,15 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         """,
     )
     parser.add_argument(
+        "--install-rtx",
+        action="store_true",
+        dest="install_rtx_modules",
+        default=False,
+        help="""
+        Enable to install `usdex.rtx` shared library and python module.
+        """,
+    )
+    parser.add_argument(
         "--install-test",
         action="store_true",
         dest="install_test_modules",
@@ -483,6 +498,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             options.clean,
             options.version,
             options.install_python_libs,
+            options.install_rtx_modules,
             options.install_test_modules,
             options.install_extra_plugins,
         )
