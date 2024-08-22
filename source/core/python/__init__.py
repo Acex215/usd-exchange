@@ -80,7 +80,13 @@ __all__ = [
     "computeEffectivePreviewSurfaceShader",
     "definePreviewMaterial",
     "addDiffuseTextureToPreviewMaterial",
+    "addNormalTextureToPreviewMaterial",
+    "addOrmTextureToPreviewMaterial",
+    "addRoughnessTextureToPreviewMaterial",
+    "addMetallicTextureToPreviewMaterial",
+    "addOpacityTextureToPreviewMaterial",
     "ColorSpace",
+    "getColorSpaceToken",
     "sRgbToLinear",
     "linearToSrgb",
 ]
