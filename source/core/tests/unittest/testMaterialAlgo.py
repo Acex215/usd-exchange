@@ -380,6 +380,8 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
             connectionInfo=[("diffuseColor", Sdf.ValueTypeNames.Color3f, "rgb")],
         )
 
+        self.assertIsValidUsd(stage)
+
     def testAddNormalTexture(self):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
@@ -403,6 +405,25 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         textureReader = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture"))
         self.assertEqual(textureReader.GetInput("scale").GetAttr().Get(), Gf.Vec4f(2, 2, 2, 1))
         self.assertEqual(textureReader.GetInput("bias").GetAttr().Get(), Gf.Vec4f(-1, -1, -1, 0))
+
+        # a non 8-bit texture will successfully add a normals texture, but will not adjust scale & bias
+        texture = Sdf.AssetPath(self.tmpFile(name="N", ext="exr"))
+        material = usdex.core.definePreviewMaterial(materials, "GoodFormat", Gf.Vec3f(0.8, 0.8, 0.8))
+        result = usdex.core.addNormalTextureToPreviewMaterial(material, texture)
+        self.assertTrue(result)
+        self.assertValidPreviewMaterialTextureNetwork(
+            material,
+            texture,
+            textureReaderName="NormalTexture",
+            colorSpace=usdex.core.ColorSpace.eRaw,
+            fallbackColor=Gf.Vec3f(0.0, 0.0, 1.0),
+            connectionInfo=[("normal", Sdf.ValueTypeNames.Normal3f, "rgb")],
+        )
+        textureReader = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture"))
+        self.assertFalse(textureReader.GetInput("scale").GetAttr())
+        self.assertFalse(textureReader.GetInput("bias").GetAttr())
+
+        self.assertIsValidUsd(stage)
 
     def testAddOrmTexture(self):
         stage = Usd.Stage.CreateInMemory()
@@ -446,6 +467,8 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
             ],
         )
 
+        self.assertIsValidUsd(stage)
+
     def testAddRoughnessTexture(self):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
@@ -479,6 +502,8 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
             fallbackColor=Gf.Vec3f(0.1, 0.0, 0.0),
             connectionInfo=[("roughness", Sdf.ValueTypeNames.Float, "r")],
         )
+
+        self.assertIsValidUsd(stage)
 
     def testAddMetallicTexture(self):
         stage = Usd.Stage.CreateInMemory()
@@ -514,6 +539,8 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
             connectionInfo=[("metallic", Sdf.ValueTypeNames.Float, "r")],
         )
 
+        self.assertIsValidUsd(stage)
+
     def testAddOpacityTexture(self):
         stage = Usd.Stage.CreateInMemory()
         usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
@@ -540,6 +567,8 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         # assert that the threshold is a very small non-zero number
         self.assertGreater(surface.GetInput("opacityThreshold").GetAttr().Get(), 0)
         self.assertLess(surface.GetInput("opacityThreshold").GetAttr().Get(), 1e-6)
+
+        self.assertIsValidUsd(stage)
 
     def testTexturesShareTexCoordReader(self):
         stage = Usd.Stage.CreateInMemory()

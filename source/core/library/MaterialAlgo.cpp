@@ -12,6 +12,7 @@
 
 #include "usdex/core/StageAlgo.h"
 
+#include <pxr/usd/ar/resolver.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 #include <pxr/usd/usdShade/tokens.h>
 #include <pxr/usd/usdUtils/pipeline.h>
@@ -136,6 +137,13 @@ UsdShadeShader acquireTextureReader(
     texShader.CreateInput(_tokens->st, SdfValueTypeNames->Float2).ConnectToSource(uvReader.GetOutput(_tokens->result));
 
     return texShader;
+}
+
+bool isEightBitTextureFormat(const SdfAssetPath& asset)
+{
+    static const std::vector<std::string> s_eightBitFormats = { "bmp", "tga", "jpg", "jpeg", "png", "tif" };
+    std::string ext = ArGetResolver().GetExtension(ArGetResolver().Resolve(asset.GetAssetPath()).GetPathString());
+    return std::find(s_eightBitFormats.begin(), s_eightBitFormats.end(), ext) != s_eightBitFormats.end();
 }
 
 float toLinear(float value)
@@ -391,11 +399,12 @@ bool usdex::core::addNormalTextureToPreviewMaterial(UsdShadeMaterial& material, 
     UsdShadeOutput texShaderOutput = textureReader.CreateOutput(_tokens->rgb, SdfValueTypeNames->Float3);
     surface.CreateInput(_tokens->normal, SdfValueTypeNames->Normal3f).ConnectToSource(texShaderOutput);
 
-    // set the scale and bias to adjust normals into tangent space
-    // note we are assuming the texture is an 8-bit channel that requires adjustment,
-    // since we can't directly access the texture (it might not even exist yet).
-    textureReader.CreateInput(_tokens->scale, SdfValueTypeNames->Float4).Set(GfVec4f(2, 2, 2, 1));
-    textureReader.CreateInput(_tokens->bias, SdfValueTypeNames->Float4).Set(GfVec4f(-1, -1, -1, 0));
+    if (isEightBitTextureFormat(texturePath))
+    {
+        // set the scale and bias to adjust normals into tangent space
+        textureReader.CreateInput(_tokens->scale, SdfValueTypeNames->Float4).Set(GfVec4f(2, 2, 2, 1));
+        textureReader.CreateInput(_tokens->bias, SdfValueTypeNames->Float4).Set(GfVec4f(-1, -1, -1, 0));
+    }
 
     return true;
 }

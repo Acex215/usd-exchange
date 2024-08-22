@@ -122,9 +122,12 @@ USDEX_API bool addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& materia
 //!
 //! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
 //!
-//! @note The UsdPreviewSurface specification requires that the texture reader needs to provide data that is properly scaled and ready to be
-//! consumed as a tangent space normal. This function assumes the texture is an 8-bit channel that requires scale and bias adjustment to
-//! transform the normals into tangent space. Similarly, it assumes that the raw normals data was written into the file, regardless of any
+//! The UsdPreviewSurface specification requires the texture reader to provide data that is properly scaled and ready to be consumed as a
+//! tangent space normal. Textures stored in 8-bit file formats require scale and bias adjustment to transform the normals into tangent space.
+//!
+//! This module cannot read the provided `texturePath` to inspect the channel data (the file may not resolve locally, or even exist yet).
+//! To account for this, it performs the scale and bias adjustment when the `texturePath` extension matches a list of known 8-bit formats:
+//! `["bmp", "tga", "jpg", "jpeg", "png", "tif"]`. Similarly, it assumes that the raw normals data was written into the file, regardless of any
 //! file format specific color space metadata. If either of these assumptions is incorrect for your source data, you will need to adjust the
 //! `scale`, `bias`, and `sourceColorSpace` settings after calling this function.
 //!
