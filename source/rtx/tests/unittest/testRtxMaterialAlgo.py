@@ -641,7 +641,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self._validateOmniPBRMaterial(stage, material, mdlShader, previewShader, red, 1.0, roughness, metallic)
 
         # Diffuse
-        def checkDiffuseTexture(matPrim, tex, color, diffLayer=False):
+        def checkDiffuseTexture(matPrim, tex, color, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addDiffuseTextureToPbrMaterial(matPrim, tex))
             # Check that "Color" was removed if the texture was applied with the same edit target
             if diffLayer:
@@ -658,7 +658,10 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("diffuse_color_constant")), color)
             self.assertEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("diffuse_texture")).path, tex)
             self.assertTrue(mdlShader.GetInput("diffuse_texture").HasConnectedSource())
-            self.assertEqual(computeEffectiveShaderInputValue(diffuseTexShader.GetInput("fallback")), Gf.Vec4f(color[0], color[1], color[2], 1.0))
+            fallback = color if fallback is None else fallback
+            self.assertEqual(
+                computeEffectiveShaderInputValue(diffuseTexShader.GetInput("fallback")), Gf.Vec4f(fallback[0], fallback[1], fallback[2], 1.0)
+            )
             self.assertTrue(diffuseTexShader.GetInput("file").HasConnectedSource())
             source, sourceName, sourceType = diffuseTexShader.GetInput("file").GetConnectedSource()
             self.assertEqual(sourceType, UsdShade.AttributeType.Input)
@@ -667,8 +670,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(previewShader.GetInput("diffuseColor").HasConnectedSource())
 
         checkDiffuseTexture(material, diffuseTexture2, red)
-        # The second time there'll be no fallback color to read from the material Color input, it will default to 1,1,1
-        checkDiffuseTexture(material, diffuseTexture, red)
+        # The second time there'll be no fallback color to read from the material input
+        checkDiffuseTexture(material, diffuseTexture, red, fallback=Gf.Vec3f(0))
 
         # Normal
         def checkNormalTexture(matPrim, tex):
@@ -691,7 +694,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         checkNormalTexture(material, normalTexture)
 
         # ORM
-        def checkOrmTexture(matPrim, tex, r, m, diffLayer=False):
+        def checkOrmTexture(matPrim, tex, r, m, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addOrmTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
                 self.assertTrue(matPrim.GetInput("Roughness"))
@@ -709,8 +712,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("metallic_texture_influence")), 1.0)
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("reflection_roughness_constant")), r)
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("metallic_constant")), m)
-            self.assertAlmostEqual(computeEffectiveShaderInputValue(ormTexShader.GetInput("fallback"))[1], r)
-            self.assertAlmostEqual(computeEffectiveShaderInputValue(ormTexShader.GetInput("fallback"))[2], m)
+            fallback = Gf.Vec4f(1, r, m, 1) if fallback is None else fallback
+            self.assertEqual(computeEffectiveShaderInputValue(ormTexShader.GetInput("fallback")), fallback)
             self.assertTrue(ormTexShader.GetInput("file").HasConnectedSource())
             source, sourceName, sourceType = ormTexShader.GetInput("file").GetConnectedSource()
             self.assertEqual(sourceType, UsdShade.AttributeType.Input)
@@ -720,7 +723,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(previewShader.GetInput("metallic").HasConnectedSource())
 
         checkOrmTexture(material, ormTexture2, roughness, metallic)
-        checkOrmTexture(material, ormTexture, roughness, metallic)
+        # The second time there'll be no fallback color to read from the material input
+        checkOrmTexture(material, ormTexture, roughness, metallic, fallback=Gf.Vec4f(1, 0.5, 0, 1))
 
         # Make a new material to test R & M separately
         materialPath = materialScopePath.AppendChild("RM_Material")
@@ -737,7 +741,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         checkNormalTexture(material, normalTexture)
 
         # Add and check roughness
-        def checkRoughnessTexture(matPrim, tex, r, diffLayer=False):
+        def checkRoughnessTexture(matPrim, tex, r, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addRoughnessTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
                 self.assertTrue(matPrim.GetInput("Roughness"))
@@ -751,7 +755,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(mdlShader.GetInput("reflectionroughness_texture").HasConnectedSource())
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("reflection_roughness_texture_influence")), 1.0)
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("reflection_roughness_constant")), r)
-            self.assertAlmostEqual(computeEffectiveShaderInputValue(roughnessTexShader.GetInput("fallback"))[0], r)
+            fallback = r if fallback is None else fallback
+            self.assertAlmostEqual(computeEffectiveShaderInputValue(roughnessTexShader.GetInput("fallback"))[0], fallback)
             self.assertTrue(roughnessTexShader.GetInput("file").HasConnectedSource())
             source, sourceName, sourceType = roughnessTexShader.GetInput("file").GetConnectedSource()
             self.assertEqual(sourceType, UsdShade.AttributeType.Input)
@@ -760,10 +765,11 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(previewShader.GetInput("roughness").HasConnectedSource())
 
         checkRoughnessTexture(material, roughnessTexture2, roughness)
-        checkRoughnessTexture(material, roughnessTexture, roughness)
+        # The second time there'll be no fallback color to read from the material input
+        checkRoughnessTexture(material, roughnessTexture, roughness, fallback=0.5)
 
         # Add and check metallic
-        def checkMetallicTexture(matPrim, tex, m, diffLayer=False):
+        def checkMetallicTexture(matPrim, tex, m, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addMetallicTextureToPbrMaterial(matPrim, tex))
             # Check that "Metallic" was removed if the texture was applied with the same edit target
             if diffLayer:
@@ -778,7 +784,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(mdlShader.GetInput("metallic_texture").HasConnectedSource())
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("metallic_texture_influence")), 1.0)
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("metallic_constant")), m)
-            self.assertAlmostEqual(computeEffectiveShaderInputValue(metallicTexShader.GetInput("fallback"))[0], m)
+            fallback = m if fallback is None else fallback
+            self.assertAlmostEqual(computeEffectiveShaderInputValue(metallicTexShader.GetInput("fallback"))[0], fallback)
             self.assertTrue(metallicTexShader.GetInput("file").HasConnectedSource())
             source, sourceName, sourceType = metallicTexShader.GetInput("file").GetConnectedSource()
             self.assertEqual(sourceType, UsdShade.AttributeType.Input)
@@ -787,10 +794,11 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(previewShader.GetInput("metallic").HasConnectedSource())
 
         checkMetallicTexture(material, metallicTexture2, metallic)
-        checkMetallicTexture(material, metallicTexture, metallic)
+        # The second time there'll be no fallback color to read from the material input
+        checkMetallicTexture(material, metallicTexture, metallic, fallback=0.0)
 
         # Add and check opacity
-        def checkOpacityTexture(matPrim, tex, o, diffLayer=False):
+        def checkOpacityTexture(matPrim, tex, o, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addOpacityTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
                 self.assertTrue(matPrim.GetInput("Opacity"))
@@ -811,7 +819,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
             self.assertEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("enable_opacity_texture")), True)
             self.assertAlmostEqual(computeEffectiveShaderInputValue(mdlShader.GetInput("opacity_constant")), o)
-            self.assertAlmostEqual(computeEffectiveShaderInputValue(opacityTexShader.GetInput("fallback"))[0], o)
+            fallback = o if fallback is None else fallback
+            self.assertAlmostEqual(computeEffectiveShaderInputValue(opacityTexShader.GetInput("fallback"))[0], fallback)
             self.assertTrue(opacityTexShader.GetInput("file").HasConnectedSource())
             source, sourceName, sourceType = opacityTexShader.GetInput("file").GetConnectedSource()
             self.assertEqual(sourceType, UsdShade.AttributeType.Input)
@@ -832,7 +841,8 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertGreater(computeEffectiveShaderInputValue(shaderInput), 0)
 
         checkOpacityTexture(material, opacityTexture2, opacity)
-        checkOpacityTexture(material, opacityTexture, opacity)
+        # The second time there'll be no fallback color to read from the material input
+        checkOpacityTexture(material, opacityTexture, opacity, fallback=1.0)
 
         # Make a new material to mess with from the session layer (not unlike a .live layer)
         materialPath = materialScopePath.AppendChild("RootLayer_Material")
