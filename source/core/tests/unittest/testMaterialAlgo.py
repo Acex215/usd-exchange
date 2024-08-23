@@ -265,6 +265,10 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
                 textureReader.GetOutput(outputName).GetAttr(),
                 msg=f"Incorrect connection for {inputName} ({inputTypeName}) -> {outputName}",
             )
+            # the only opinion is from the connection
+            self.assertFalse(surface.GetInput(inputName).GetAttr().HasAuthoredValue())
+            self.assertEqual(len(surface.GetInput(inputName).GetValueProducingAttributes()), 1)
+            self.assertEqual(surface.GetInput(inputName).GetValueProducingAttributes()[0], textureReader.GetOutput(outputName).GetAttr())
 
     def testPreviewMaterialShaders(self):
         stage = Usd.Stage.CreateInMemory()

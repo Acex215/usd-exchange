@@ -359,12 +359,15 @@ bool usdex::core::addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& mate
     // to call this function with their own UsdPreviewSurface wired in, we can accommodate
     GfVec3f color(0.0f, 0.0f, 0.0f);
     UsdShadeInput colorInput = surface.GetInput(_tokens->color);
-    if (!colorInput)
+    if (colorInput)
+    {
+        colorInput.Get(&color);
+        colorInput.GetAttr().Clear();
+    }
+    else
     {
         colorInput = surface.CreateInput(_tokens->color, SdfValueTypeNames->Color3f);
-        colorInput.Set(color);
     }
-    colorInput.Get(&color);
     GfVec4f fallback(color[0], color[1], color[2], 1.0f);
 
     UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexDiffuseName, texturePath, ColorSpace::eAuto, fallback);
@@ -425,19 +428,25 @@ bool usdex::core::addOrmTextureToPreviewMaterial(UsdShadeMaterial& material, con
     float metallic = 0.0f;
     UsdShadeInput occlusionInput = surface.CreateInput(_tokens->occlusion, SdfValueTypeNames->Float);
     UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
-    if (!roughnessInput)
+    if (roughnessInput)
+    {
+        roughnessInput.Get(&roughness);
+        roughnessInput.GetAttr().Clear();
+    }
+    else
     {
         roughnessInput = surface.CreateInput(_tokens->roughness, SdfValueTypeNames->Float);
-        roughnessInput.Set(roughness);
     }
     UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
-    if (!metallicInput)
+    if (metallicInput)
+    {
+        metallicInput.Get(&metallic);
+        metallicInput.GetAttr().Clear();
+    }
+    else
     {
         metallicInput = surface.CreateInput(_tokens->metallic, SdfValueTypeNames->Float);
-        metallicInput.Set(metallic);
     }
-    surface.GetInput(_tokens->roughness).Get(&roughness);
-    surface.GetInput(_tokens->metallic).Get(&metallic);
     GfVec4f fallback(1.0f, roughness, metallic, /* unused */ 1.0f);
 
     UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexORMName, texturePath, ColorSpace::eRaw, fallback);
@@ -469,12 +478,15 @@ bool usdex::core::addRoughnessTextureToPreviewMaterial(UsdShadeMaterial& materia
     // with their own UsdPreviewSurface wired in, we can accommodate
     float roughness = 0.5f;
     UsdShadeInput roughnessInput = surface.GetInput(_tokens->roughness);
-    if (!roughnessInput)
+    if (roughnessInput)
+    {
+        roughnessInput.Get(&roughness);
+        roughnessInput.GetAttr().Clear();
+    }
+    else
     {
         roughnessInput = surface.CreateInput(_tokens->roughness, SdfValueTypeNames->Float);
-        roughnessInput.Set(roughness);
     }
-    surface.GetInput(_tokens->roughness).Get(&roughness);
     GfVec4f fallback(roughness, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
 
     UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexRoughnessName, texturePath, ColorSpace::eRaw, fallback);
@@ -503,12 +515,15 @@ bool usdex::core::addMetallicTextureToPreviewMaterial(UsdShadeMaterial& material
     // to call this function with their own UsdPreviewSurface wired in, we can accommodate
     float metallic = 0.0f;
     UsdShadeInput metallicInput = surface.GetInput(_tokens->metallic);
-    if (!metallicInput)
+    if (metallicInput)
+    {
+        metallicInput.Get(&metallic);
+        metallicInput.GetAttr().Clear();
+    }
+    else
     {
         metallicInput = surface.CreateInput(_tokens->metallic, SdfValueTypeNames->Float);
-        metallicInput.Set(metallic);
     }
-    surface.GetInput(_tokens->metallic).Get(&metallic);
     GfVec4f fallback(metallic, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
 
     UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexMetallicName, texturePath, ColorSpace::eRaw, fallback);
@@ -536,12 +551,16 @@ bool usdex::core::addOpacityTextureToPreviewMaterial(UsdShadeMaterial& material,
     // read the current opacity to use as the fallback for when the texture is missing
     float opacity = 1.0f;
     UsdShadeInput opacityInput = surface.GetInput(_tokens->opacity);
-    if (!opacityInput)
+    if (opacityInput)
+    {
+        opacityInput.Get(&opacity);
+        opacityInput.GetAttr().Clear();
+    }
+    else
     {
         opacityInput = surface.CreateInput(_tokens->opacity, SdfValueTypeNames->Float);
-        opacityInput.Set(opacity);
     }
-    surface.GetInput(_tokens->opacity).Get(&opacity);
+
     GfVec4f fallback(opacity, /* unused */ 0.0f, /* unused */ 0.0f, /* unused */ 1.0f);
 
     UsdShadeShader textureReader = ::acquireTextureReader(material, _tokens->uvTexOpacityName, texturePath, ColorSpace::eRaw, fallback);
