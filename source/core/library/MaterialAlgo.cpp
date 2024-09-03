@@ -139,10 +139,15 @@ UsdShadeShader acquireTextureReader(
     return texShader;
 }
 
-bool isEightBitTextureFormat(const SdfAssetPath& asset)
+// Check if the file extension for the texture asset matches a set of known 8 bit texture formats
+// Note, the UsdShadInput provided is expected to be for an SdfAssetPath for the shader's texture file input
+bool isEightBitTextureFormat(const UsdShadeInput& textureAssetPathInput)
 {
+    SdfAssetPath resolvedTexturePath;
+    textureAssetPathInput.Get(&resolvedTexturePath);
+
     static const std::vector<std::string> s_eightBitFormats = { "bmp", "tga", "jpg", "jpeg", "png", "tif" };
-    std::string ext = ArGetResolver().GetExtension(ArGetResolver().Resolve(asset.GetAssetPath()).GetPathString());
+    std::string ext = ArGetResolver().GetExtension(resolvedTexturePath.GetResolvedPath());
     return std::find(s_eightBitFormats.begin(), s_eightBitFormats.end(), ext) != s_eightBitFormats.end();
 }
 
@@ -402,7 +407,7 @@ bool usdex::core::addNormalTextureToPreviewMaterial(UsdShadeMaterial& material, 
     UsdShadeOutput texShaderOutput = textureReader.CreateOutput(_tokens->rgb, SdfValueTypeNames->Float3);
     surface.CreateInput(_tokens->normal, SdfValueTypeNames->Normal3f).ConnectToSource(texShaderOutput);
 
-    if (isEightBitTextureFormat(texturePath))
+    if (isEightBitTextureFormat(textureReader.GetInput(_tokens->file)))
     {
         // set the scale and bias to adjust normals into tangent space
         textureReader.CreateInput(_tokens->scale, SdfValueTypeNames->Float4).Set(GfVec4f(2, 2, 2, 1));

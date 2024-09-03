@@ -8,6 +8,9 @@
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
 
+import os
+import pathlib
+import tempfile
 from typing import List, Tuple
 
 import usdex.core
@@ -426,6 +429,84 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         textureReader = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture"))
         self.assertFalse(textureReader.GetInput("scale").GetAttr())
         self.assertFalse(textureReader.GetInput("bias").GetAttr())
+
+        self.assertIsValidUsd(stage)
+
+    def testAddRelativeNormalTexture(self):
+        # Test relative normal texture paths in root layer, session layer, and subLayers resident in subdirectories
+        identifier = self.tmpFile("test", "usda")
+        stage = usdex.core.createStage(identifier, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+
+        def subDirTmpFile(subdir: str = "", name: str = "", ext: str = "") -> str:
+            # Helper function to create a temp file under the temp base dir within a subdir
+            tempDir = pathlib.Path(self.tmpBaseDir()) / subdir
+            tempDir.mkdir(parents=True, exist_ok=True)
+            (handle, fileName) = tempfile.mkstemp(prefix=f"{os.path.join(tempDir, name)}_", suffix=f".{ext}")
+            os.close(handle)
+            return fileName
+
+        identifierParent = pathlib.Path(identifier).parent
+        sameDirTextureFile = self.tmpFile(name="N", ext="png")
+        subDirTextureFile = subDirTmpFile(subdir="textures", name="N", ext="png")
+
+        # ./N.png - same relative
+        # N.png - same "search relative"
+        # ./textures/N.png - subdir relative
+        # textures/N.png - subdir "search relative"
+        textureAssetPaths = [
+            f"./{pathlib.Path(sameDirTextureFile).name}",
+            f"{pathlib.Path(sameDirTextureFile).name}",
+            f"./{pathlib.Path(subDirTextureFile).relative_to(identifierParent).as_posix()}",
+            f"{pathlib.Path(subDirTextureFile).relative_to(identifierParent).as_posix()}",
+        ]
+
+        def assertRelativeNormalTex(texture: Sdf.AssetPath, materialName: str):
+            # An 8-bit texture with a relative path needs a scale & bias
+            material = usdex.core.definePreviewMaterial(materials, materialName, Gf.Vec3f(0.8, 0.8, 0.8))
+            result = usdex.core.addNormalTextureToPreviewMaterial(material, texture)
+            self.assertTrue(result)
+            self.assertValidPreviewMaterialTextureNetwork(
+                material,
+                texture,
+                textureReaderName="NormalTexture",
+                colorSpace=usdex.core.ColorSpace.eRaw,
+                fallbackColor=Gf.Vec3f(0.0, 0.0, 1.0),
+                connectionInfo=[("normal", Sdf.ValueTypeNames.Normal3f, "rgb")],
+            )
+            textureReader = UsdShade.Shader(material.GetPrim().GetChild("NormalTexture"))
+            self.assertEqual(textureReader.GetInput("scale").GetAttr().Get(), Gf.Vec4f(2, 2, 2, 1))
+            self.assertEqual(textureReader.GetInput("bias").GetAttr().Get(), Gf.Vec4f(-1, -1, -1, 0))
+
+        # Define materials in the root layer
+        for i, texturePath in enumerate(textureAssetPaths):
+            assertRelativeNormalTex(Sdf.AssetPath(texturePath), f"RelativeNormal_{i}")
+
+        # Define materials in the session layer
+        stage.SetEditTarget(Usd.EditTarget(stage.GetSessionLayer()))
+        for i, texturePath in enumerate(textureAssetPaths):
+            assertRelativeNormalTex(Sdf.AssetPath(texturePath), f"RelativeNormal_Session_{i}")
+
+        # Define materials in a sublayer in subdirectory
+        subDirIdentifier = subDirTmpFile(subdir="sublayers", name="materials", ext="usda")
+        layer = Sdf.Layer.CreateAnonymous()
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+            success = usdex.core.exportLayer(layer, subDirIdentifier, self.defaultAuthoringMetadata)
+        self.assertTrue(success)
+        subLayer = Sdf.Layer.FindOrOpen(subDirIdentifier)
+        stage.GetRootLayer().subLayerPaths.append(subDirIdentifier)
+        stage.SetEditTarget(Usd.EditTarget(subLayer))
+
+        layerPath = pathlib.Path(subDirIdentifier).parent
+
+        # ../N.png - parent dir relative
+        # ../textures/N.png - subdir of parent dir relative
+        textureAssetPaths = [
+            f"../{pathlib.Path(sameDirTextureFile).name}",
+            f"../{pathlib.Path(subDirTextureFile).relative_to(identifierParent).as_posix()}",
+        ]
+        for i, texturePath in enumerate(textureAssetPaths):
+            assertRelativeNormalTex(Sdf.AssetPath(texturePath), f"RelativeNormal_Sublayer_{i}")
 
         self.assertIsValidUsd(stage)
 
