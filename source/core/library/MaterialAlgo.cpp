@@ -603,7 +603,7 @@ const pxr::TfToken& usdex::core::getColorSpaceToken(ColorSpace value)
         }
         default:
         {
-            TF_CODING_ERROR("Invalid ColorSpace value: %d", value);
+            TF_CODING_ERROR("Invalid ColorSpace value: %d", static_cast<int>(value));
             return _tokens->invalid;
         }
     }

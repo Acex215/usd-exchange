@@ -254,7 +254,7 @@ bool PrimvarData<T>::index()
     std::unordered_map<size_t, int> indexMap;
     for (const auto& value : flattenedValues)
     {
-        auto insertIt = indexMap.insert(std::make_pair(pxr::VtHashValue(value), int(indexedValues.size())));
+        auto insertIt = indexMap.insert(std::make_pair(pxr::VtHashValue(value), static_cast<int>(indexedValues.size())));
 
         // If the insert succeeded it is a new value and should be added to the values array
         if (insertIt.second)
