@@ -70,15 +70,15 @@ TF_DEFINE_PRIVATE_TOKENS(
     ((usdPreviewSurfaceOcclusion, "occlusion"))
     ((usdPreviewSurfaceOpacity, "opacity"))
     ((usdPreviewSurfaceRoughness, "roughness"))
-    ((materialColor, "Color"))
-    ((materialColorInputs, "inputs:Color"))
-    ((materialOpacity, "Opacity"))
-    ((materialOpacityInputs, "inputs:Opacity"))
-    ((materialRoughness, "Roughness"))
-    ((materialRoughnessInputs, "inputs:Roughness"))
-    ((materialMetallic, "Metallic"))
-    ((materialMetallicInputs, "inputs:Metallic"))
-    ((materialIor, "IOR"))
+    ((materialColor, "diffuseColor"))
+    ((materialColorInputs, "inputs:diffuseColor"))
+    ((materialOpacity, "opacity"))
+    ((materialOpacityInputs, "inputs:opacity"))
+    ((materialRoughness, "roughness"))
+    ((materialRoughnessInputs, "inputs:roughness"))
+    ((materialMetallic, "metallic"))
+    ((materialMetallicInputs, "inputs:metallic"))
+    ((materialIor, "ior"))
     ((materialDiffuseTexture, "DiffuseTexture"))
     ((materialNormalTexture, "NormalTexture"))
     ((materialOpacityTexture, "OpacityTexture"))
@@ -432,7 +432,6 @@ UsdShadeMaterial usdex::rtx::definePbrMaterial(
     if (!mdlShader)
     {
         TF_RUNTIME_ERROR("Unable to define UsdShadeShader named \"%s\" as a child of \"%s\"", s_mdlShaderName, path.GetAsString().c_str());
-        // TODO: OM-109366 - Cleanup any authored prims before returning a failure
         return UsdShadeMaterial();
     }
 

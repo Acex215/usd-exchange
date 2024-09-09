@@ -130,6 +130,10 @@ void bindMaterialAlgo(module& m)
         R"(
             Defines a PBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
 
+            The resulting Material prim will have "Interface" ``UsdShade.Inputs`` which drive both render contexts. See
+            `UsdShadeNodeGraph <https://openusd.org/release/api/class_usd_shade_node_graph.html#UsdShadeNodeGraph_Interfaces>`_ for explanations
+            of Interfaces.
+
             Note:
 
                 The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
@@ -318,7 +322,9 @@ void bindMaterialAlgo(module& m)
         R"(
             Defines a Glass ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
 
-            MDL and UsdPreviewSurface use a linear color space, please convert RGB and sRGB values to linear
+            The resulting Material prim will have "Interface" ``UsdShade.Inputs`` which drive both render contexts. See
+            `UsdShadeNodeGraph <https://openusd.org/release/api/class_usd_shade_node_graph.html#UsdShadeNodeGraph_Interfaces>`_ for explanations
+            of Interfaces.
 
             Note:
                 The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
