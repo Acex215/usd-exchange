@@ -46,7 +46,7 @@ class TestCase(unittest.TestCase):
     "The default Linear Units to be used when configuring a ``Usd.Stage``"
 
     defaultAuthoringMetadata = (
-        f"usdex unittests: {usdex.core.version()}, usd_ver: {Usd.GetVersion()}, python_ver: {sys.version_info.major}.{sys.version_info.minor}"
+        f"usdex_ver: {usdex.core.version()}, usd_ver: {Usd.GetVersion()}, python_ver: {sys.version_info.major}.{sys.version_info.minor}"
     )
     "The default authoring metadata to be used when configuring a ``Usd.Stage``"
 
