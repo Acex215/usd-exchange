@@ -79,7 +79,7 @@ class LightAlgoTest(usdex.test.TestCase):
         self._checkDomeLightAttrs(dome_light_auto, 0.88, relTextureFile)
         self._checkDomeLightAttrs(dome_light_lat_long, 0.99, relTextureFile, UsdLux.Tokens.latlong)
 
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*is not a valid texture format token")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*is not a valid texture format token")]):
             dome_light_invalid_format = usdex.core.defineDomeLight(stage, Sdf.Path("/World/invalid"), 0.11, relTextureFile, UsdLux.Tokens.geometry)
             self.assertFalse(dome_light_invalid_format)
 

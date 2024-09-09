@@ -63,7 +63,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         # If an empty array is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, Vt.Vec3fArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -72,7 +72,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("ConstantValue")
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 1.0, 0.0)])
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -125,7 +125,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 1.0, 0.0) for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -157,7 +157,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray()
         indices = Vt.IntArray()
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -167,7 +167,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([0])
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -226,7 +226,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -235,7 +235,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("IndexValuesGreaterThanRange")
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1, 2, 3])  # Face varying interpolation
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -244,7 +244,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("NegativeIndexValues")
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])  # Vertex interpolation
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid normals")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, normals=normals)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -297,7 +297,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("EmptyValue")
         values = Vt.Vec3fArray([Gf.Vec3f(1.5, 1.5, 1.5)])
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.rightHanded, values)
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, '.*invalid display color: The interpolation "rightHanded" is not valid for 1 values'),
@@ -310,7 +310,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, Vt.Vec3fArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -363,7 +363,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 1.0, 0.0) for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -394,7 +394,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray()
         indices = Vt.IntArray()
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -453,7 +453,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -463,7 +463,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1, 2, 3])  # Face varying interpolation
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -473,7 +473,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(0.0, 0.0, 0.0)])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])  # Vertex interpolation
         data = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display color")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayColor=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -533,7 +533,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -586,7 +586,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.FloatArray([1.0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -617,7 +617,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.FloatArray()
         indices = Vt.IntArray()
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -676,7 +676,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.FloatArray([1])
         indices = Vt.IntArray([0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -686,7 +686,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1, 2, 3])  # Face varying interpolation
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.faceVarying, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -696,7 +696,7 @@ class DefinePointBasedTestCaseMixin(ABC):
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])  # Vertex interpolation
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid display opacity")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, displayOpacity=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))

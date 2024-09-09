@@ -10,7 +10,7 @@
 
 #pragma once
 
-//! @file usdex/test/ScopedTfDiagnosticChecker.h
+//! @file usdex/test/ScopedDiagnosticChecker.h
 //! @brief A scoped class to capture and assert expected `TfDiagnostics` and `TfErrorMarks` for use in a `doctest` suite.
 
 #include <usdex/core/Diagnostics.h>
@@ -40,19 +40,19 @@ namespace usdex::test
 
 //! A scoped class to capture and assert expected `TfDiagnostics` and `TfErrorMarks` for use in a `doctest` suite.
 //!
-//! Construct a `ScopedTfDiagnosticChecker` and a list of expected diagnostic messages.
+//! Construct a `ScopedDiagnosticChecker` and a list of expected diagnostic messages.
 //!
 //! Each `DiagnosticPattern` must contain:
 //!     - One `TfDiagnosticType` (e.g `TF_DIAGNOSTIC_STATUS_TYPE`)
 //!     - A regex pattern matching the expected diagnostic commentary (message)
 //!
-//! On context exit, the `ScopedTfDiagnosticChecker` will assert that all expected `TfDiagnostics` and `TfErrorMarks` were emmitted.
+//! On context exit, the `ScopedDiagnosticChecker` will assert that all expected `TfDiagnostics` and `TfErrorMarks` were emmitted.
 //!
 //! @note `TfErrorMarks` will be diagnosed before any general `TfDiagnostics`. The supplied list of expected values should account for this.
 //!
 //! Example:
 //!
-//!     #include <usdex/test/ScopedTfDiagnosticChecker.h>
+//!     #include <usdex/test/ScopedDiagnosticChecker.h>
 //!     #include <pxr/base/tf/diagnostic.h>
 //!
 //!     #define DOCTEST_CONFIG_IMPLEMENTATION_IN_DLL
@@ -63,11 +63,11 @@ namespace usdex::test
 //!     TEST_CASE("My Test Case")
 //!     {
 //!         {
-//!             usdex::test::ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*foo" } });
+//!             usdex::test::ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*foo" } });
 //!             TF_WARN("This message ends in foo");
 //!         }
 //!     }
-class ScopedTfDiagnosticChecker
+class ScopedDiagnosticChecker
 {
 
 public:
@@ -75,19 +75,19 @@ public:
     //! A vector of expected `TfDiagnosticTypes` and `std::regex` compliant match patterns.
     using DiagnosticPatterns = std::vector<std::pair<pxr::TfEnum, std::string>>;
 
-    //! Construct a default `ScopedTfDiagnosticChecker` to assert that no `TfDiagnostics` or `TfErrorMarks` are emitted.
-    ScopedTfDiagnosticChecker() = default;
+    //! Construct a default `ScopedDiagnosticChecker` to assert that no `TfDiagnostics` or `TfErrorMarks` are emitted.
+    ScopedDiagnosticChecker() = default;
 
-    //! Construct a `ScopedTfDiagnosticChecker` with a vector of expected `DiagnosticPattern` pairs.
-    ScopedTfDiagnosticChecker(DiagnosticPatterns expected) : m_expected{ std::move(expected) }
+    //! Construct a `ScopedDiagnosticChecker` with a vector of expected `DiagnosticPattern` pairs.
+    ScopedDiagnosticChecker(DiagnosticPatterns expected) : m_expected{ std::move(expected) }
     {
         // disable the usdex output stream
         m_originalOutputStream = usdex::core::getDiagnosticsOutputStream();
         usdex::core::setDiagnosticsOutputStream(usdex::core::DiagnosticsOutputStream::eNone);
     };
 
-    //! On destruction the `ScopedTfDiagnosticChecker` will assert the expected `TfDiagnostics` and `TfErrorMarks` were emitted using doctest `CHECK`
-    ~ScopedTfDiagnosticChecker()
+    //! On destruction the `ScopedDiagnosticChecker` will assert the expected `TfDiagnostics` and `TfErrorMarks` were emitted using doctest `CHECK`
+    ~ScopedDiagnosticChecker()
     {
         auto diagnostics = m_delegate.TakeUncoalescedDiagnostics();
 

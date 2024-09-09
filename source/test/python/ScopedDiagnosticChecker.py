@@ -9,7 +9,7 @@
 # its affiliates is strictly prohibited.
 
 __all__ = [
-    "ScopedTfDiagnosticChecker",
+    "ScopedDiagnosticChecker",
 ]
 
 import re
@@ -19,17 +19,17 @@ import usdex.core
 from pxr import Tf, UsdUtils
 
 
-class ScopedTfDiagnosticChecker:
+class ScopedDiagnosticChecker:
     """A context manager to capture and assert expected `Tf.Diagnostics` and `Tf.ErrorMarks`
 
-    Construct a `ScopedTfDiagnosticChecker` with a `unittest.TestCase` instance and a list of expected diagnostic messages.
+    Construct a `ScopedDiagnosticChecker` with a `unittest.TestCase` instance and a list of expected diagnostic messages.
 
     Each `Tuple` must contain:
 
         - One `Tf.DiagnosticType` (e.g `Tf.TF_DIAGNOSTIC_STATUS_TYPE`)
         - A regex pattern matching the expected diagnostic commentary (message)
 
-    On context exit, the `ScopedTfDiagnosticChecker` will assert that all expected `Tf.Diagnostics` and `Tf.ErrorMarks` were emmitted.
+    On context exit, the `ScopedDiagnosticChecker` will assert that all expected `Tf.Diagnostics` and `Tf.ErrorMarks` were emmitted.
 
     Note:
 
@@ -46,7 +46,7 @@ class ScopedTfDiagnosticChecker:
 
             class MyTestCase(unittest.TestCase):
                 def testDiagnostics(self):
-                    with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*foo")]):
+                    with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*foo")]):
                         Tf.Warn("This message ends in foo")
     """
 

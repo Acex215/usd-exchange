@@ -24,7 +24,7 @@ class CreateStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage creation
         identifier = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
             stage = usdex.core.createStage(
                 identifier,
                 self.defaultPrimName,
@@ -35,7 +35,7 @@ class CreateStageTestCase(usdex.test.TestCase):
         self.assertIsNone(stage)
 
         identifier = self.tmpFile("test", "foo")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
             stage = usdex.core.createStage(
                 identifier,
                 self.defaultPrimName,
@@ -79,7 +79,7 @@ class CreateStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage creation
         value = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim")]):
             stage = usdex.core.createStage(identifier, value, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
@@ -104,13 +104,13 @@ class CreateStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage creation
         value = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
 
         value = UsdGeom.Tokens.none
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
@@ -157,13 +157,13 @@ class CreateStageTestCase(usdex.test.TestCase):
 
         # An "X" up axis is considered invalid and result in an unsuccessful stage creation
         value = "X"
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
 
         value = "x"
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
@@ -174,13 +174,13 @@ class CreateStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage creation
         value = 0.0
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, self.defaultUpAxis, value, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
 
         value = -5.0
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             stage = usdex.core.createStage(identifier, self.defaultPrimName, self.defaultUpAxis, value, self.defaultAuthoringMetadata)
         self.assertIsNone(stage)
         self.assertLayerNotRegistered(identifier)
@@ -263,7 +263,7 @@ class ConfigureStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage configuration
         value = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim name")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim name")]):
             result = usdex.core.configureStage(stage, value, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(stage.HasDefaultPrim())
@@ -318,13 +318,13 @@ class ConfigureStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage configuration
         value = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
 
         value = UsdGeom.Tokens.none
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
@@ -379,13 +379,13 @@ class ConfigureStageTestCase(usdex.test.TestCase):
 
         # An "X" up axis is considered invalid and result in an unsuccessful stage configuration
         value = "X"
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
 
         value = "x"
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, value, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
@@ -396,13 +396,13 @@ class ConfigureStageTestCase(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage configuration
         value = 0.0
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, value, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
 
         value = -5.0
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
             result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, value, self.defaultAuthoringMetadata)
         self.assertFalse(result)
         self.assertFalse(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
@@ -509,7 +509,7 @@ class SaveStageTestCase(usdex.test.TestCase):
         stage.DefinePrim(f"{root.GetPath()}/another1")
         stage.SetEditTarget(Usd.EditTarget(overLayer))  # over
         stage.DefinePrim(f"{root.GetPath()}/another2")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
             usdex.core.saveStage(stage, authoringMetadata=self.defaultAuthoringMetadata, comment=comment)
         for layer in stage.GetLayerStack():
             if not layer.anonymous:
@@ -538,7 +538,7 @@ class SaveStageTestCase(usdex.test.TestCase):
         stage.DefinePrim(f"{root.GetPath()}/another7")
         stage.SetEditTarget(Usd.EditTarget(overLayer))  # over
         stage.DefinePrim(f"{root.GetPath()}/another8")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
             usdex.core.saveStage(stage, authoringMetadata=self.defaultAuthoringMetadata, comment=comment)
         for layer in stage.GetLayerStack():
             if not layer.anonymous:
@@ -553,7 +553,7 @@ class SaveStageTestCase(usdex.test.TestCase):
         stage.DefinePrim(f"{root.GetPath()}/another10")
         stage.SetEditTarget(Usd.EditTarget(overLayer))  # over
         stage.DefinePrim(f"{root.GetPath()}/another11")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
             usdex.core.saveStage(stage, authoringMetadata=self.defaultAuthoringMetadata)
         for layer in stage.GetLayerStack():
             if not layer.anonymous:
@@ -571,7 +571,7 @@ class SaveStageTestCase(usdex.test.TestCase):
         stage.DefinePrim(f"{root.GetPath()}/another13")
         stage.SetEditTarget(Usd.EditTarget(overLayer))  # over
         stage.DefinePrim(f"{root.GetPath()}/another14")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
             usdex.core.saveStage(stage, authoringMetadata=self.defaultAuthoringMetadata)
         for layer in stage.GetLayerStack():
             if not layer.anonymous:

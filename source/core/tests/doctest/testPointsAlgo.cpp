@@ -8,7 +8,7 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include <usdex/test/ScopedTfDiagnosticChecker.h>
+#include <usdex/test/ScopedDiagnosticChecker.h>
 
 #include <usdex/core/PointsAlgo.h>
 
@@ -33,7 +33,7 @@ static constexpr const char* s_vtArrayStacksEnvVar = "VT_LOG_STACK_ON_ARRAY_DETA
 
 TEST_CASE("definePointCloud accepts nullopt")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     UsdStageRefPtr stage = UsdStage::CreateInMemory();
     SdfPath path("/Points");
@@ -78,7 +78,7 @@ TEST_CASE("definePointCloud accepts nullopt")
 
 TEST_CASE("definePointCloud does not detach arrays")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     UsdStageRefPtr stage = UsdStage::CreateInMemory();
     SdfPath path("/Points");

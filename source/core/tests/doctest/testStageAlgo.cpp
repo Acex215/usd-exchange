@@ -9,7 +9,7 @@
 // its affiliates is strictly prohibited.
 
 #include <usdex/test/FilesystemUtils.h>
-#include <usdex/test/ScopedTfDiagnosticChecker.h>
+#include <usdex/test/ScopedDiagnosticChecker.h>
 
 #include <usdex/core/Core.h>
 #include <usdex/core/Feature.h>
@@ -79,7 +79,7 @@ TEST_CASE("createStage identifier")
     // empty identifier
     std::string identifier = "";
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -89,7 +89,7 @@ TEST_CASE("createStage identifier")
     usdex::test::ScopedTmpDir tmpDir;
     identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.foo");
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -134,7 +134,7 @@ TEST_CASE("createStage defaultPrim")
     // invalid default prim name
     std::string defaultPrimName = "";
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim name.*" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid default prim name.*" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -164,7 +164,7 @@ TEST_CASE("createStage upAxis")
 
     // empty axis
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value \"\"" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value \"\"" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, {}, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -172,7 +172,7 @@ TEST_CASE("createStage upAxis")
 
     // a non-axis token is not valid
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, UsdGeomTokens->none, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -180,7 +180,7 @@ TEST_CASE("createStage upAxis")
 
     // x is an invalid axis
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Unsupported up axis value.*" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, UsdGeomTokens->x, linearUnits, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -224,7 +224,7 @@ TEST_CASE("createStage linearUnits")
 
     // invalid units
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Linear units value.*" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Linear units value.*" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, 0.0, authoringMetadata);
     }
     CHECK(stage == nullptr);
@@ -232,7 +232,7 @@ TEST_CASE("createStage linearUnits")
 
     // negative units are invalid
     {
-        ScopedTfDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Linear units value.*" } });
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Linear units value.*" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, -1.0, authoringMetadata);
     }
     CHECK(stage == nullptr);
