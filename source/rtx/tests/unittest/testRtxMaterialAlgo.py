@@ -112,25 +112,25 @@ class MaterialAlgoTest(usdex.test.TestCase):
         """Validate that the OmniPbr Material is setup as expected"""
 
         # The Material Interface should include a Color3f named "Color" that holds the specified value
-        shaderInput = material.GetInput("Color")
+        shaderInput = material.GetInput("diffuseColor")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Color3f)
         self.assertVecAlmostEqual(shaderInput.Get(), color)
 
         # The Material Interface should include a Float named "Opacity" that holds the specified value
-        shaderInput = material.GetInput("Opacity")
+        shaderInput = material.GetInput("opacity")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
         self.assertAlmostEqual(shaderInput.Get(), opacity)
 
         # The Material Interface should include a Float named "Roughness" that holds the specified value
-        shaderInput = material.GetInput("Roughness")
+        shaderInput = material.GetInput("roughness")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
         self.assertAlmostEqual(shaderInput.Get(), roughness)
 
         # The Material Interface should include a Float named "Roughness" that holds the specified value
-        shaderInput = material.GetInput("Metallic")
+        shaderInput = material.GetInput("metallic")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
         self.assertAlmostEqual(shaderInput.Get(), metallic)
@@ -203,13 +203,13 @@ class MaterialAlgoTest(usdex.test.TestCase):
     def _validateOmniGlassMaterial(self, material, mdlShader, previewShader, color, ior):
 
         # The Material Interface should include a Color3f named "Color" that holds the specified value
-        shaderInput = material.GetInput("Color")
+        shaderInput = material.GetInput("diffuseColor")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Color3f)
         self.assertVecAlmostEqual(shaderInput.Get(), color)
 
         # The Material Interface should include a Float named "IOR" that holds the specified value
-        shaderInput = material.GetInput("IOR")
+        shaderInput = material.GetInput("ior")
         self.assertTrue(shaderInput)
         self.assertEqual(shaderInput.GetTypeName(), Sdf.ValueTypeNames.Float)
         self.assertAlmostEqual(shaderInput.Get(), ior, places=5)
@@ -645,9 +645,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(usdex.rtx.addDiffuseTextureToPbrMaterial(matPrim, tex))
             # Check that "Color" was removed if the texture was applied with the same edit target
             if diffLayer:
-                self.assertTrue(matPrim.GetInput("Color"))
+                self.assertTrue(matPrim.GetInput("diffuseColor"))
             else:
-                self.assertFalse(matPrim.GetInput("Color"))
+                self.assertFalse(matPrim.GetInput("diffuseColor"))
             # Check that many other inputs were modified and set
             primStShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("TexCoordReader")))
             self.assertTrue(isinstance(primStShader, UsdShade.Shader))
@@ -697,11 +697,11 @@ class MaterialAlgoTest(usdex.test.TestCase):
         def checkOrmTexture(matPrim, tex, r, m, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addOrmTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
-                self.assertTrue(matPrim.GetInput("Roughness"))
-                self.assertTrue(matPrim.GetInput("Metallic"))
+                self.assertTrue(matPrim.GetInput("roughness"))
+                self.assertTrue(matPrim.GetInput("metallic"))
             else:
-                self.assertFalse(matPrim.GetInput("Roughness"))
-                self.assertFalse(matPrim.GetInput("Metallic"))
+                self.assertFalse(matPrim.GetInput("roughness"))
+                self.assertFalse(matPrim.GetInput("metallic"))
             ormTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("ORMTexture")))
             self.assertTrue(isinstance(ormTexShader, UsdShade.Shader))
             self.assertEqual(computeEffectiveShaderInputValue(matPrim.GetInput("ORMTexture")).path, tex)
@@ -744,9 +744,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
         def checkRoughnessTexture(matPrim, tex, r, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addRoughnessTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
-                self.assertTrue(matPrim.GetInput("Roughness"))
+                self.assertTrue(matPrim.GetInput("roughness"))
             else:
-                self.assertFalse(matPrim.GetInput("Roughness"))
+                self.assertFalse(matPrim.GetInput("roughness"))
             roughnessTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("RoughnessTexture")))
             self.assertTrue(isinstance(roughnessTexShader, UsdShade.Shader))
             self.assertEqual(computeEffectiveShaderInputValue(matPrim.GetInput("RoughnessTexture")).path, tex)
@@ -773,9 +773,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
             self.assertTrue(usdex.rtx.addMetallicTextureToPbrMaterial(matPrim, tex))
             # Check that "Metallic" was removed if the texture was applied with the same edit target
             if diffLayer:
-                self.assertTrue(matPrim.GetInput("Metallic"))
+                self.assertTrue(matPrim.GetInput("metallic"))
             else:
-                self.assertFalse(matPrim.GetInput("Metallic"))
+                self.assertFalse(matPrim.GetInput("metallic"))
             metallicTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("MetallicTexture")))
             self.assertTrue(isinstance(metallicTexShader, UsdShade.Shader))
             self.assertEqual(computeEffectiveShaderInputValue(matPrim.GetInput("MetallicTexture")).path, tex)
@@ -801,9 +801,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
         def checkOpacityTexture(matPrim, tex, o, fallback=None, diffLayer=False):
             self.assertTrue(usdex.rtx.addOpacityTextureToPbrMaterial(matPrim, tex))
             if diffLayer:
-                self.assertTrue(matPrim.GetInput("Opacity"))
+                self.assertTrue(matPrim.GetInput("opacity"))
             else:
-                self.assertFalse(matPrim.GetInput("Opacity"))
+                self.assertFalse(matPrim.GetInput("opacity"))
             opacityTexShader = UsdShade.Shader(stage.GetPrimAtPath(materialPath.AppendChild("OpacityTexture")))
             self.assertTrue(isinstance(opacityTexShader, UsdShade.Shader))
             self.assertEqual(computeEffectiveShaderInputValue(matPrim.GetInput("OpacityTexture")).path, tex)
@@ -859,8 +859,9 @@ class MaterialAlgoTest(usdex.test.TestCase):
             checkDiffuseTexture(material, diffuseTexture, red, diffLayer=True)
             checkNormalTexture(material, normalTexture)
             checkOrmTexture(material, ormTexture, roughness, metallic, diffLayer=True)
-            checkRoughnessTexture(material, roughnessTexture, roughness, diffLayer=True)
-            checkMetallicTexture(material, metallicTexture, metallic, diffLayer=True)
+            # roughness and metallic need default fallbacks because ORM will have already cleared the original value
+            checkRoughnessTexture(material, roughnessTexture, roughness, fallback=0.5, diffLayer=True)
+            checkMetallicTexture(material, metallicTexture, metallic, fallback=0.0, diffLayer=True)
             checkOpacityTexture(material, opacityTexture, opacity, diffLayer=True)
 
         if os.environ["USD_FLAVOR"] == "nv-usd":
@@ -1002,6 +1003,33 @@ class MaterialAlgoTest(usdex.test.TestCase):
             ]
         with usdex.test.ScopedTfDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
+
+    def testCannotAddPreviewMaterialInterface(self):
+        stage = Usd.Stage.CreateInMemory()
+        usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
+        materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        material = usdex.core.definePreviewMaterial(materials, "Test", color=Gf.Vec3f(0.25, 0.5, 0.25), roughness=0.77, metallic=0.33, opacity=0.8)
+
+        # creating a MDL surface shader will prevent the Preview Material interface from succeeding
+        usdex.rtx.createMdlShader(material, "TestMDL", mdlPath=Sdf.AssetPath("OmniPBR.mdl"), module="OmniPBR")
+
+        # the material starts with no inputs
+        self.assertEqual(material.GetInputs(), [])
+
+        # multiple render contexts will error gracefully
+        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
+            result = usdex.core.addPreviewMaterialInterface(material)
+        self.assertFalse(result)
+        self.assertEqual(material.GetInputs(), [])
+
+        # disconnecting the MDL surface will allow the Preview Material Interface to be authored
+        material.GetSurfaceOutput("mdl").ClearSources()
+        result = usdex.core.addPreviewMaterialInterface(material)
+        self.assertTrue(result)
+        self.assertEqual(
+            sorted([x.GetBaseName() for x in material.GetInterfaceInputs()]),
+            ["diffuseColor", "metallic", "opacity", "roughness"],
+        )
 
 
 class definePbrMaterialTestCase(usdex.test.DefineFunctionTestCase):

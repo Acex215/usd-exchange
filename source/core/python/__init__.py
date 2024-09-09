@@ -85,6 +85,8 @@ __all__ = [
     "addRoughnessTextureToPreviewMaterial",
     "addMetallicTextureToPreviewMaterial",
     "addOpacityTextureToPreviewMaterial",
+    "addPreviewMaterialInterface",
+    "removeMaterialInterface",
     "ColorSpace",
     "getColorSpaceToken",
     "sRgbToLinear",

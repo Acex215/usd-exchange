@@ -29,9 +29,54 @@ namespace usdex::core
 //! [UsdPreviewSurface specification](https://openusd.org/release/spec_usdpreviewsurface.html) compliant shader networks for use with the
 //! universal render context.
 //!
-//! @note UsdPreviewSurface materials should be supported by all renderers, and are generally used as "fallback" shaders when renderer-specific
-//! shaders have not been supplied. While typically serving as fallback/previews, they are still relatively advanced PBR materials and may be suitable
-//! as final quality materials, depending on your intended target use case for your USD data.
+//! # Creating and Binding Materials #
+//!
+//! This module provides functions for creating materials (`createMaterial()`), binding them to geometry (`bindMaterial()`), and some basic color
+//! transformation functions (linear and sRGB only).
+//!
+//! While some of these implementations are fairly straightforward, they serve to catch & prevent several common mistakes made when authoring
+//! materials using the `UsdShade` module directly.
+//!
+//! # Defining Preview Materials #
+//!
+//! `UsdPreviewSurface` materials should be supported by all renderers, and are generally used as "fallback" shaders when renderer-specific
+//! shaders have not been supplied. While typically serving as fallback/previews, they are still relatively advanced PBR materials and may be
+//! suitable as final quality materials, depending on your intended target use case for your USD data.
+//!
+//! Several functions below assist with authoring and adding textures to Preview Materials, and are a suitable starting point for anyone needing
+//! general PBR behavior across a variety of renderers.
+//!
+//! In the Preview Material functions, we make several assumptions about the source data, which is broadly applicable to many use cases. If more
+//! specific behavior is required, `computeEffectivePreviewSurfaceShader()` can be used to locate the underlying surface shader for further direct
+//! authoring (or re-wiring) of `UsdShadeInputs`.
+//!
+//! # Material Interfaces #
+//!
+//! Several of the functions below refer to a "Material Interface". This is a term for `UsdShadeInputs` which have been authored directly on a
+//! `UsdShadeMaterial` prim and connected to lower-level `UsdShadeShader` inputs, to form a shading network that controls the overall appearance
+//! of the material. See [UsdShadeNodeGraph](https://openusd.org/release/api/class_usd_shade_node_graph.html#UsdShadeNodeGraph_Interfaces) for a
+//! technical explanation of the Interface Inputs.
+//!
+//! Material Interfaces are useful for a variety of reasons:
+//! - They form a "contract" between the Material author and the end-user as to which inputs are available for editing.
+//! - They make it simpler for downstream processes, like render delegates, to make assumptions about the material.
+//! - Exposing top-level attributes allows a Material prototype to be instanced, while still providing controls that allow each instance to
+//!   appear unique.
+//!
+//! However, Material Interfaces are not consistently supported in every Application & Renderer:
+//! - Any USD native application will support Material Interfaces, and many more will also support them for import into their native scene format.
+//! - Some even require Material Interfaces; these will ignore edits to Shader prims and only react to edits to Material prims.
+//! - But a few others fail to import Material Interfaces into their native scene format.
+//!
+//! If you would like to use Material Interfaces with Preview Materials, try `addPreviewMaterialInterface()` to auto-generate an interface. Note that
+//! this function does not work for multi-context shader networks.
+//!
+//! If instead you need to target applications that cannot load Material Interfaces, use `removeMaterialInterface()` to clean the content before
+//! loading into your target applications.
+//!
+//! @warning If your data is targetted at USD native applications or other USD Ecosystem leading applications, then using Material Interfaces
+//! is recommended. If you favor broad applicability throughout the _entire_ USD Ecosystem, it maybe be preferable to avoid Material Interfaces
+//! for the time being.
 //!
 //! @{
 
@@ -111,6 +156,9 @@ USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
 //!
 //! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
 //!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
@@ -131,6 +179,9 @@ USDEX_API bool addDiffuseTextureToPreviewMaterial(pxr::UsdShadeMaterial& materia
 //! file format specific color space metadata. If either of these assumptions is incorrect for your source data, you will need to adjust the
 //! `scale`, `bias`, and `sourceColorSpace` settings after calling this function.
 //!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
@@ -145,6 +196,9 @@ USDEX_API bool addNormalTextureToPreviewMaterial(pxr::UsdShadeMaterial& material
 //!
 //! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
 //!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
@@ -156,6 +210,9 @@ USDEX_API bool addOrmTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, c
 //!
 //! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
 //!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
@@ -166,6 +223,9 @@ USDEX_API bool addRoughnessTextureToPreviewMaterial(pxr::UsdShadeMaterial& mater
 //! It is expected that the material was created by `definePreviewMaterial()`
 //!
 //! The texture will be sampled using texture coordinates from the default UV set (generally named `primvars:st`).
+//!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
 //!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
@@ -182,10 +242,46 @@ USDEX_API bool addMetallicTextureToPreviewMaterial(pxr::UsdShadeMaterial& materi
 //! - UsdPreviewSurface: `ior = 1.0`
 //! - UsdPreviewSurface: `opacityThreshold = float_epsilon` (just greater than zero)
 //!
+//! @note If you intend to create a Material Interface, it is preferable to author all initial shader attributes (including textures)
+//! *before* calling `addPreviewMaterialInterface()`. This function will not attempt to reconcile any existing inputs on the Material.
+//!
 //! @param material The material prim
 //! @param texturePath The `SdfAssetPath` to the texture file
 //! @returns Whether or not the texture was added to the material
 USDEX_API bool addOpacityTextureToPreviewMaterial(pxr::UsdShadeMaterial& material, const pxr::SdfAssetPath& texturePath);
+
+//! Adds `UsdShadeInputs` to the material prim to create an "interface" to the underlying Preview Shader network.
+//!
+//! All non-default-value `UsdShadeInputs` on the effective surface shader for the universal render context will be "promoted" to the
+//! `UsdShadeMaterial` as new `UsdShadeInputs`. They will be connected to the original source inputs on the shaders, to drive those values, and they
+//! will be authored with a value matching what had been set on the shader inputs at the time this function was called.
+//!
+//! Additionally, `UsdUVTexture.file` inputs on connected shaders will be promoted to the material, following the same logic as direct surface inputs.
+//!
+//! @note It is preferable to author all initial shader attributes (including textures) *before* calling `addPreviewMaterialInterface()`.
+//!
+//! @warning This function will fail if there is any other render context driving the material surface. It is only suitable for use on Preview
+//! Shader networks, such as the network generated by `definePreviewMaterial()` and its associated `add*Texture` functions. If you require multiple
+//! contexts, you should instead construct a Material Interface directly, or with targetted end-user interaction.
+//!
+//! @param material The material prim
+//! @returns Whether or not the Material inputs were added successfully
+USDEX_API bool addPreviewMaterialInterface(pxr::UsdShadeMaterial& material);
+
+//! Removes any `UsdShadeInputs` found on the material prim.
+//!
+//! All `UsdShadeInputs` on the `UsdShadeMaterial` will be disconnected from any underlying shader inputs, then removed from the material.
+//! The current values may be optionally "baked down" onto the shader inputs in order to retain the current material behavior, or may be
+//! discarded in order to revert to a default appearance based on the shader definitions.
+//!
+//! @note While `addPreviewMaterialInterface` is specific to Preview Material shader networks, `removeMaterialInterface` *affects all render contexts*
+//! and will remove all `UsdShadeInputs` returned via `UsdShadeMaterial::GetInterfaceInputs()`, baking down the values onto all consumer shaders,
+//! regardless of render context.
+//!
+//! @param material The material prim
+//! @param bakeValues Whether or not the current Material inputs values are set on the underlying Shader inputs
+//! @returns Whether or not the Material inputs were removed successfully
+USDEX_API bool removeMaterialInterface(pxr::UsdShadeMaterial& material, bool bakeValues = true);
 
 //! Texture color space (encoding) types
 // clang-format off
