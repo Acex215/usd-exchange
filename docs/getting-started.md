@@ -2,15 +2,17 @@
 
 ## Try the Samples
 
-The best way to get started with the OpenUSD Exchange SDK is to try out the OpenUSD Exchange Samples. These are simple applications built with the OpenUSD Exchange SDK that showcase many features and key concepts of the SDK. You can execute the samples to try them out, learn from the source code used in them, and modify them to experiment working with the OpenUSD Exchange SDK for yourself.
+The best way to get started with the OpenUSD Exchange SDK is to try out the OpenUSD Exchange Samples. These are simple applications that showcase many features and key concepts of the SDK.
+
+You can execute the samples to try them out, learn from their source code, and modify them to experiment with OpenUSD and the OpenUSD Exchange SDK for yourself.
 
 ### Get the Samples
 
-The OpenUSD Exchange Samples are available from the [OpenUSD Exchange Samples GitHub repository](https://github.com/NVIDIA-Omniverse/usd-exchange-samples). You can clone the repository or download the source as a zip file.
+The OpenUSD Exchange Samples are available on [GitHub](https://github.com/NVIDIA-Omniverse/usd-exchange-samples). You can clone the repository or download the source as a zip file.
 
 ### Build
 
-To try the samples you will need to build the samples from source. The included build scripts make it easy.
+To try the samples you will need to build them from source. The included build scripts make it easy.
 ``````{card}
 
 `````{tab-set}
@@ -173,13 +175,13 @@ $project_root
 
 This `_install` folder will be copied into `$project_root/usdex` for this walkthrough.  Note that the `target-deps` folder contains soft links on Linux and junctions on Windows, so any time it is copied, it requires deep copy commands or options.
 
-For more details on choosing build flavors & features, or different versions of the SDK, see the [repo_install_usdex](devtools.md#repo_install_usdex) documentation.
+For more details on choosing build flavors & features, or different versions of the SDK, see the [install_usdex](devtools.md#repo_install_usdex) documentation.
 
 #### Runtime Dependencies
 
 The `install_usdex` tool will assemble the exact runtime requirements based on the build flavor you have selected, so the easiest approach is to copy the file tree that it generated.
 
-There is some flexibility however. For more thorough details about how to deploy the runtime dependencies for an application or plugin using the OpenUSD Exchange SDK, see the **detailed runtime requirements** `TODO - link` section.
+There is some flexibility however. For more thorough details about how to deploy the runtime dependencies for an application or plugin using the OpenUSD Exchange SDK, see the [detailed runtime requirements](./runtime-requirements.md).
 
 ### Sample Program
 
@@ -510,16 +512,32 @@ The application must be able to find the shared libraries located in `usdex/$pla
 
 It is a good idea to author test data in your source format which you can use during development and for regression testing.
 
-Once your data is converted to USD, it is recommended to test it for correctness & compliance with OpenUSD and Omniverse expectations, using the [Omniverse Asset Validator](https://docs.omniverse.nvidia.com/kit/docs/asset-validator/latest/index.html). It is a Python module which you can use to run a suite of tests that check for common USD authoring mistakes.
+Once your data is converted to USD, it is recommended to test it for correctness & compliance with OpenUSD, using a tool like the [Omniverse Asset Validator](https://docs.omniverse.nvidia.com/kit/docs/asset-validator/latest/index.html). It is a Python module which you can use to run a suite of validation rules that check for common USD authoring mistakes.
 
 ```{eval-rst}
 .. note::
-  The Asset Validator documentation presents as a Kit Extension, but Kit is not required to use it. You can see example uses in the `OpenUSD Exchange Samples <https://github.com/NVIDIA-Omniverse/usd-exchange-samples>`__.
+  The Asset Validator documentation presents as an Omniverse Kit Extension, but Kit is not required to use it. You can see example uses in the `OpenUSD Exchange Samples <https://github.com/NVIDIA-Omniverse/usd-exchange-samples>`__.
 ```
 
-`TODO` - add a paragraph or two about `usdex.test` and `usdex/test/*.h`
+If you are using python's unittest framework for your regression testing, consider trying the `usdex.test` python module in your test suite. It includes a few `unittest.TestCase` derived classes to simplify some common OpenUSD testing scenarios, including the Asset Validator mentioned about (e.g `self.assertIsValidUsd()`), as well as context managers for asserting OpenUSD and OpenUSD Exchange Diagnostic logs.
+
+If you require C++ testing, consider using [doctest](https://github.com/doctest/doctest) and the `usdex/test` headers, which provide similar diagnostic log assertions for the doctest framework. Unfortunately, Asset Validation is not yet available for pure C++ testing.
 
 ## Debugging
+
+### Diagnostic Logs
+
+OpenUSD provides [diagnostics facilities](https://openusd.org/release/api/page_tf__diagnostic.html) to issue coding errors, runtime errors, warnings and status messages. The OpenUSD Exchange SDK also uses these `TfDiagnostic` messages to relay detailed status, warning, and error conditions the user.
+
+There are functions to activate and configure a specialized "diagnostics delegate" within the SDK detailed in the [Diagnostic Messages group](../api/group__diagnostics.rebreather_rst).
+
+Users may immediately notice that the OpenUSD Exchange SDK function, `usdex::core::createStage()` emits a Status message to `stdout` like:
+
+```text
+Status: in saveStage at line 254 of ...\source\core\library\StageAlgo.cpp -- Saving "stage with rootLayer @.../AppData/Local/Temp/usdex/sample.usdc@, sessionLayer @anon:000001927295CA60:sample-session.usda@"
+```
+
+One way to filter out these messages is to activate the SDK's diagnostic delegate using `usdex::core::activateDiagnosticsDelegate()`. Once this diagnostics delegate is engaged, the default diagnostics level emitted is "warning", so the "status" messages will be hidden.
 
 ### TF_DEBUG Logs
 
@@ -533,25 +551,21 @@ PLUG_LOAD                : Plugin loading
 PLUG_REGISTRATION        : Plugin registration
 USD_CHANGES              : USD change processing
 USD_STAGE_LIFETIMES      : USD stage ctor/dtor messages
+```
+
+Additionally, OpenUSD Exchange SDK adds its own TF_DEBUG settings:
+
+```text
 USDEX_TRANSCODING_ERROR  : Indicates when UsdPrim or UsdProperty name string encoding fails
 ```
 
-Combine multiple symbols and wildcards to enable multiple symbol messages:
+The debug variables can be combined using wildcards to enable multiple symbol messages:
 
 ```text
 TF_DEBUG=*               : Enable all debug symbols
-TF_DEBUG=PLUG_* AR_*     : Enable debug symbols for all ``PLUG_*`` and ``AR_*`` messages
+TF_DEBUG='PLUG_* AR_*'   : Enable debug symbols for all ``PLUG_*`` and ``AR_*`` messages
+TF_DEBUG=USDEX_*         : Enable only the debug symbols for OpenUSD Exchange SDK messages
 ```
-
-### Diagnostic Logs
-
-OpenUSD offers [diagnostic facilities](https://openusd.org/release/api/page_tf__diagnostic.html) to issue coding errors, runtime errors, warnings and status messages. The OpenUSD Exchange SDK also uses these `TfDiagnostic` messages to relay detailed status, warning, and error conditions the user. There are functions to control a specialized diagnostics delegate within the SDK detailed in the [Diagnostic Messages group](../api/group__diagnostics.rebreather_rst). Users may immediately notice that the OpenUSD Exchange SDK function, `usdex::core::createStage()` emits a Status message to `stdout` like:
-
-```text
-Status: in saveStage at line 254 of ...\source\core\library\StageAlgo.cpp -- Saving "stage with rootLayer @.../AppData/Local/Temp/usdex/sample.usdc@, sessionLayer @anon:000001927295CA60:sample-session.usda@"
-```
-
-One way to filter out these messages is to activate the SDK's diagnostic delegate using `usdex::core::activateDiagnosticsDelegate()`. Once this diagnostics delegate is engaged, the default diagnostics level emitted is "warning", so the "status" messages will be hidden.
 
 ### Attaching a Debugger
 
