@@ -155,7 +155,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -198,7 +198,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.FloatArray([1.0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -230,7 +230,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         values = Vt.FloatArray()
         indices = Vt.IntArray()
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -280,7 +280,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         values = Vt.FloatArray([1])
         indices = Vt.IntArray([0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -290,7 +290,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1, 2, 3])  # Face varying interpolation
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.faceVarying, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -300,7 +300,7 @@ class DefineBasisCurvesTestCaseMixin(DefinePointBasedTestCaseMixin):
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])  # Vertex interpolation
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=data)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -324,7 +324,7 @@ class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defin
         path = Sdf.Path("/World/InvalidTopology")
 
         # The wrap must be periodic or nonperiodic for linear curves
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, CURVE_VERTEX_COUNTS, POINTS, wrap=UsdGeom.Tokens.pinned)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -332,7 +332,7 @@ class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defin
         # There must be at least 2 verts per nonperiodic linear curve
         points = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, curveVertexCount, points)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -340,14 +340,14 @@ class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defin
         # There must be at least 3 verts per periodic linear curve
         points = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(1.0, 0.0, 0.0)])
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, curveVertexCount, points, wrap=UsdGeom.Tokens.periodic)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -413,21 +413,21 @@ class BatchedLinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
 
         # There must be at least 2 verts per nonperiodic linear curve
         points = BATCHED_POINTS[:-8]
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, BATCHED_CURVE_VERTEX_COUNTS, points)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
 
         # There must be at least 3 verts per periodic linear curve
         points = BATCHED_POINTS[:-7]
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, BATCHED_CURVE_VERTEX_COUNTS, points, wrap=UsdGeom.Tokens.periodic)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -484,7 +484,7 @@ class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test
         path = Sdf.Path("/World/InvalidTopology")
 
         # The basis must be one of bezier, bspline, catmulRom for cubic curves
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -496,7 +496,7 @@ class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test
         self.assertFalse(stage.GetPrimAtPath(path))
 
         # The wrap must be one of periodic, nonperiodic, or pinned for bezier curves
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -511,7 +511,7 @@ class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test
         # There must be at least 4 verts per nonperiodic cubic curve
         points = POINTS[0:3]
         curveVertexCount = Vt.IntArray([3])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -525,14 +525,14 @@ class NonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test
         # There must be (vertCount - 4) % 3 verts per nonperiodic bezier curve
         points = POINTS[:-1]
         curveVertexCount = Vt.IntArray([6])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCount, points, basis=UsdGeom.Tokens.bezier)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -578,7 +578,7 @@ class BatchedNonperiodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usd
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -644,7 +644,7 @@ class PeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.De
         path = Sdf.Path("/World/InvalidTopology")
 
         # The number of vertices must be divisible by 3 per periodic bezier curve
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -658,7 +658,7 @@ class PeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.De
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -707,7 +707,7 @@ class BatchedPeriodicBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -754,7 +754,7 @@ class PinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defi
         # There must be at least 4 verts per pinned bezier curve
         points = POINTS[:3]
         curveVertexCount = Vt.IntArray([3])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -768,7 +768,7 @@ class PinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defi
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -814,7 +814,7 @@ class BatchedPinnedBezierCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.te
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -861,7 +861,7 @@ class NonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
         # There must be at least 4 verts per nonperiodic cubic curve
         points = POINTS[0:3]
         curveVertexCount = Vt.IntArray([3])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -874,7 +874,7 @@ class NonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -920,7 +920,7 @@ class BatchedNonperiodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, us
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -967,7 +967,7 @@ class PeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.D
         # There must be at least 2 verts per periodic bspline / catmullRom curve
         points = POINTS[0:1]
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -981,7 +981,7 @@ class PeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.D
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1027,7 +1027,7 @@ class BatchedPeriodicBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1073,7 +1073,7 @@ class PinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Def
         # There must be at least 2 verts per pinned bspline or catmullRom curve
         points = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -1087,7 +1087,7 @@ class PinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Def
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1132,7 +1132,7 @@ class BatchedPinnedBsplineCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.t
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1179,7 +1179,7 @@ class NonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.
         # There must be at least 4 verts per nonperiodic cubic curve
         points = POINTS[0:3]
         curveVertexCount = Vt.IntArray([3])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -1192,7 +1192,7 @@ class NonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1238,7 +1238,7 @@ class BatchedNonperiodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin,
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1285,7 +1285,7 @@ class PeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
         # There must be at least 2 verts per periodic bspline / catmullRom curve
         points = POINTS[0:1]
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -1299,7 +1299,7 @@ class PeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.tes
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1345,7 +1345,7 @@ class BatchedPeriodicCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, us
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1391,7 +1391,7 @@ class PinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.
         # There must be at least 2 verts per pinned bspline or catmullRom curve
         points = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0)])
         curveVertexCount = Vt.IntArray([1])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(
                 stage,
                 path,
@@ -1405,7 +1405,7 @@ class PinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -1450,7 +1450,7 @@ class BatchedPinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usde
 
         # The sum of the curveVertexCounts must equal the count of the points
         curveVertexCounts = Vt.IntArray([7, 4, 11])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineCubicBasisCurves(stage, path, curveVertexCounts, BATCHED_POINTS)
         self.assertDefineFunctionFailure(curves)
         self.assertFalse(stage.GetPrimAtPath(path))

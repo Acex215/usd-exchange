@@ -32,16 +32,16 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
         # An invalid parent will result in an invalid Material schema being returned
         invalid_parent = stage.GetPrimAtPath("/Root/InvalidPath")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             material = usdex.core.createMaterial(invalid_parent, "InvalidMaterial")
         self.assertFalse(material)
 
         # An invalid name will result in an invalid Material schema being returned
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             material = usdex.core.createMaterial(materials, "")
         self.assertFalse(material)
 
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             material = usdex.core.createMaterial(materials, "1_Material")
         self.assertFalse(material)
 
@@ -63,19 +63,19 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
         # An invalid material will fail to bind
         invalidMaterial = UsdShade.Material(materials.GetChild("InvalidPath"))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdShadeMaterial.*is not valid, cannot bind material")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdShadeMaterial.*is not valid, cannot bind material")]):
             result = usdex.core.bindMaterial(cube2, invalidMaterial)
         self.assertFalse(result)
         self.assertFalse(cube2.HasAPI(UsdShade.MaterialBindingAPI))
 
         # An invalid target prim will fail to be bound
         invalidTarget = UsdGeom.Cube(geometry.GetChild("InvalidPath")).GetPrim()
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdPrim.*is not valid, cannot bind material")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "UsdPrim.*is not valid, cannot bind material")]):
             result = usdex.core.bindMaterial(invalidTarget, material)
         self.assertFalse(result)
 
         # If both are invalid it cannot bind either
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*are not valid, cannot bind material")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*are not valid, cannot bind material")]):
             result = usdex.core.bindMaterial(invalidTarget, invalidMaterial)
         self.assertFalse(result)
 
@@ -245,7 +245,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
 
         # an invalid material will error gracefully
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
             result = usdex.core.addPreviewMaterialInterface(UsdShade.Material())
         self.assertFalse(result)
 
@@ -253,7 +253,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         otherMaterial = UsdShade.Material.Define(stage, materials.GetPath().AppendChild("NonUniversal"))
         otherShader = UsdShade.Shader.Define(stage, otherMaterial.GetPath().AppendChild("NonUniversalShader"))
         otherMaterial.CreateSurfaceOutput("foo").ConnectToSource(otherShader.CreateOutput("out", Sdf.ValueTypeNames.Token))
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*does not have a valid surface shader for the universal render context."),
@@ -265,7 +265,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         # a material with no surface outputs will error gracefully
         badMaterial = usdex.core.definePreviewMaterial(materials, "NoSurface", Gf.Vec3f(0.25, 0.5, 0.25))
         badMaterial.GetSurfaceOutput().ClearSources()
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*does not have a valid surface shader for the universal render context."),
@@ -278,7 +278,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         multiContextMaterial = usdex.core.definePreviewMaterial(materials, "MultiContext", Gf.Vec3f(0.25, 0.5, 0.25))
         otherShader = UsdShade.Shader.Define(stage, multiContextMaterial.GetPath().AppendChild("NonUniversalShader"))
         multiContextMaterial.CreateSurfaceOutput("foo").ConnectToSource(otherShader.CreateOutput("out", Sdf.ValueTypeNames.Token))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
             result = usdex.core.addPreviewMaterialInterface(multiContextMaterial)
         self.assertFalse(result)
 
@@ -407,7 +407,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertIsValidUsd(stage)
 
         # an invalid material will error gracefully
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, "UsdShadeMaterial.*is not valid.")]):
             result = usdex.core.removeMaterialInterface(UsdShade.Material())
         self.assertFalse(result)
 
@@ -560,13 +560,13 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
 
     def assertInvalidPreviewMaterialForTextureFunctions(self, parent: Usd.Prim, texture: Sdf.AssetPath):
         # an invalid material will error gracefully
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
             result = usdex.core.addDiffuseTextureToPreviewMaterial(UsdShade.Material(), texture)
         self.assertFalse(result)
 
         # an invalid surface shader will error gracefully
         badMaterial = UsdShade.Material.Define(parent.GetStage(), parent.GetPath().AppendChild("BadMaterial"))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
             result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
         self.assertFalse(result)
 
@@ -574,13 +574,13 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         otherShader = UsdShade.Shader.Define(parent.GetStage(), badMaterial.GetPath().AppendChild("NoShaderId"))
         badMaterial.CreateSurfaceOutput().ConnectToSource(otherShader.CreateOutput(UsdShade.Tokens.surface, Sdf.ValueTypeNames.Token))
         self.assertIsSurfaceShader(badMaterial, otherShader)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
             result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
         self.assertFalse(result)
 
         # an surface shader that is not a UPS will error gracefully
         otherShader.SetShaderId("UsdUvTexture")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*first be defined using definePreviewMaterial")]):
             result = usdex.core.addDiffuseTextureToPreviewMaterial(badMaterial, texture)
         self.assertFalse(result)
 
@@ -692,26 +692,26 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         materials = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
 
         # An out-of-range opacity will prevent authoring a material
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value -0.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value -0.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadOpacity", Gf.Vec3f(1, 0, 0), opacity=-0.000001)
         self.assertFalse(material)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value 1.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Opacity value 1.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadOpacity", Gf.Vec3f(1, 0, 0), opacity=1.000001)
         self.assertFalse(material)
 
         # An out-of-range roughness will prevent authoring a material
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value -0.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value -0.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadRoughness", Gf.Vec3f(1, 0, 0), roughness=-0.000001)
         self.assertFalse(material)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value 1.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Roughness value 1.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadRoughness", Gf.Vec3f(1, 0, 0), roughness=1.000001)
         self.assertFalse(material)
 
         # An out-of-range metallic will prevent authoring a material
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value -0.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value -0.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadMetallic", Gf.Vec3f(1, 0, 0), metallic=-0.000001)
         self.assertFalse(material)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value 1.000001 is outside range")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Metallic value 1.000001 is outside range")]):
             material = usdex.core.definePreviewMaterial(materials, "BadMetallic", Gf.Vec3f(1, 0, 0), metallic=1.000001)
         self.assertFalse(material)
 
@@ -847,7 +847,7 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         # Define materials in a sublayer in subdirectory
         subDirIdentifier = subDirTmpFile(subdir="sublayers", name="materials", ext="usda")
         layer = Sdf.Layer.CreateAnonymous()
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, subDirIdentifier, self.defaultAuthoringMetadata)
         self.assertTrue(success)
         subLayer = Sdf.Layer.FindOrOpen(subDirIdentifier)

@@ -63,7 +63,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
 
         # The number of ids must match the number of points
         ids = Vt.Int64Array([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
             pointCloud = usdex.core.definePointCloud(stage, path, POINTS, ids)
         self.assertIsInstance(pointCloud, UsdGeom.Points)
         self.assertFalse(pointCloud)
@@ -95,7 +95,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
 
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, ids=Vt.Int64Array())
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -103,7 +103,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         # If the array size does not match any valid interpolations then no prim is defined
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.Int64Array([i for i in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid ids")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, ids=values)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -167,7 +167,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         # If an empty value is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         widths = widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([]))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -184,7 +184,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.FloatArray([1.0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -209,7 +209,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         # If an empty array is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray(), Vt.IntArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -237,7 +237,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         values = Vt.FloatArray([1])
         indices = Vt.IntArray([0 for _ in range(self.primvarSizes[UsdGeom.Tokens.vertex] + 1)])
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -247,7 +247,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1])
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -257,7 +257,7 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid widths")]):
             result = self.defineFunc(stage, path, *self.requiredArgs, widths=widths)
         self.assertFalse(result)
         self.assertFalse(stage.GetPrimAtPath(path))

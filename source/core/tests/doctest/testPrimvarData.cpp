@@ -8,7 +8,7 @@
 // without an express license agreement from NVIDIA CORPORATION or
 // its affiliates is strictly prohibited.
 
-#include <usdex/test/ScopedTfDiagnosticChecker.h>
+#include <usdex/test/ScopedDiagnosticChecker.h>
 
 #include <usdex/core/PrimvarData.h>
 
@@ -94,7 +94,7 @@ void testPrimvarData(const TfToken& interpolation, VtArray<T>& values, VtIntArra
 
 TEST_CASE("PrimvarData Values")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     for (const TfToken& interpolation : interpolations())
     {
@@ -130,7 +130,7 @@ TEST_CASE("PrimvarData Values")
 
 TEST_CASE("PrimvarData Indices")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -149,7 +149,7 @@ TEST_CASE("PrimvarData Indices")
 
 TEST_CASE("PrimvarData ElementSize")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -182,7 +182,7 @@ TEST_CASE("PrimvarData ElementSize")
 
 TEST_CASE("PrimvarData IsIdentical")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -214,7 +214,7 @@ TEST_CASE("PrimvarData IsIdentical")
 
 TEST_CASE("PrimvarData Equality")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -247,7 +247,7 @@ TEST_CASE("PrimvarData Equality")
 
 TEST_CASE("PrimvarData Inequality")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -278,7 +278,7 @@ TEST_CASE("PrimvarData Inequality")
 
 TEST_CASE("PrimvarData Copy Constructor")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -296,7 +296,7 @@ TEST_CASE("PrimvarData Copy Constructor")
 
 TEST_CASE("PrimvarData in optionals do not detach")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -314,7 +314,7 @@ TEST_CASE("PrimvarData in optionals do not detach")
 
 TEST_CASE("PrimvarData Moves")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     VtFloatArray values = { -1.0, 0.5, 1.5 };
     VtIntArray indices = { 0, 1, 2 };
@@ -345,7 +345,7 @@ TEST_CASE("PrimvarData Moves")
 
 TEST_CASE("PrimvarData getPrimvarData")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     UsdStageRefPtr stage = UsdStage::CreateInMemory();
     SdfPath path("/Prim");
@@ -441,7 +441,7 @@ TEST_CASE("PrimvarData getPrimvarData")
 
 TEST_CASE("PrimvarData setPrimvar")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     UsdStageRefPtr stage = UsdStage::CreateInMemory();
     SdfPath path("/Prim");
@@ -504,20 +504,20 @@ TEST_CASE("PrimvarData setPrimvar")
 
     FloatPrimvarData badInterpolation = FloatPrimvarData(UsdGeomTokens->cubic, values);
     {
-        ScopedTfDiagnosticChecker checkErrors({ { TF_DIAGNOSTIC_CODING_ERROR_TYPE, "Attempt to set invalid primvar interpolation \"cubic\".*" } });
+        ScopedDiagnosticChecker checkErrors({ { TF_DIAGNOSTIC_CODING_ERROR_TYPE, "Attempt to set invalid primvar interpolation \"cubic\".*" } });
         CHECK(!badInterpolation.setPrimvar(primvar));
     }
 
     IntPrimvarData wrongDataType = IntPrimvarData(UsdGeomTokens->vertex, indices);
     {
-        ScopedTfDiagnosticChecker checkErrors({ { TF_DIAGNOSTIC_CODING_ERROR_TYPE, ".*expected 'VtArray<float>', got 'VtArray<int>'.*" } });
+        ScopedDiagnosticChecker checkErrors({ { TF_DIAGNOSTIC_CODING_ERROR_TYPE, ".*expected 'VtArray<float>', got 'VtArray<int>'.*" } });
         CHECK(!wrongDataType.setPrimvar(primvar)); // the primvar requires FloatArray values
     }
 }
 
 TEST_CASE("PrimvarData Time Samples")
 {
-    ScopedTfDiagnosticChecker check;
+    ScopedDiagnosticChecker check;
 
     UsdStageRefPtr stage = UsdStage::CreateInMemory();
     SdfPath path("/Prim");

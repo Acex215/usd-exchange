@@ -349,7 +349,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         usdex.core.bindMaterial(cylinder, material)
         self.assertTrue(cylinder.HasAPI(UsdShade.MaterialBindingAPI))
 
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             testShader = usdex.rtx.createMdlShader(UsdShade.Material(), "badShader", Sdf.AssetPath("OmniPBR.mdl"), "OmniPBR", False)
         self.assertFalse(testShader.GetPrim())
 
@@ -361,7 +361,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
             ]
-        with usdex.test.ScopedTfDiagnosticChecker(self, expected):
+        with usdex.test.ScopedDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
     def testInvalidMdlShaderCreation(self):
@@ -377,23 +377,23 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
         # An invalid parent will result in an invalid Shader schema being returned
         invalid_parent = UsdShade.Material(stage.GetPrimAtPath("/Root/InvalidPath"))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             shader = usdex.rtx.createMdlShader(invalid_parent, name, mdlPath, module)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
         # An invalid name will result in an invalid Shader schema being returned
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             shader = usdex.rtx.createMdlShader(material, "", mdlPath, module)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             shader = usdex.rtx.createMdlShader(material, "1_Material", mdlPath, module)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
 
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid location")]):
             shader = usdex.rtx.createMdlShader(material, "Glass.mdl", mdlPath, module)
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertFalse(shader)
@@ -545,7 +545,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("badMaterial")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             material = usdex.rtx.definePbrMaterial(badStage, materialPath, red)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
@@ -556,7 +556,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("badGlassMaterial")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             material = usdex.rtx.defineGlassMaterial(badStage, materialPath, green)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
@@ -568,7 +568,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("badMaterial3")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             material = usdex.rtx.definePbrMaterial(badPrim, "badMaterial3", red)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
@@ -579,7 +579,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         materialPath = materialScopePath.AppendChild("badGlassMaterial2")
         mdlShaderPath = materialPath.AppendChild(mdlShaderName)
         previewShaderPath = materialPath.AppendChild(usdShaderName)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             material = usdex.rtx.defineGlassMaterial(badPrim, "badGlassMaterial2", green)
         mdlShader = UsdShade.Shader(stage.GetPrimAtPath(mdlShaderPath))
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
@@ -596,7 +596,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
             ]
-        with usdex.test.ScopedTfDiagnosticChecker(self, expected):
+        with usdex.test.ScopedDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
     def testTexturedMaterialDefinition(self):
@@ -855,7 +855,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         previewShader = UsdShade.Shader(stage.GetPrimAtPath(previewShaderPath))
 
         stage.SetEditTarget(Usd.EditTarget(stage.GetSessionLayer()))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*doesn't exist in the current edit target layer")] * 6):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*doesn't exist in the current edit target layer")] * 6):
             checkDiffuseTexture(material, diffuseTexture, red, diffLayer=True)
             checkNormalTexture(material, normalTexture)
             checkOrmTexture(material, ormTexture, roughness, metallic, diffLayer=True)
@@ -872,7 +872,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
             ]
-        with usdex.test.ScopedTfDiagnosticChecker(self, expected):
+        with usdex.test.ScopedDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
     def testInvalidTexturedMaterialDefinition(self):
@@ -888,7 +888,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         previewShaderPath = materialPath.AppendChild(usdShaderName)
 
         def checkNoTextureAdds(material):
-            with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Cannot add texture")] * 6):
+            with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Cannot add texture")] * 6):
                 self.assertFalse(usdex.rtx.addDiffuseTextureToPbrMaterial(material, "my_diffuse_texture_path"))
                 self.assertFalse(usdex.rtx.addNormalTextureToPbrMaterial(material, "my_normal_texture_path"))
                 self.assertFalse(usdex.rtx.addOrmTextureToPbrMaterial(material, "my_orm_texture_path"))
@@ -935,14 +935,14 @@ class MaterialAlgoTest(usdex.test.TestCase):
 
         # Invalid material
         invalidMaterial = UsdShade.Material()
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*cannot create MDL shader input")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*cannot create MDL shader input")]):
             shaderInput = usdex.rtx.createMdlShaderInput(invalidMaterial, "invalid_material_input", "invalid_value", Sdf.ValueTypeNames.Asset)
         self.assertIsInstance(shaderInput, UsdShade.Input)
         self.assertFalse(shaderInput)
 
         # Invalid MDL shader
         noShaderMaterial = usdex.core.createMaterial(stage.GetDefaultPrim(), "NoShaderMaterial")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Cannot create MDL shader input")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Cannot create MDL shader input")]):
             shaderInput = usdex.rtx.createMdlShaderInput(noShaderMaterial, "invalid_mdl_shader_input", "invalid_value", Sdf.ValueTypeNames.Asset)
         self.assertIsInstance(shaderInput, UsdShade.Input)
         self.assertFalse(shaderInput)
@@ -984,7 +984,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         stage.SetEditTarget(Usd.EditTarget(stage.GetSessionLayer()))
 
         # Attempt to change the type (it should NOT work in this edit target)
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*input already exists as type <token>"),
@@ -1001,7 +1001,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
             expected = [
                 (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Failed to resolve reference @OmniPBR.mdl@"),
             ]
-        with usdex.test.ScopedTfDiagnosticChecker(self, expected):
+        with usdex.test.ScopedDiagnosticChecker(self, expected):
             self.assertIsValidUsd(stage, issuePredicates=self.allowedIssuePredicates())
 
     def testCannotAddPreviewMaterialInterface(self):
@@ -1017,7 +1017,7 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertEqual(material.GetInputs(), [])
 
         # multiple render contexts will error gracefully
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*has 2 effective surface outputs.")]):
             result = usdex.core.addPreviewMaterialInterface(material)
         self.assertFalse(result)
         self.assertEqual(material.GetInputs(), [])

@@ -72,7 +72,7 @@ class DefineCameraTestCase(usdex.test.DefineFunctionTestCase):
         self.assertIsValidUsd(result.GetPrim().GetStage())
 
         stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*opinions in the composed layer stack are stronger"),

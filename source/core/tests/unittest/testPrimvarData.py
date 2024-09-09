@@ -282,7 +282,7 @@ class PrimvarDataTestCase(usdex.test.TestCase):
         # Primvar data that has an element size will not be indexed as the correct strategy for this is unclear
         values = Vt.FloatArray([0.0, 1.0, 0.0, 1.0])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, elementSize=2)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*due to element size")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*due to element size")]):
             self.assertFalse(data.index())
 
         # Non-optimal indexed primvar data can be indexed and will become optimal
@@ -327,7 +327,7 @@ class PrimvarDataTestCase(usdex.test.TestCase):
         values = Vt.FloatArray([0.0, 1.0])
         indices = Vt.IntArray([0, 0, 1, 1, 2, 2])
         data = usdex.core.FloatPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*existing indices outside the range of existing values"),

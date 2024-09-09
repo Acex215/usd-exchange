@@ -85,7 +85,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
 
         # The sum of the faceVertexCounts must equal the count of the faceVertexIndices otherwise the topology is invalid.
         faceVertexCounts = Vt.IntArray([2])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             mesh = usdex.core.definePolyMesh(stage, path, faceVertexCounts, FACE_VERTEX_INDICES, POINTS)
         self.assertIsInstance(mesh, UsdGeom.Mesh)
         self.assertFalse(mesh)
@@ -93,7 +93,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
 
         # The faceVertexIndices normals must be within the range of the points otherwise the topology is invalid.
         points = Vt.Vec3fArray([Gf.Vec3f(0.0, 0.0, 0.0), Gf.Vec3f(0.0, 0.0, 1.0)])
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, points)
         self.assertIsInstance(mesh, UsdGeom.Mesh)
         self.assertFalse(mesh)
@@ -122,7 +122,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         # If an empty array is specified no valid interpolation is found so no prim is defined
         path = parentPath.AppendChild("EmptyValue")
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.faceVarying, Vt.Vec2fArray())
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -131,7 +131,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         path = parentPath.AppendChild("ConstantValue")
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0)])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.constant, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -140,7 +140,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         path = parentPath.AppendChild("PerFaceValue")
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0) for _ in range(len(FACE_VERTEX_COUNTS))])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.uniform, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -165,7 +165,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         path = parentPath.AppendChild("InvalidValue")
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0) for _ in range(len(FACE_VERTEX_INDICES) + 1)])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.faceVarying, values)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -197,7 +197,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray()
         indices = Vt.IntArray()
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.faceVarying, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -207,7 +207,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0)])
         indices = Vt.IntArray([0])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.constant, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -217,7 +217,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0)])
         indices = Vt.IntArray([0 for _ in range(len(FACE_VERTEX_COUNTS))])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.uniform, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -245,7 +245,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0)])
         indices = Vt.IntArray([0 for _ in range(len(FACE_VERTEX_INDICES) + 1)])
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.faceVarying, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -255,7 +255,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0), Gf.Vec2f(0.0, 0.0)])
         indices = Vt.IntArray([0, 1, 2, 3, 0, 1, 2, 3])  # Face varying interpolation
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.faceVarying, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
@@ -265,7 +265,7 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         values = Vt.Vec2fArray([Gf.Vec2f(0.0, 0.0), Gf.Vec2f(0.0, 0.0)])
         indices = Vt.IntArray([-1, 0, 1, -1, 0, 1])  # Vertex interpolation
         data = usdex.core.Vec2fPrimvarData(UsdGeom.Tokens.vertex, values, indices)
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid uvs")]):
             mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS, uvs=data)
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))

@@ -43,7 +43,7 @@ class LayerAlgoTest(usdex.test.TestCase):
     def testSaveLayer(self):
         layer: Sdf.Layer = self.tmpLayer()
         self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.* with comment "{self._testMethodName}"')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.* with comment "{self._testMethodName}"')]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata, comment=self._testMethodName)
         self.assertTrue(success)
         self.assertEqual(layer.comment, self._testMethodName)
@@ -60,7 +60,7 @@ class LayerAlgoTest(usdex.test.TestCase):
 
     def testSaveLayerFails(self):
         layer: Sdf.Layer = Sdf.Layer.CreateAnonymous()
-        with usdex.test.ScopedTfDiagnosticChecker(
+        with usdex.test.ScopedDiagnosticChecker(
             self,
             [
                 (Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE, "Cannot save anonymous layer"),
@@ -75,7 +75,7 @@ class LayerAlgoTest(usdex.test.TestCase):
 
         # default comment is None
         self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata)
         self.assertTrue(success)
         self.assertEqual(layer.comment, "")
@@ -83,7 +83,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         self.assertEqual(layer.customLayerData, self.__expectedAuthoringMetadata())
 
         # explicit comment=None
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata, comment=None)
         self.assertTrue(success)
         self.assertEqual(layer.comment, "")
@@ -91,7 +91,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         self.assertEqual(layer.customLayerData, self.__expectedAuthoringMetadata())
 
         # empty comment
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, 'Saving.*with comment ""')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, 'Saving.*with comment ""')]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata, comment="")
         self.assertTrue(success)
         self.assertEqual(layer.comment, "")
@@ -104,7 +104,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # setting custom metadata using the same keys blocks the automated authoring metadata
         layer.customLayerData = {"creator": "foo bar"}
         self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.*with comment "{self._testMethodName}"')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.*with comment "{self._testMethodName}"')]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata, comment=self._testMethodName)
         self.assertTrue(success)
         self.assertEqual(layer.comment, self._testMethodName)
@@ -115,7 +115,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         layer.ClearCustomLayerData()
         layer.customLayerData = {"foo": "bar"}
         self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.*with comment "{self._testMethodName}"')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.*with comment "{self._testMethodName}"')]):
             success = usdex.core.saveLayer(layer, LayerAlgoTest.defaultAuthoringMetadata, comment=self._testMethodName)
         self.assertTrue(success)
         self.assertEqual(layer.comment, self._testMethodName)
@@ -130,18 +130,18 @@ class LayerAlgoTest(usdex.test.TestCase):
 
         # An invalid value will result in an unsuccessful stage creation
         identifier = ""
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata)
         self.assertFalse(success)
 
         identifier = self.tmpFile("test", "foo")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata)
         self.assertFalse(success)
 
         # A valid "usda" value will result in a successful layer export
         identifier = self.tmpFile("test", "usda")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata)
         self.assertTrue(success)
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
@@ -150,7 +150,7 @@ class LayerAlgoTest(usdex.test.TestCase):
 
         # A valid "usdc" value will result in a successful layer export
         identifier = self.tmpFile("test", "usdc")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata)
         self.assertTrue(success)
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
@@ -169,7 +169,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # The comment in the source layer should not be changed
         self.assertEqual(layer.comment, defaultComment)
         identifier = self.tmpFile("test", "usda")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             self.assertTrue(usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata))
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
         self.assertEqual(layer.comment, defaultComment)
@@ -182,7 +182,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # The comment in the source layer should not be changed
         self.assertEqual(layer.comment, existingComment)
         identifier = self.tmpFile("test", "usda")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             self.assertTrue(usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata))
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
         self.assertEqual(layer.comment, existingComment)
@@ -192,7 +192,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # The comment in the source layer should not be changed
         self.assertEqual(layer.comment, existingComment)
         identifier = self.tmpFile("test", "usda")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Exporting.*with comment "{exportComment}"')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Exporting.*with comment "{exportComment}"')]):
             self.assertTrue(usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata, comment=exportComment))
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
         self.assertEqual(layer.comment, existingComment)
@@ -202,7 +202,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # The comment in the source layer should not be changed
         self.assertEqual(layer.comment, existingComment)
         identifier = self.tmpFile("test", "usda")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, 'Exporting.*with comment ""')]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, 'Exporting.*with comment ""')]):
             self.assertTrue(usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata, comment=""))
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
         self.assertEqual(layer.comment, existingComment)
@@ -215,7 +215,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # A valid "usd" value will result in a successful layer export
         # The default encoding of "usdc" will be used
         identifier = self.tmpFile("test", "usd")
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata, fileFormatArgs={})
         self.assertTrue(success)
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
@@ -226,7 +226,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # If explicitly set the format will be "usda"
         identifier = self.tmpFile("test", "usd")
         fileFormatArgs = {"format": "usda"}
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata, fileFormatArgs=fileFormatArgs)
         self.assertTrue(success)
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)
@@ -237,7 +237,7 @@ class LayerAlgoTest(usdex.test.TestCase):
         # If explicitly set the format will be "usdc"
         identifier = self.tmpFile("test", "usd")
         fileFormatArgs = {"format": "usdc"}
-        with usdex.test.ScopedTfDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Exporting")]):
             success = usdex.core.exportLayer(layer, identifier, LayerAlgoTest.defaultAuthoringMetadata, fileFormatArgs=fileFormatArgs)
         self.assertTrue(success)
         exportedLayer = Sdf.Layer.FindOrOpen(identifier)

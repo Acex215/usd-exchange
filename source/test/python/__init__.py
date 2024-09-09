@@ -9,11 +9,11 @@
 # its affiliates is strictly prohibited.
 
 __all__ = [
-    "ScopedTfDiagnosticChecker",
+    "ScopedDiagnosticChecker",
     "TestCase",
     "DefineFunctionTestCase",
 ]
 
 from .DefineFunctionTestCase import DefineFunctionTestCase
-from .ScopedTfDiagnosticChecker import ScopedTfDiagnosticChecker
+from .ScopedDiagnosticChecker import ScopedDiagnosticChecker
 from .TestCase import TestCase
