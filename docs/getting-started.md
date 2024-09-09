@@ -1,6 +1,6 @@
-# Getting Started with OpenUSD Exchange SDK
+# Getting Started
 
-## Try the OpenUSD Exchange Samples
+## Try the Samples
 
 The best way to get started with the OpenUSD Exchange SDK is to try out the OpenUSD Exchange Samples. These are simple applications built with the OpenUSD Exchange SDK that showcase many features and key concepts of the SDK. You can execute the samples to try them out, learn from the source code used in them, and modify them to experiment working with the OpenUSD Exchange SDK for yourself.
 
@@ -104,7 +104,7 @@ Once you have oriented yourself with the samples that interest you, try modifyin
 
 Proceed to the next section to learn how to start building your own application to convert data to OpenUSD.
 
-## Integrate the OpenUSD Exchange SDK and Build an Application
+## Build an Application
 
 The next step to familiarize yourself with the OpenUSD Exchange SDK is to create a simple standalone application.
 
@@ -116,7 +116,7 @@ This walkthrough will use these tokens:
 - `$config` - the build configuration (`debug` or `release`)
 - `$platform` - the platform (`linux-x86_64` or `windows-x86_64`)
 
-### "Install" the OpenUSD Exchange SDK
+### Install the SDK
 
  Assembling the minimal requirements for the OpenUSD Exchange SDK can be complicated, so there is an [install_usdex](devtools.md#repo_install_usdex) script that developers run to gather everything into one `_install` folder. This folder can then be copied into the project structure of the developer's application.
 
@@ -506,7 +506,7 @@ The application must be able to find the shared libraries located in `usdex/$pla
   If OpenUSD is installed on your system and its paths are in your ``PATH`` environment variable, the samples may not run correctly.
 ```
 
-## Testing Data Converter Output
+## Testing the Results
 
 It is a good idea to author test data in your source format which you can use during development and for regression testing.
 
@@ -519,9 +519,9 @@ Once your data is converted to USD, it is recommended to test it for correctness
 
 `TODO` - add a paragraph or two about `usdex.test` and `usdex/test/*.h`
 
-## Debugging your Data Converter
+## Debugging
 
-### TF_DEBUG Environment Variable Logging
+### TF_DEBUG Logs
 
 OpenUSD ships with a debug logging feature that prints to `stdout`. You can configure OpenUSD logging using the `TF_DEBUG` environment variable or the `TfDebug` interface. All of the debug message types are available using the [`TfDebug::GetDebugSymbolDescriptions()`](https://openusd.org/release/api/class_tf_debug.html#ac31e63c4d474fd7297df4d1cdac10937) method.
 
@@ -543,9 +543,9 @@ TF_DEBUG=*               : Enable all debug symbols
 TF_DEBUG=PLUG_* AR_*     : Enable debug symbols for all ``PLUG_*`` and ``AR_*`` messages
 ```
 
-### Diagnostic Facilities
+### Diagnostic Logs
 
-OpenUSD offers [diagnostic facilities](https://openusd.org/release/api/page_tf__diagnostic.html) to issue coding errors, runtime errors, warnings and status messages. The OpenUSD Exchange SDK also uses these `TfDiagnostic` messages to relay detailed status, warning, and error conditions the user. There are functions to control a specialized diagnostics delegate within the SDK detailed in the [Diagnostic Messages group](../api/group__diagnostics.md). Users may immediately notice that the OpenUSD Exchange SDK function, `usdex::core::createStage()` emits a Status message to `stdout` like:
+OpenUSD offers [diagnostic facilities](https://openusd.org/release/api/page_tf__diagnostic.html) to issue coding errors, runtime errors, warnings and status messages. The OpenUSD Exchange SDK also uses these `TfDiagnostic` messages to relay detailed status, warning, and error conditions the user. There are functions to control a specialized diagnostics delegate within the SDK detailed in the [Diagnostic Messages group](../api/group__diagnostics.rebreather_rst). Users may immediately notice that the OpenUSD Exchange SDK function, `usdex::core::createStage()` emits a Status message to `stdout` like:
 
 ```text
 Status: in saveStage at line 254 of ...\source\core\library\StageAlgo.cpp -- Saving "stage with rootLayer @.../AppData/Local/Temp/usdex/sample.usdc@, sessionLayer @anon:000001927295CA60:sample-session.usda@"
