@@ -10,23 +10,24 @@ OpenUSD Exchange SDK
    :hidden:
 
    What is OpenUSD Exchange SDK? <self>
-   OpenUSD Exchange Changelog <docs/changes.rst>
-   OpenUSD Exchange License Notices <docs/licenses.md>
+   Changelog <docs/changes.rst>
+   License Notices <docs/licenses.md>
 
 .. toctree::
    :caption: Guides
    :maxdepth: 1
    :hidden:
 
-   Getting Started with OpenUSD Exchange SDK <docs/getting-started.md>
-   Authoring USD with OpenUSD Exchange <docs/authoring-usd.md>
+   Getting Started <docs/getting-started.md>
+   Authoring USD <docs/authoring-usd.md>
+   Runtime Requirements <docs/runtime-requirements.md>
 
 .. toctree::
    :caption: Developer Reference
    :maxdepth: 1
    :hidden:
 
-   OpenUSD Exchange Samples <https://github.com/NVIDIA-Omniverse/usd-exchange-samples>
-   OpenUSD Exchange C++ API <api/api.rst>
-   OpenUSD Exchange Python API <docs/python.rst>
-   OpenUSD Exchange Dev Tools <docs/devtools.md>
+   Samples <https://github.com/NVIDIA-Omniverse/usd-exchange-samples>
+   C++ API <api/api.rst>
+   Python API <docs/python.rst>
+   Dev Tools <docs/devtools.md>

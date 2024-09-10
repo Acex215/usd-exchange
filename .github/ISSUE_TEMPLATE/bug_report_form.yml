@@ -47,7 +47,7 @@ body:
     attributes:
       label: OpenUSD Flavor
       description: What flavor of OpenUSD are you using?
-      placeholder: "example: stock or custom"
+      placeholder: "example: usd, usd-minimal, or custom"
     validations:
       required: true
 
