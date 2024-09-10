@@ -106,7 +106,7 @@ Once you have oriented yourself with the samples that interest you, try modifyin
 
 Proceed to the next section to learn how to start building your own application to convert data to OpenUSD.
 
-## Build an Application
+## Integrate into an Application
 
 The next step to familiarize yourself with the OpenUSD Exchange SDK is to create a simple standalone application.
 

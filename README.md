@@ -12,7 +12,7 @@ To start using OpenUSD Exchange SDK see the [Getting Started](docs/getting-start
 
 ## Downloading or Building
 
-We provide precompiled binaries of the OpenUSD Exchange SDK, as well as all dependencies required to compile, link, and run a program that uses the OpenUSD Exchange libraries and modules. Additionally, OpenUSD Exchange SDK is source available and is licensed for modification & re-distribution (see our License Notices).
+We provide precompiled binaries of the OpenUSD Exchange SDK, as well as all dependencies required to compile, link, and run a program that uses the OpenUSD Exchange libraries and modules. Additionally, OpenUSD Exchange SDK is source available and is licensed for modification & re-distribution (see our [License Notices](docs/licenses.md)).
 
 To download the precompiled OpenUSD Exchange SDK binaries and all the necessary dependencies:
   - Download or clone the [OpenUSD Exchange SDK repository](https://github.com/NVIDIA-Omniverse/usd-exchange)
@@ -41,12 +41,11 @@ For general questions about OpenUSD itself, use the [Alliance for OpenUSD Forum]
 - [NVIDIA OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples)
 - [OpenUSD API Docs](https://openusd.org/release/api/index.html)
 - [OpenUSD User Docs](https://openusd.org/release/index.html)
-- [NVIDIA OpenUSD Tutorials and Examples](https://github.com/NVIDIA-Omniverse/USD-Tutorials-And-Examples)
+- [NVIDIA OpenUSD Resources and Learning](https://developer.nvidia.com/usd)
 - [NVIDIA OpenUSD Code Samples](https://github.com/NVIDIA-Omniverse/OpenUSD-Code-Samples)
-- [NVIDIA OpenUSD Docs](https://developer.nvidia.com/usd)
 
 # License
 
 The NVIDIA OpenUSD Exchange SDK is governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
 
- See our [License Notices](docs/licenses.md) for more details, including Third Party License Notices for open source dependencies.
+See our [License Notices](docs/licenses.md) for more details, including Third Party License Notices for open source dependencies.
