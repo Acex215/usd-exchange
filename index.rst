@@ -21,6 +21,7 @@ OpenUSD Exchange SDK
    Getting Started <docs/getting-started.md>
    Authoring USD <docs/authoring-usd.md>
    Runtime Requirements <docs/runtime-requirements.md>
+   Deployment Options <docs/deployments.md>
 
 .. toctree::
    :caption: Developer Reference
