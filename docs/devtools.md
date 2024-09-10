@@ -86,7 +86,7 @@ For example, to add on `usdSkel` and `usdPhysics` call:
 
 ### Install usdex_rtx
 
-If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use `usdex_rtx` to assist with [MDL Shader](https://www.nvidia.com/en-us/design-visualization/technologies/material-definition-language) authoring. Use the `--install-rtx` argument to install the OpenUSD Exchange RTX library and python module.
+If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use `usdex_rtx` to assist with [MDL Shader](https://www.nvidia.com/en-us/design-visualization/technologies/material-definition-language) authoring. Use the `--install-rtx` argument to install the [usdex_rtx library](../api/group__rtx__materials.rebreather_rst) and [`usdex.rtx` python module](./python-usdex-rtx.rst).
 
 ``````{card}
 `````{tab-set}
@@ -109,7 +109,7 @@ If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use
 
 ### Python test helpers
 
-If you would like to use our `usdex.test` python helpers, or the [Omniverse Asset Validator](https://docs.omniverse.nvidia.com/kit/docs/asset-validator/latest/index.html), you can use `--install-test` to install them both.
+If you would like to use our [`usdex.test` python module](./python-usdex-test.rst), or the [Omniverse Asset Validator](https://docs.omniverse.nvidia.com/kit/docs/asset-validator/latest/index.html), you can use `--install-test` to install them both.
 
 ``````{card}
 `````{tab-set}
