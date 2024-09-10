@@ -120,7 +120,7 @@ This walkthrough will use these tokens:
 
 ### Install the SDK
 
- Assembling the minimal requirements for the OpenUSD Exchange SDK can be complicated, so there is an [install_usdex](devtools.md#repo_install_usdex) script that developers run to gather everything into one `_install` folder. This folder can then be copied into the project structure of the developer's application.
+ Assembling the minimal requirements for the OpenUSD Exchange SDK can be complicated, so there is an [install_usdex](devtools.md#install_usdex) script that developers run to gather everything into one `_install` folder. This folder can then be copied into the project structure of the developer's application.
 
 Running these commands *from the Sample's root folder* will generate the `_install` folder for both debug and release configurations and deep copy them to wherever the sample project is located.  Note that if running the install script from the Exchange Samples, it is necessary to build them first:
 
@@ -175,7 +175,7 @@ $project_root
 
 This `_install` folder will be copied into `$project_root/usdex` for this walkthrough.  Note that the `target-deps` folder contains soft links on Linux and junctions on Windows, so any time it is copied, it requires deep copy commands or options.
 
-For more details on choosing build flavors & features, or different versions of the SDK, see the [install_usdex](devtools.md#repo_install_usdex) documentation.
+For more details on choosing build flavors & features, or different versions of the SDK, see the [install_usdex](devtools.md#install_usdex) documentation.
 
 #### Runtime Dependencies
 

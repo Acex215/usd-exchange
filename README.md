@@ -19,7 +19,7 @@ To download the precompiled OpenUSD Exchange SDK binaries and all the necessary 
   - Navigate to your local `usd-exchange` directory
   - Run `./repo.sh install_usdex` or `.\repo.bat install_usdex` to download & assemble the OpenUSD Exchange SDK runtime requirements into a dedicated folder.
 
-For more details on choosing build flavors & features, or different versions of the SDK, see the [install_usdex](docs/devtools.md#repo_install_usdex) tool documentation.
+For more details on choosing build flavors & features, or different versions of the SDK, see the [install_usdex](docs/devtools.md#install_usdex) tool documentation.
 
 If you would like to modify it, or build it against your own OpenUSD distribution, see [CONTRIBUTING.md](https://github.com/NVIDIA-Omniverse/usd-exchange/blob/main/CONTRIBUTING.md#building) to learn about building from source.
 
