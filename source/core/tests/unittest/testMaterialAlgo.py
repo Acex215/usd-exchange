@@ -458,12 +458,6 @@ class MaterialAlgoTest(usdex.test.TestCase):
         # all authored data remains valid
         self.assertIsValidUsd(
             stage,
-            issuePredicates=[
-                omni.asset_validator.IssuePredicates.And(
-                    omni.asset_validator.IssuePredicates.ContainsMessage("UsdUVTexture prim"),
-                    omni.asset_validator.IssuePredicates.ContainsMessage("has invalid or unresolvable inputs:file of @@"),
-                )
-            ],
         )
 
     def testRemoveMaterialInterfaceFromStrongerLayer(self):
