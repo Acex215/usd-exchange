@@ -1,8 +1,11 @@
 # OpenUSD Exchange Dev Tools
 
-Most users of OpenUSD Exchange SDK will have their own build systems & CI/CD processes, and our custom dev tools may be of limited use outside of the usd-exchange and usd-exchange-samples repositories.
+Most users of OpenUSD Exchange SDK will have their own build systems & CI/CD processes, and our custom dev tools may be of limited use outside of the `usd-exchange` and `usd-exchange-samples` repositories.
 
-However, one tool that we highly recommend using is the `repo install_usdex` tool, which can be used to acquire all of the OpenUSD Exchange build & runtime requirements.
+However, there are two tools that we highly recommend using:
+
+- The [`repo install_usdex`](#install_usdex) tool can be used to acquire all of the OpenUSD Exchange build & runtime requirements.
+- The [Omniverse Asset Validator](#asset-validator) is a python module & command line interface for validating OpenUSD Stage/Layer data. It can be used interactively, but we find it most useful when integrated into CI/CD processes to ensure valid output of data converters.
 
 ## install_usdex
 
@@ -109,7 +112,7 @@ If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use
 
 ### Python test helpers
 
-If you would like to use our [`usdex.test` python module](./python-usdex-test.rst), or the [Omniverse Asset Validator](https://docs.omniverse.nvidia.com/kit/docs/asset-validator/latest/index.html), you can use `--install-test` to install them both.
+If you would like to use our [`usdex.test` python module](./python-usdex-test.rst), or the [Omniverse Asset Validator](#asset-validator), you can use `--install-test` to install them both.
 
 ``````{card}
 `````{tab-set}
@@ -164,3 +167,33 @@ commands = [
 .. repotools-confval:: usd_ver
 .. repotools-confval:: python_ver
 ```
+
+## Asset Validator
+
+The Omniverse Asset Validator provides both a python module & command line interface for validating OpenUSD Stage/Layer data. It includes a suite of validation rules that check for common USD authoring mistakes, including all rules from OpenUSD's [usdchecker](https://openusd.org/release/toolset.html#usdchecker) cli, along with some additional rules developed by NVIDIA.
+
+It can be used interactively, but we find it most useful when integrated into CI/CD processes to test for correctness & compliance of OpenUSD data models.
+
+To use the validator from python, with the default rules enabled, simply provide any layer URI (or composed `Usd.Stage` object) and validate:
+
+```
+import omni.asset_validator
+
+# validate an existing layer file
+engine = omni.asset_validator.ValidationEngine()
+print(engine.validate("foo.usd"))
+
+# validate a stage in memory
+stage = Usd.Stage.CreateAnonymous()
+# define prims
+engine = omni.asset_validator.ValidationEngine()
+print(engine.validate(stage))
+```
+
+There are also CLI examples of the Asset Validator in [OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples).
+
+If you are using Python's [unittest framework](https://docs.python.org/3/library/unittest.html) for your regression testing, consider trying the [`usdex.test` python module](./python-usdex-test.rst) in your test suite. It includes a few `unittest.TestCase` derived classes to simplify some common OpenUSD testing scenarios, including the Asset Validator (e.g `self.assertIsValidUsd()`).
+
+To acquire both the Asset Validator and the `usdex.test` module, use [`repo install_usdex --install-test`](#python-test-helpers).
+
+Unfortunately, the Omniverse Asset Validator is not yet available for pure C++ testing, but recent OpenUSD versions now include a [UsdValidatorSuite](https://openusd.org/release/api/class_usd_validator_suite.html#details) that is implemented in C++. Over time these two frameworks will align & validation should be possible from either C++ or Python.
