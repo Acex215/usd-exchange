@@ -110,19 +110,38 @@ When integrating OpenUSD Exchange libraries and modules into a microservice or o
 
 This process is fairly straightforward, but there are a couple intricacies that you should be aware of in order to end up with the minimal amount of files in your final image.
 
-Below is an example `Dockerfile` snippet for a microservice that uses the [`usdex.core`](./python-usdex-core.rst) python module:
+Below is an example `Dockerfile` for a microservice that uses the [`usdex.core`](./python-usdex-core.rst) python module:
 
 ```docker
-# Download and stage OpenUSD Exchange SDK
-RUN --mount=type=ssh,id=github git clone git+ssh://git@github.com:NVIDIA-Omniverse/usd-exchange.git
-RUN cd usd-exchange && ./repo.sh install_usdex --version 1.0.0 --install-dir /usdex-runtime
+FROM ubuntu:22.04
+
+# Install git (to clone the repo), curl (to download binaries), and python (to run)
+RUN apt update && apt install -y git curl python3.10 libpython3.10
+
+# Install OpenUSD and OpenUSD Exchange, making sure to match the system python version
+RUN git clone https://github.com/NVIDIA-Omniverse/usd-exchange.git
+RUN cd usd-exchange && ./repo.sh install_usdex --python-version 3.10 --version 1.0.0 --install-dir /usdex-runtime
 
 # Clean up temporary files not needed for runtime
-RUN /usd-exchange/packman/packman prune 0 && rm -rf /usd-exchange
+RUN usd-exchange/tools/packman/packman prune 0 && rm -rf usd-exchange
 
 # Install the OpenUSD and OpenUSD Exchange libraries and python modules
+RUN python3.10 -m site --user-site
 RUN ln -s /usdex-runtime/python/* /usr/local/lib/python3.10/dist-packages/
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usdex-runtime/lib"
+```
+
+Once you build the image you should be able to run it and use [`usdex.core`](./python-usdex-core.rst) from any python process in the container:
+
+```bash
+> docker run my-image python3.10 -c 'import pxr.Usd, usdex.core; print(f"OpenUSD: {pxr.Usd.GetVersion()}\nOpenUSD Exchange: {usdex.core.version()}")'
+OpenUSD: (0, 24, 5)
+OpenUSD Exchange: 1.0.0
+```
+
+```{eval-rst}
+.. note::
+  The example above is Ubuntu based using Python 3.10, but neither of these are strict requirements. The precompiled OpenUSD Exchange SDK binaries are ``manylinux_2_35`` compatible and available for multiple python versions (or without python entirely).
 ```
 
 You may wish to approach your container organization differently, but the main steps should be the same:
