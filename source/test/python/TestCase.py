@@ -33,7 +33,7 @@ class TestCase(unittest.TestCase):
     """
 
     maxDiff = None
-    "See `unittest` documentation"
+    "See `unittest.TestCase.maxDiff <https://docs.python.org/3/library/unittest.html#unittest.TestCase.maxDiff>`_ documentation"
 
     validFileIdentifierRegex = r"[^A-Za-z0-9_-]"
 

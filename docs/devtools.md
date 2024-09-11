@@ -34,7 +34,7 @@ By default, the tool will install the core library and module from OpenUSD Excha
 ````{tab-item} Windows
 :sync: windows
 
-```bash
+```bat
 .\run.bat install_usdex --usd-version 24.05 --python-version 3.11 --version 1.0.0
 ```
 ````
@@ -55,7 +55,7 @@ Similarly, to download & assemble a minimal monolithic USD 23.11, with no python
 ````{tab-item} Windows
 :sync: windows
 
-```bash
+```bat
 .\run.bat install_usdex --usd-flavor usd-minimal --usd-version 23.11 --python-version 0 --version 1.0.0
 ```
 ````
@@ -80,7 +80,7 @@ For example, to add on `usdSkel` and `usdPhysics` call:
 ````{tab-item} Windows
 :sync: windows
 
-```bash
+```bat
 .\run.bat install_usdex --version 1.0.0 --install-extra-plugins usdSkel usdPhysics
 ```
 ````
@@ -103,7 +103,7 @@ If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use
 ````{tab-item} Windows
 :sync: windows
 
-```bash
+```bat
 .\run.bat install_usdex --version 1.0.0 --install-rtx
 ```
 ````
@@ -126,7 +126,7 @@ If you would like to use our [`usdex.test` python module](./python-usdex-test.rs
 ````{tab-item} Windows
 :sync: windows
 
-```bash
+```bat
 .\run.bat install_usdex --version 1.0.0 --install-test
 ```
 ````
