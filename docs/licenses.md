@@ -4,9 +4,7 @@
 
 The NVIDIA OpenUSD Exchange SDK is governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
 
-The NVIDIA OpenUSD Exchange SDK is licensed as a "Community Product", defined in the Agreement as unsupported Software generally accessible to the public and free of charge, as updated from time to time, that Customer may use without a paid Subscription or Services.
-
-Further, as the NVIDIA OpenUSD Exchange SDK is made source available, “Derivative Samples” can be produced from its source code, and all modifications, derivatives, adaptations, extensions or enhancements to that source code are permissible, provided the “Derivative Samples” requirements of license is adhered to.
+As the NVIDIA OpenUSD Exchange SDK is made source available, “Derivative Samples” can be produced from its source code, and all modifications, derivatives, adaptations, extensions or enhancements to that source code are permissible, provided the “Derivative Samples” requirements of license is adhered to.
 
 ## Runtime License Notices
 
