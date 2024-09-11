@@ -7,6 +7,11 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""
+`usdex.core <https://docs.omniverse.nvidia.com/kit/docs/usd-exchange/latest/docs/python-usdex-core.html>`_ provides higher-level convenience
+functions top of lower-level `OpenUSD <https://openusd.org/release/index.html>`_ concepts, so developers can quickly adopt OpenUSD best practices
+when mapping their native data sources to OpenUSD-legible data models.
+"""
 
 __all__ = [
     # core

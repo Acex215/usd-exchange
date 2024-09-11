@@ -13,7 +13,6 @@ import pathlib
 import tempfile
 from typing import List, Tuple
 
-import omni.asset_validator
 import usdex.core
 import usdex.test
 from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdShade, UsdUtils

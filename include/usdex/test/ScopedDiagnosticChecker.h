@@ -26,7 +26,8 @@
 
 #include <regex>
 
-//! @brief The namespace for the OpenUSD Exchange SDK doctest based Testing Library.
+//! @brief [usdex::test](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) provides [doctest](https://github.com/doctest/doctest) based test
+//! utilities for validating in-memory [OpenUSD](https://openusd.org/release/index.html) data for consistency and correctness.
 namespace usdex::test
 {
 

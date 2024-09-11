@@ -33,6 +33,7 @@ class TestCase(unittest.TestCase):
     """
 
     maxDiff = None
+    "See `unittest` documentation"
 
     validFileIdentifierRegex = r"[^A-Za-z0-9_-]"
 
