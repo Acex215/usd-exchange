@@ -7,10 +7,14 @@
 # disclosure or distribution of this material and related documentation
 # without an express license agreement from NVIDIA CORPORATION or
 # its affiliates is strictly prohibited.
+"""
+`usdex.test <https://docs.omniverse.nvidia.com/kit/docs/usd-exchange/latest/docs/python-usdex-test.html>`_ provides ``unittest`` based test utilities
+for validating in-memory `OpenUSD <https://openusd.org/release/index.html>`_ data for consistency and correctness.
+"""
 
 __all__ = [
-    "ScopedDiagnosticChecker",
     "TestCase",
+    "ScopedDiagnosticChecker",
     "DefineFunctionTestCase",
 ]
 

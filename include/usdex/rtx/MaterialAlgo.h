@@ -24,7 +24,10 @@
 //! @file usdex/rtx/MaterialAlgo.h
 //! @brief Material and Shader Utilities
 
-//! @brief The namespace for the OpenUSD Exchange SDK RTX Library.
+//! @brief [usdex::rtx](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) provides utility functions for creating, editing, and querying
+//! [UsdShade](https://openusd.org/release/api/usd_shade_page_front.html) data models which represent
+//! [MDL Materials and Shaders](https://www.nvidia.com/en-us/design-visualization/technologies/material-definition-language) for use with the
+//! RTX Renderer.
 namespace usdex::rtx
 {
 
