@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/Diagnostics.h
-//! @brief Specialized handling for OpenUSD Diagnostic messages (logs)
+//! @brief Specialized handling of OpenUSD `TfDiagnostic` messages (logs).
 
 #include "usdex/core/Api.h"
 
@@ -22,7 +22,7 @@ namespace usdex::core
 
 //! @defgroup diagnostics Diagnostic Messages (Logs)
 //!
-//! Specialized handling of OpenUSD TfDiagnostic messages (logs).
+//! Specialized handling of OpenUSD `TfDiagnostic` messages (logs).
 //!
 //! The `Tf` module from OpenUSD provides various diagnostic logging abilities, including the ability to override the default message handler
 //! (which prints to `stderr`) with one or more custom handlers.

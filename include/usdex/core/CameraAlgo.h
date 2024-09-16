@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/CameraAlgo.h
-//! @brief Utilities for manipulating UsdGeomCamera and GfCamera data
+//! @brief Utility functions to manipulate `UsdGeomCamera` and `GfCamera` data
 
 #include "Api.h"
 
@@ -27,12 +27,12 @@
 namespace usdex::core
 {
 
-//! @defgroup cameras UsdGeomCamera Algorithms
+//! @defgroup cameras Camera Prims
 //!
 //! Utility functions to manipulate `UsdGeomCamera` and `GfCamera` data
 //!
 //! See [UsdGeomCamera](https://openusd.org/release/api/class_usd_geom_camera.html) and
-//! [GfCamera](https://openusd.org/release/api/class_gf_camera.html)for details.
+//! [GfCamera](https://openusd.org/release/api/class_gf_camera.html) for details.
 //!
 //! @{
 

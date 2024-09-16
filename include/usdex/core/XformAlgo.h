@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/XformAlgo.h
-//! @brief Utilities for manipulating UsdGeomXform and UsdGeomXformable Prims
+//! @brief Utility functions to manipulate 3D transformation data on `UsdGeomXformable` Prims.
 
 #include "Api.h"
 
@@ -30,11 +30,34 @@
 namespace usdex::core
 {
 
-//! @defgroup xformable UsdGeomXformable Algorithms
+//! @defgroup xformable 3D Transformations
 //!
-//! Utility functions to manipulate `UsdPrim` transformation data.
+//! Utility functions to manipulate 3D transformation data on `UsdGeomXformable` Prims.
 //!
-//! See `UsdGeomXformable` for details.
+//! The [UsdGeomXformable](https://openusd.org/release/api/usd_geom_page_front.html#UsdGeom_Xformable) schema supports a rich set of transform
+//! operations from which a resulting matrix can be computed.
+//!
+//! The flexibility of this system adds complexity to the code required for authoring and retrieving transform information. This module provides
+//! functions for authoring and retrieving transformation using a standard suite of transform formats.
+//!
+//! The goal of these functions is to decouple the caller's preferred transform format from the format in which the transform is stored on the
+//! `UsdPrim`. This is accomplished by internally converting between formats as needed, and modifing the storage format when required.
+//!
+//! # Getting Transforms #
+//!
+//! The `getLocalTransform` functions will retrieve the local transform of a `UsdPrim` in the format requested.
+//! - If the existing [UsdGeomXformOps](https://openusd.org/release/api/class_usd_geom_xform_op.html) can be mapped to the requested format,
+//!   then the components will be populated with the values authored.
+//! - If there is no clear mapping, then a local transformation matrix will be computed, and the components extracted from that.
+//!
+//! # Setting Transforms #
+//!
+//! The `setLocalTransform` functions will set the values of existing `UsdGeomXformOps` on a `UsdPrim` to achieve the transform supplied.
+//! - If the given format can be mapped to the existing `UsdGeomXformOps`, or have mappable values extracted, then the values of those will be set.
+//! - If the given format (or the value it holds) cannot be mapped to the existing `UsdGeomXformOps`, then new operations will be authored that can.
+//! - If no `UsdGeomXformOps` exist, then new ones matching the format will be authored.
+//!
+//! When a value is set at a given time, all existing time samples will be maintained, even in cases where the operations were changed.
 //!
 //! @{
 
@@ -120,7 +143,7 @@ USDEX_API void getLocalTransformComponents(
 
 //! @}
 
-//! @defgroup xform UsdGeomXform Algorithms
+//! @defgroup xform Xform Prims
 //!
 //! Utility functions to create `UsdGeomXform` prims.
 //!

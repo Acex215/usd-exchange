@@ -30,7 +30,7 @@
 namespace usdex::core
 {
 
-//! @defgroup curves UsdGeomCurves Algorithms
+//! @defgroup curves Line and Curve Prims
 //!
 //! Utility functions to create geometric Line and Curve descriptions.
 //!

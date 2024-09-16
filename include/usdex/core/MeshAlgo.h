@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/MeshAlgo.h
-//! @brief Utility functions to create Mesh descriptions.
+//! @brief Utility functions to create polygonal `UsdGeomMesh` Prims.
 
 #include "Api.h"
 #include "PrimvarData.h"
@@ -29,9 +29,9 @@
 namespace usdex::core
 {
 
-//! @defgroup mesh UsdGeomMesh Algorithms
+//! @defgroup mesh Mesh Prims
 //!
-//! Utility functions to create Mesh descriptions.
+//! Utility functions to create polygonal `UsdGeomMesh` Prims.
 //!
 //! See [UsdGeomMesh](https://openusd.org/release/api/class_usd_geom_mesh.html) for details.
 //! @{

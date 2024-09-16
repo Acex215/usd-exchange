@@ -24,7 +24,7 @@
 namespace usdex::core
 {
 
-//! @defgroup stageMetadata UsdStage Configuration
+//! @defgroup stage_metadata UsdStage Configuration
 //!
 //! Utility functions to provide consistant authoring of `UsdStages`
 //!
@@ -104,7 +104,7 @@ USDEX_API void saveStage(pxr::UsdStagePtr stage, const std::string& authoringMet
 
 //! @}
 
-//! @defgroup stageHierarchy UsdStage Hierarchy
+//! @defgroup stage_hierarchy UsdStage Hierarchy
 //!
 //! Utility functions to avoid common mistakes when manipulating the prim hierarchy of a `UsdStage`.
 //!

@@ -22,7 +22,7 @@
 #include <optional>
 
 //! @file usdex/rtx/MaterialAlgo.h
-//! @brief Material and Shader Utilities
+//! @brief Material and Shader Prims for use with the RTX Renderer
 
 //! @brief [usdex::rtx](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) provides utility functions for creating, editing, and querying
 //! [UsdShade](https://openusd.org/release/api/usd_shade_page_front.html) data models which represent
@@ -31,7 +31,7 @@
 namespace usdex::rtx
 {
 
-//! @defgroup rtx_materials UsdShade Material and Shader Utilities for use with the RTX Renderer
+//! @defgroup rtx_materials Material and Shader Prims for use with the RTX Renderer
 //!
 //! Utility functions for creating, editing, and querying MDL Materials and Shaders for use with the RTX Renderer.
 //!

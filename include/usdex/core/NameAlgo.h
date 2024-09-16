@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/NameAlgo.h
-//! @brief Utilities for manipulating UsdPrim objects
+//! @brief Utility functions to generate valid names and display names for `UsdPrims`, and valid property names on `UsdPrims`.
 
 #include "Api.h"
 
@@ -25,11 +25,74 @@
 namespace usdex::core
 {
 
-//! @defgroup prim_name UsdPrim Name Functions
+//! @defgroup names Prim and Property Names
 //!
-//! Utility functions to generate valid names for `UsdPrims`
+//! Utility functions to generate valid names and display names for `UsdPrims`, and valid property names on `UsdPrims`.
 //!
-//! See [Valid and Unique Names](../docs/authoring-usd.html#valid-and-unique-names) for details.
+//! OpenUsd has [strict requirements](https://openusd.org/release/api/group__group__tf___string.html#gaa129b294af3f68d01477d430b70d40c8)
+//! on what names are valid for a `UsdObject`, though the specification is evolving over time.
+//!
+//! Additionally the names of sibling Objects must be unique so that the `SdfPath` that identifies them is unique within the `UsdStage`.
+//!
+//! Most authoring functions in this library require that the names and paths supplied are valid. While it would be possible for each of these
+//! functions to create valid values directly, this workflow can lead to undetected name collisions.
+//!
+//! The functions below can be used to produce valid `UsdObject` names for any OpenUSD runtime that we support.
+//!
+//! # Transcoding #
+//!
+//! By default, valid names are produced via a [transcoding process](https://docs.omniverse.nvidia.com/kit/docs/omni-transcoding)
+//! that generates names which can be losslessly decoded.
+//!
+//! - For any legal identifier in a given runtime, this transcoding will produce no changes.
+//! - For illegal identifiers, the transcoding will produce a human readable name that meets the requirements of the runtime.
+//!
+//! @note The transcoding process has been proposed for inclusion in a future version of OpenUSD. Once a suitable implementation is available,
+//! we will adopt it internally to our name validation functions.
+//!
+//! While we do not currently provide decoding functions, the `omni_transcoding` shared library and associated python module do provide decoding.
+//! For the time being, it is recommended to use this library directly to decode any `UsdPrim` or `UsdProperty` names that have been serialized.
+//!
+//! If you prefer to avoid transcoding entirely, this behaviour can be disabled via our @ref settings.
+//!
+//! # Prim Naming Functions #
+//!
+//! To ensure that a `UsdPrim` is valid use `getValidPrimName()`.
+//!
+//! When defining multiple prims below a common parent use `getValidChildNames()` to ensure that the names are not only valid, but also unique
+//! from one another and existing children.
+//!
+//! When there is no existing parent, we provide `getValidPrimNames()`.
+//!
+//! # Property Naming Functions #
+//!
+//! To ensure that a `UsdProperty` name is valid, use `getValidPropertyName()`. This function differs from Prim Name encoding, as it explicitly
+//! handles nested namespaces (e.g. `foo:bar:baz`) and encodes each portion of the namespace independently.
+//!
+//! When defining multiple properties for the same `UsdPrim`, use `getValidPropertyNames()` to ensure that the names are not only valid, but also
+//! unique from one another.
+//!
+//! # Prim Display Name #
+//!
+//! Unlike names, "Display Names" support all UTF-8 encoding across all runtimes, as they are simply metadata on the Prim, and are not used to
+//! uniquely identify it. You can author UTF-8 binary strings and/or characters directly in a .usda file.
+//!
+//! Example:
+//!
+//!     def Cube "cube1" (
+//!         displayName = "\xF0\x9F\x9A\x80"
+//!     )
+//!
+//!     def Cube "cube2" (
+//!         displayName = "🚀"
+//!     )
+//!
+//! We recommend setting the display name metadata in cases where the native name of an item could not be used for the associated `UsdObject`.
+//! This could be because the name was invalid, or because it needed to be allocated a suffix to become unique. In either case the original value
+//! can be stored as the display name.
+//!
+//! However, support for storing a display name on a Prim is not consistent across all versions of OpenUsd. To make this more consistent,
+//! we provide functions to manipulate the display name metadata in any OpenUSD runtime.
 //!
 //! @{
 
@@ -110,16 +173,6 @@ private:
     CacheImpl* m_impl;
 };
 
-//! @}
-
-//! @defgroup property_name UsdProperty Name Functions
-//!
-//! Utility functions to generate valid names for properties of a `UsdPrim`
-//!
-//! See [Valid and Unique Names](../docs/authoring-usd.html#valid-and-unique-names) for details.
-//!
-//! @{
-
 //! Produce a valid property name using the Bootstring algorithm.
 //!
 //! @param name The input name
@@ -132,13 +185,6 @@ USDEX_API pxr::TfToken getValidPropertyName(const std::string& name);
 //! @param reservedNames A vector of reserved property names. Names in the vector will not be included in the return.
 //! @returns A vector of valid and unique names.
 USDEX_API pxr::TfTokenVector getValidPropertyNames(const std::vector<std::string>& names, const pxr::TfTokenVector& reservedNames = {});
-
-//! @}
-
-//! @defgroup prim_displayname UsdPrim Display Name Functions
-//!
-//! Utility functions for interacting with the display name metadata of `UsdPrims`
-//! @{
 
 //! Return this prim's display name (metadata)
 //!
