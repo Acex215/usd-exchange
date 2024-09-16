@@ -24,7 +24,7 @@
 namespace usdex::core
 {
 
-//! @defgroup primvars UsdGeomPrimvar Data Management
+//! @defgroup primvars Primvar Data Management
 //!
 //! Utilities to author and inspect [UsdGeomPrimvars](https://openusd.org/release/api/class_usd_geom_primvar.html)
 //!

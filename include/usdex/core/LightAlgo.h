@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/LightAlgo.h
-//! @brief Utilities for creating lights
+//! @brief Utility functions to define, manipulate, and read `UsdLux` Light Prims.
 
 #include "Api.h"
 
@@ -29,7 +29,7 @@
 
 namespace usdex::core
 {
-//! @defgroup lights UsdLux Light Creation Helpers
+//! @defgroup lights Light Prims
 //!
 //! Utility functions to define, manipulate, and read `UsdLux` Light Prims.
 //!

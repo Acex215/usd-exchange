@@ -23,7 +23,7 @@
 namespace usdex::core
 {
 
-//! @defgroup materials UsdShade Material and Shader Utilities applicable to all render contexts
+//! @defgroup materials Material and Shader Prims applicable to all render contexts
 //!
 //! Utility functions for creating, editing, and querying `UsdShadeMaterial` and `UsdShadeShader` objects, as well as conveniences around authoring
 //! [UsdPreviewSurface specification](https://openusd.org/release/spec_usdpreviewsurface.html) compliant shader networks for use with the

@@ -11,7 +11,7 @@
 #pragma once
 
 //! @file usdex/core/PointsAlgo.h
-//! @brief Utility functions to create geometric Points Prims.
+//! @brief Utility functions to create `UsdGeomPoint` Prims.
 
 #include "Api.h"
 #include "PrimvarData.h"
@@ -30,9 +30,9 @@
 namespace usdex::core
 {
 
-//! @defgroup points UsdGeomPoints Algorithms
+//! @defgroup points Point Cloud / Particle Prims
 //!
-//! Utility functions to create geometric point cloud (ie. particles) prims.
+//! Utility functions to create `UsdGeomPoint` prims.
 //!
 //! [UsdGeomPoints](https://openusd.org/release/api/class_usd_geom_points.html#details) prims are simple point clouds or particle fields.
 //! Points generally receive a single shading sample each, which should take normals into account, if present.

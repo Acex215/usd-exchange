@@ -31,9 +31,9 @@
 namespace usdex::test
 {
 
-//! @defgroup doctest Utilities for testing USD authoring within doctest test suites.
+//! @defgroup doctest Test USD Authoring within doctest test suites.
 //!
-//! In C++ `usdex::test` uses the <a href="https://github.com/doctest/doctest">doctest</a> testing framework. The utility classes and functions
+//! In C++ `usdex::test` uses the [doctest](https://github.com/doctest/doctest) testing framework. The utility classes and functions
 //! within this group use doctest commands in their implementations directly and as such are expected to be used within a running doctest
 //! context.
 //!
