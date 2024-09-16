@@ -1,5 +1,5 @@
 [repo]
-name = "usd-exchange"
+name = "usd-exchange-sdk"
 logging = "warning"
 folders.version_file = "CHANGELOG.md"
 extra_tool_paths."++" = [
