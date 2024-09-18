@@ -15,9 +15,9 @@
 
 #include "Api.h"
 
-//! @brief [usdex::core](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) provides higher-level convenience functions on top of lower-level
-//! [OpenUSD](https://openusd.org/release/index.html) concepts, so developers can quickly adopt OpenUSD best practices when mapping their native
-//! data sources to OpenUSD-legible data models.
+//! @brief [usdex::core](https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk) provides higher-level convenience functions on top of
+//! lower-level [OpenUSD](https://openusd.org/release/index.html) concepts, so developers can quickly adopt OpenUSD best practices when mapping their
+//! native data sources to OpenUSD-legible data models.
 namespace usdex::core
 {
 

@@ -26,8 +26,8 @@
 
 #include <regex>
 
-//! @brief [usdex::test](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) provides [doctest](https://github.com/doctest/doctest) based test
-//! utilities for validating in-memory [OpenUSD](https://openusd.org/release/index.html) data for consistency and correctness.
+//! @brief [usdex::test](https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk) provides [doctest](https://github.com/doctest/doctest)
+//! based test utilities for validating in-memory [OpenUSD](https://openusd.org/release/index.html) data for consistency and correctness.
 namespace usdex::test
 {
 
