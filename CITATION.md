@@ -9,6 +9,6 @@ If you use OpenUSD Exchange SDK in a publication, please use citations in the fo
   title = {OpenUSD Exchange SDK: Collection of Libraries to simplify OpenUSD data interchange between 3D Ecosystems},
   author = {NVIDIA Omniverse Development Team},
   year = {2024},
-  url = {https://docs.omniverse.nvidia.com/kit/docs/usd-exchange},
+  url = {https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk},
 }
 ```

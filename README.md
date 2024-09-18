@@ -2,7 +2,7 @@
 
 # Overview
 
-[OpenUSD Exchange SDK](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange) accelerates [OpenUSD](https://openusd.org) adoption by helping developers design and develop their own USD I/O solutions that produce consistent and correct USD assets across diverse 3D ecosystems.
+[OpenUSD Exchange SDK](https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk) accelerates [OpenUSD](https://openusd.org) adoption by helping developers design and develop their own USD I/O solutions that produce consistent and correct USD assets across diverse 3D ecosystems.
 
 It provides higher-level convenience functions on top of lower-level USD concepts, so developers can quickly adopt OpenUSD best practices when mapping their native data sources to OpenUSD-legible data models.
 
@@ -37,7 +37,7 @@ For general questions about OpenUSD itself, use the [Alliance for OpenUSD Forum]
 
 # References
 
-- [NVIDIA OpenUSD Exchange SDK Docs](https://docs.omniverse.nvidia.com/kit/docs/usd-exchange)
+- [NVIDIA OpenUSD Exchange SDK Docs](https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk)
 - [NVIDIA OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples)
 - [OpenUSD API Docs](https://openusd.org/release/api/index.html)
 - [OpenUSD User Docs](https://openusd.org/release/index.html)
