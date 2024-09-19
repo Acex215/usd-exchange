@@ -24,10 +24,10 @@
 
   <!-- Optional Omniverse addons -->
   <dependency name="omni_asset_validator" linkPath="../_build/target-deps/omni_asset_validator" tags="non-redist">
-    <package name="omni.asset_validator" version="0.13.3+v0133.1657.72a7a38a.gl.${platform}" />
+    <package name="omni.asset_validator" version="0.13.3+v0133.1657.72a7a38a.gl.${platform_target}" />
   </dependency>
   <dependency name="omni_transcoding" linkPath="../_build/target-deps/omni_transcoding/${config}" tags="non-redist">
-    <package name="omni_transcoding.${platform}.${config}" version="0.1.0+main.249.e5aa3370.gl" />
+    <package name="omni_transcoding.${platform_target_abi}.${config}" version="1.0.0+main.263.c07a0c0a.gl" />
   </dependency>
 
 </project>

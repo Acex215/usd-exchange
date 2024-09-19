@@ -289,9 +289,8 @@ else ifeq ($(CONFIG),release)
 endif
 
 # ABI Settings
-# TODO - change this when we switch containers
 ifndef ABI_DEFINES
-	ABI_DEFINES = -D_GLIBCXX_USE_CXX11_ABI=0 -std=c++17
+	ABI_DEFINES = -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++17
 endif
 
 # Ignored Warnings
