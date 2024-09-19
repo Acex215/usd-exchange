@@ -44,7 +44,9 @@ function m.setup_workspace(args)
         allow_undefined_symbols_linux = args.allow_undefined_symbols_linux or true,
         extra_warnings = args.extra_warnings or true,
         security_hardening = args.security_hardening or false,
-        fix_cpp_version = true,
+        fix_cpp_version = args.fix_cpp_version or true,
+        -- enable modern gcc warnings
+        linux_gcc7_warnings = args.linux_gcc7_warnings or false
     })
 
     repo_build.enable_vstudio_sourcelink()
