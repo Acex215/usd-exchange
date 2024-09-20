@@ -20,8 +20,9 @@ def main(arguments: argparse.Namespace):
     usd_flavor = omni.repo.man.resolve_tokens("${usd_flavor}")
     usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
     python_ver = omni.repo.man.resolve_tokens("${python_ver}")
+    abi = omni.repo.man.resolve_tokens("${abi}")
 
-    omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}")
+    omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
     # copy internal packman config into place
     if omni.repo.ci.is_running_on_ci():
@@ -36,14 +37,19 @@ def main(arguments: argparse.Namespace):
         f"usd_ver:{usd_ver}",
         "--set-token",
         f"python_ver:{python_ver}",
+        f"--abi={abi}",
         "build",
         "--rebuild",
         "--config",
         arguments.build_config,
+        "--verbose",
         "--/repo_build/licensing/enabled=true",
     ]
-    if not omni.repo.ci.is_windows():
+    if omni.repo.man.is_linux():
         build.append("--/repo_build/docker/enabled=true")
+        if abi:
+            build.append(f"--/repo_build/docker/image_url={omni.repo.man.resolve_tokens('${env:REPO_BUILD_IMAGE}')}")
+
     build = [omni.repo.man.resolve_tokens(x) for x in build]
     omni.repo.ci.launch(build)
 
@@ -52,7 +58,7 @@ def main(arguments: argparse.Namespace):
         if arguments.build_config == "release":
             omni.repo.ci.launch([repo, "docs"])
             # package the docs for linux only as we don't want overlapping packages once all flavors are assembled
-            if not omni.repo.ci.is_windows():
+            if omni.repo.man.is_linux():
                 omni.repo.ci.launch([repo, "package", "--mode", "docs"])
 
     # generate the package
@@ -65,6 +71,7 @@ def main(arguments: argparse.Namespace):
             f"usd_ver:{usd_ver}",
             "--set-token",
             f"python_ver:{python_ver}",
+            f"--abi={abi}",
             "package",
             "--mode",
             "usdex",

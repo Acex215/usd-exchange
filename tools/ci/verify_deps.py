@@ -35,8 +35,9 @@ def main(_: argparse.Namespace):
         usd_flavor = flavor["usd_flavor"]
         usd_ver = flavor["usd_ver"]
         python_ver = flavor["python_ver"]
+        abi = flavor.get("cxx_abi", omni.repo.man.resolve_tokens("$abi"))
 
-        omni.repo.man.logger.info(f"Verifying usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}")
+        omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
         # generate the usd-deps.packman.xml
         omni.repo.ci.launch(
@@ -63,6 +64,7 @@ def main(_: argparse.Namespace):
                 f"usd_ver:{usd_ver}",
                 "--set-token",
                 f"python_ver:{python_ver}",
+                f"--abi={abi}",
                 "verify_deps",
             ],
             warning_only=True,
