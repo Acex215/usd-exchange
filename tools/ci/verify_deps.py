@@ -9,6 +9,7 @@
 # its affiliates is strictly prohibited.
 
 import argparse
+import glob
 import json
 import shutil
 
@@ -69,6 +70,16 @@ def main(_: argparse.Namespace):
 
         if status != 0:
             success = False
+
+    # assemble uber csv of all missing deps
+    data = []
+    for csv in glob.glob("_repo/missing_deps*.csv"):
+        with open(csv, "r") as f:
+            data.extend(f.read().strip("\n").split("\n"))
+    # hold the header column at the top, but sort the deps
+    data = [data[0]] + sorted(set(data) - set([data[0]]))
+    with open("_repo/missing_deps.csv", "w") as f:
+        f.write("\n".join(data))
 
     if not success:
         raise omni.repo.man.exceptions.TestError("Some deps are not yet public!", emit_stack=False)
