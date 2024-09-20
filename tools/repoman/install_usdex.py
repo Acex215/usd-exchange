@@ -177,7 +177,9 @@ def __install(
         if dep in runtimeDeps:
             if dep == f"usd-{buildConfig}":
                 linkPath = f"{targetDepsDir}/usd/{buildConfig}"
-            elif buildConfig in info["package_name"]:  # dep uses omniflow v2 naming with separate release/debug packages
+            elif "package_name" in info and buildConfig in info["package_name"]:  # dep uses omniflow v2 naming with separate release/debug packages
+                linkPath = f"{targetDepsDir}/{dep}/{buildConfig}"
+            elif "local_path" in info and buildConfig in info["local_path"]:  # dep is source linked locally
                 linkPath = f"{targetDepsDir}/{dep}/{buildConfig}"
             else:
                 linkPath = f"{targetDepsDir}/{dep}"
