@@ -24,7 +24,11 @@ def run_verify_deps(options: argparse.Namespace, toolConfig: Dict):
     buildConfigs = ["release", "debug"]
     remotes = ["cloudfront"]
 
-    status = 0
+    usd_flavor = omni.repo.man.resolve_tokens("${usd_flavor}")
+    usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
+    python_ver = omni.repo.man.resolve_tokens("${python_ver}")
+
+    csv = []
     for platform in platforms:
         tokens = omni.repo.man.get_tokens(platform=platform)
         for config in buildConfigs:
@@ -45,11 +49,13 @@ def run_verify_deps(options: argparse.Namespace, toolConfig: Dict):
                         level=omni.repo.man.logging.ERROR,
                         msg=f"Failed: {package.name}@{package.version} is missing from {remote}",
                     )
-                    status = 1
+                    csv.append(f"{package.name},{package.version},{remote.partition('packman:')[-1]}")
 
-    if status == 0:
+    if not csv:
         omni.repo.man.print_log("Verification Passed")
     else:
+        with open(f"_repo/missing_deps_{usd_flavor}_{usd_ver}_py_{python_ver}.csv", "w") as f:
+            f.write("\n".join(["name,version,remote"] + sorted(csv)))
         raise omni.repo.man.RepoToolError("Verification Failed")
 
 
