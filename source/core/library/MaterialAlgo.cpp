@@ -661,9 +661,9 @@ bool usdex::core::addPreviewMaterialInterface(pxr::UsdShadeMaterial& material)
     if (effectiveSurfaceOutputs.size() > 1 || effectiveSurfaceOutputs.empty())
     {
         TF_RUNTIME_ERROR(
-            "UsdShadeMaterial <%s> has %d effective surface outputs. This function is not suitable for multi-context shader networks.",
+            "UsdShadeMaterial <%s> has %zu effective surface outputs. This function is not suitable for multi-context shader networks.",
             material.GetPath().GetAsString().c_str(),
-            effectiveSurfaceOutputs.size()
+            size_t(effectiveSurfaceOutputs.size()) // explicit cast as the type changed from uint32_t to size_t in usd 24.08
         );
         return false;
     }
