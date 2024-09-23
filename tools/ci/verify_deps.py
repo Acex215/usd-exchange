@@ -35,7 +35,7 @@ def main(_: argparse.Namespace):
         usd_flavor = flavor["usd_flavor"]
         usd_ver = flavor["usd_ver"]
         python_ver = flavor["python_ver"]
-        abi = flavor.get("cxx_abi", omni.repo.man.resolve_tokens("$abi"))
+        abi = flavor.get("cxx_abi", "2.35")
 
         omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
