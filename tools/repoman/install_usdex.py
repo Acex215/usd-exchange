@@ -424,7 +424,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument(
         "--usd-version",
         dest="usd_ver",
-        choices=["24.05", "23.11"],  # public versions only
+        choices=["24.08", "24.05", "23.11"],  # public versions only
         help=f"The OpenUSD version to install. Defaults to `{usd_ver}`",
     )
     parser.add_argument(
