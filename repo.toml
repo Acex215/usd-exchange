@@ -13,6 +13,7 @@ default_flavor = "usd_24.05_py_3.10"
 usd_flavor = "usd"
 usd_ver = "24.05"
 python_ver = "3.10"
+abi = "2.35"
 
 [repo_version_header]
 enabled = true
@@ -36,7 +37,9 @@ fetch.packman_target_files_to_pull = [
 ]
 
 # enable only for internal use
+# if enabled, requires a `docker.image_url` matching the `repo.tokens.abi` glibc version
 docker.enabled = false
+premake."token:abi==2.35".linux_x86_64_cxx_abi = true
 
 clean.folders."++" = ["$root/_conan", "$root/_deps"]
 
@@ -70,6 +73,7 @@ post_build.commands = [
         "--set-token", "usd_flavor:${usd_flavor}",
         "--set-token", "usd_ver:${usd_ver}",
         "--set-token", "python_ver:${python_ver}",
+        "--abi=${abi}",
         "install_usdex",
         "-c", "$config",
         "--use-existing-build",
@@ -134,13 +138,14 @@ default_suite = "all"
 test_root = "$root/_build/$platform/$config"
 catch2.junit_output = true
 aggregated_log_file = "$root/_build/tests/test_results.xml"
-archive_pattern = "$root/_build/packages/usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}*$platform.$config.7z"
+archive_pattern = "$root/_build/packages/usd-exchange_${usd_flavor}_${usd_ver}_py_${python_ver}*${platform_target_abi}.$config.7z"
 archive_post_unpack_cmds = [
     [
         "$root/repo${shell_ext}",
         "--set-token", "usd_flavor:${usd_flavor}",
         "--set-token", "usd_ver:${usd_ver}",
         "--set-token", "python_ver:${python_ver}",
+        "--abi=${abi}",
         "install_usdex",
         "-c", "$config",
         "--use-existing-build",

@@ -149,6 +149,8 @@ def __install(
     tokens = omni.repo.man.get_tokens()
     tokens["config"] = buildConfig
     platform = tokens["platform"]
+    tokens["platform_target"] = platform
+    tokens["platform_target_abi"] = omni.repo.man.get_abi_platform_translation(platform, tokens.get("abi", "2.35"))
     installDir = omni.repo.man.resolve_tokens(installDir, extra_tokens=tokens)
     targetDepsDir = omni.repo.man.resolve_tokens(f"{stagingDir}/target-deps", extra_tokens=tokens)
 
@@ -175,7 +177,9 @@ def __install(
         if dep in runtimeDeps:
             if dep == f"usd-{buildConfig}":
                 linkPath = f"{targetDepsDir}/usd/{buildConfig}"
-            elif buildConfig in info["package_name"]:  # dep uses omniflow v2 naming with separate release/debug packages
+            elif "package_name" in info and buildConfig in info["package_name"]:  # dep uses omniflow v2 naming with separate release/debug packages
+                linkPath = f"{targetDepsDir}/{dep}/{buildConfig}"
+            elif "local_path" in info and buildConfig in info["local_path"]:  # dep is source linked locally
                 linkPath = f"{targetDepsDir}/{dep}/{buildConfig}"
             else:
                 linkPath = f"{targetDepsDir}/{dep}"

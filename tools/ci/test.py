@@ -20,8 +20,9 @@ def main(arguments: argparse.Namespace):
     usd_flavor = omni.repo.man.resolve_tokens("${usd_flavor}")
     usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
     python_ver = omni.repo.man.resolve_tokens("${python_ver}")
+    abi = omni.repo.man.resolve_tokens("${abi}")
 
-    omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}")
+    omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
     # copy internal packman config into place
     if omni.repo.ci.is_running_on_ci():
@@ -50,6 +51,7 @@ def main(arguments: argparse.Namespace):
         f"usd_ver:{usd_ver}",
         "--set-token",
         f"python_ver:{python_ver}",
+        f"--abi={abi}",
         "test",
         "--from-package",
         "--config",

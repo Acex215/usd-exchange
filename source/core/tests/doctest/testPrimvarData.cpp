@@ -335,12 +335,11 @@ TEST_CASE("PrimvarData Moves")
     CHECK(b.values().empty());
     CHECK(!b.hasIndices());
 
-    std::optional<const FloatPrimvarData> d = std::move(c);
+    std::optional<const FloatPrimvarData> d = std::exchange(c, std::nullopt);
     CHECK(d.has_value());
     CHECK(d.value().values().IsIdentical(values));
     CHECK(d.value().indices().IsIdentical(indices));
-    CHECK(c.value().values().empty());
-    CHECK(!c.value().hasIndices());
+    CHECK(!c.has_value());
 }
 
 TEST_CASE("PrimvarData getPrimvarData")

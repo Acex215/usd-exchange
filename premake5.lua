@@ -8,11 +8,6 @@ usdex_build = require("tools/premake/usdex_build")
 
 workspace "usd-exchange-sdk"
     usdex_build.setup_workspace({security_hardening=true})
-    -- note: remove once /guard:cf is included from add_security_hardening_flags
-    filter {"system:windows"}
-        buildoptions { "/guard:cf" }
-    filter {}
-
 
 project "devtools"
     kind "Utility"
