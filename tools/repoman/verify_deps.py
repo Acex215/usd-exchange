@@ -30,14 +30,17 @@ def run_verify_deps(options: argparse.Namespace, toolConfig: Dict):
 
     csv = []
     for platform in platforms:
+        platform_target_abi = omni.repo.man.get_abi_platform_translation(platform, abi_version=omni.repo.man.resolve_tokens("$abi"))
         tokens = omni.repo.man.get_tokens(platform=platform)
+        tokens["platform_target"] = platform
+        tokens["platform_target_abi"] = platform_target_abi
         for config in buildConfigs:
             tokens["config"] = config
             for depsFile in depsFiles:
                 omni.repo.man.print_log(f"Verifying deps `{depsFile}` for platform={platform} config={config}")
                 (_, missing) = packmanapi.verify(
                     depsFile,
-                    platform=platform,
+                    platform=platform_target_abi,
                     tokens=tokens,
                     exclude_local=True,
                     remotes=remotes,
