@@ -109,6 +109,7 @@ extra_premake_args = ["--python-ver=${python_ver}"]
 settings_template_file = "$root/tools/vscode/settings.template.json"
 write_python_paths_in_settings_json = true
 generate_python_env_file = false
+generate_python_setup_shell_script = false
 # note: remove this when repo_build supports the generic `repo.python_executable` settings
 python = "$root/_build/target-deps/python/python${exe_ext}"
 python_env.PATH."++" = [
