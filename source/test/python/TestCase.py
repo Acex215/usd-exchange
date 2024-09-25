@@ -51,6 +51,9 @@ class TestCase(unittest.TestCase):
     )
     "The default authoring metadata to be used when configuring a ``Usd.Stage``"
 
+    defaultValidationIssuePredicates = []
+    "A list of callables to determine if certain USD validation Issues should be ignored for this TestCase"
+
     @classmethod
     def setUpClass(cls):
         # activate the usdex delegate to affect OpenUSD diagnostic logs
@@ -70,7 +73,14 @@ class TestCase(unittest.TestCase):
                 The default list of IssuePredicates will always be enabled.
             msg: Optional message to report while validation failed.
         """
-        issues = self.__validateUsd(asset=asset, engine=self.validationEngine, issuePredicates=issuePredicates)
+
+        ips = []
+        if issuePredicates:
+            ips = issuePredicates + self.defaultValidationIssuePredicates
+        else:
+            ips = self.defaultValidationIssuePredicates
+
+        issues = self.__validateUsd(asset=asset, engine=self.validationEngine, issuePredicates=ips)
         if issues:
             if msg is None:
                 msg = "\n".join(str(issue) for issue in list(issues))

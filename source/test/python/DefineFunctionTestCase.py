@@ -137,6 +137,7 @@ class DefineFunctionTestCase(TestCase):
         stage.SetEditTarget(Usd.EditTarget(self.rootLayer))
         result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionSuccess(result)
+        self.assertIsValidUsd(stage)
 
     def testWeakerStronger(self):
         # A prim can be defined in a weaker sub layer and then re-defined in a stronger one.
@@ -150,6 +151,7 @@ class DefineFunctionTestCase(TestCase):
         stage.SetEditTarget(Usd.EditTarget(self.strongerSubLayer))
         result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionSuccess(result)
+        self.assertIsValidUsd(stage)
 
     def testStrongerWeaker(self):
         # A prim can be defined in a stronger sub layer and then re-defined in a weaker one.
@@ -163,6 +165,7 @@ class DefineFunctionTestCase(TestCase):
         stage.SetEditTarget(Usd.EditTarget(self.weakerSubLayer))
         result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionSuccess(result)
+        self.assertIsValidUsd(stage)
 
     def testParentNameSuccess(self):
         # A valid parent and name will result in success
@@ -173,6 +176,7 @@ class DefineFunctionTestCase(TestCase):
         name = "NewPrim"
         result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionSuccess(result)
+        self.assertIsValidUsd(stage)
 
     def testInvalidStage(self):
         # An invalid stage will result in a failure
@@ -228,6 +232,7 @@ class DefineFunctionTestCase(TestCase):
         ):
             result = self.defineFunc(stage, path, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
+        self.assertIsValidUsd(stage)
 
     def testInvalidParent(self):
         # A invalid parent will result in a failure
@@ -251,6 +256,7 @@ class DefineFunctionTestCase(TestCase):
         with ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid location")]):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
+        self.assertIsValidUsd(stage)
 
     def testInvalidName(self):
         # A invalid name will result in a failure
@@ -287,3 +293,4 @@ class DefineFunctionTestCase(TestCase):
         ):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
+        self.assertIsValidUsd(stage)
