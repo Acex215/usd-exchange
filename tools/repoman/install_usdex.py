@@ -29,7 +29,7 @@ def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNames
     )
 
 
-def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_ver, python_ver, buildConfig, version, tokens):
+def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, repoVersionFile, usd_flavor, usd_ver, python_ver, buildConfig, version, tokens):
     """Acquire usd-exchange
 
     This function operates in three different modes:
@@ -73,9 +73,15 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
 
     # No version passed into the function and no packageVersion found in target-deps
     if not version and not packageVersion:
-        raise omni.repo.man.exceptions.ConfigurationError(
-            "No version was specified. Use the `--version` argument or setup a packman dependency for usd-exchange"
-        )
+        # Determine the default version for cloned repo when the user "just wants the version associated with this branch"
+        if os.path.exists(repoVersionFile):
+            package_version = omni.repo.man.build_number.generate_build_number_from_file(repoVersionFile)
+            version = package_version.split("+")[0]
+
+        if not version:
+            raise omni.repo.man.exceptions.ConfigurationError(
+                "No version was specified. Use the `--version` argument or setup a packman dependency for usd-exchange"
+            )
 
     # respect flavor variations if they are provided
     if not packageName or (usd_flavor and usd_ver and python_ver):
@@ -138,6 +144,7 @@ def __install(
     usd_flavor: str,
     usd_ver: str,
     python_ver: str,
+    repoVersionFile: str,
     buildConfig: str,
     clean: bool,
     version: str,
@@ -161,7 +168,18 @@ def __install(
         shutil.rmtree(stagingDir, ignore_errors=True)
         return
 
-    usd_exchange_path = __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_ver, python_ver, buildConfig, version, tokens)
+    usd_exchange_path = __acquireUSDEX(
+        installDir,
+        useExistingBuild,
+        targetDepsDir,
+        repoVersionFile,
+        usd_flavor,
+        usd_ver,
+        python_ver,
+        buildConfig,
+        version,
+        tokens,
+    )
 
     # determine the required runtime dependencies
     runtimeDeps = ["omni_transcoding", f"usd-{buildConfig}"]
@@ -375,6 +393,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     usd_flavor = toolConfig["usd_flavor"]
     usd_ver = toolConfig["usd_ver"]
     python_ver = toolConfig["python_ver"]
+    repoVersionFile = config["repo"]["folders"]["version_file"]
 
     parser.description = "Tool to download and install precompiled OpenUSD Exchange binaries and all of its runtime dependencies."
     parser.add_argument(
@@ -498,6 +517,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             usd_flavor,
             usd_ver,
             python_ver,
+            repoVersionFile,
             options.config,
             options.clean,
             options.version,

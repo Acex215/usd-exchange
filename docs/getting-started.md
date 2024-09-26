@@ -170,7 +170,7 @@ $project_root
 
 ```{eval-rst}
 .. note::
-  The ``install_usdex`` script may be run from either the Exchange Samples or the Exchange SDK root directory, it is provided with both repositories.  If ``repo.bat|sh install_usdex`` is run from within the usd-exchange repository root, there is no need to run ``repo.bat|sh build`` first. Instead, a ``--version`` argument is required, which specifies the prebuilt SDK binaries that should be downloaded (e.g ``--version 1.0.0``).
+  The ``install_usdex`` script may be run from either the Exchange Samples or the Exchange SDK root directory, it is provided with both repositories.  If ``repo.bat|sh install_usdex`` is run from within the usd-exchange repository root, there is no need to run ``repo.bat|sh build`` first. The version of OpenUSD Exchange that is downloaded will match the top line of the USD Exchange repository's [CHANGELOG.md](../CHANGELOG.md) if no ``--version`` argument is provided.
 ```
 
 This `_install` folder will be copied into `$project_root/usdex` for this walkthrough.  Note that the `target-deps` folder contains soft links on Linux and junctions on Windows, so any time it is copied, it requires deep copy commands or options.
