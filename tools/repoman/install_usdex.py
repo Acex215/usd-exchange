@@ -35,7 +35,7 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
     This function operates in three different modes:
     - Run from within usdex repo
         - `useExistingBuild` early exit, usdex is already "acquired"
-        - otherwise `version` is required, packageName@$version.$platform.$buildConfig is fetched from packman and
+        - otherwise `version` is required, packageName@$version+$platform_target_abi.$buildConfig is fetched from packman and
           linked to `$targetDepsDir/usd-exchange/$buildConfig`
     - Run from within a downstream repo with a configured `target-deps.packman.xml`
         - if using a remote usdex package, package name and version is read and packageName@$packageVersion is fetched from packman
@@ -55,7 +55,7 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
             info = packmanapi.resolve_dependency(
                 "usd-exchange",
                 "deps/target-deps.packman.xml",
-                platform=tokens["platform"],
+                platform=tokens["platform_target_abi"],
                 remotes=["cloudfront"],
                 tokens=tokens,
             )
@@ -84,7 +84,7 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, usd_flavor, usd_
     linkPath = f"{targetDepsDir}/usd-exchange/{buildConfig}"
     # packageVersion is empty if a version was passed this function
     if not packageVersion:
-        packageVersion = f"{version}.{tokens['platform']}.{buildConfig}"
+        packageVersion = f"{version}+{tokens['platform_target_abi']}.{buildConfig}"
     print(f"Download and Link usd-exchange {packageVersion} to {linkPath}")
     try:
         result = packmanapi.install(name=packageName, package_version=packageVersion, remotes=["cloudfront"], link_path=linkPath)
