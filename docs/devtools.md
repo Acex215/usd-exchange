@@ -35,7 +35,7 @@ By default, the tool will install the core library and module from OpenUSD Excha
 :sync: windows
 
 ```bat
-.\run.bat install_usdex --usd-version 24.05 --python-version 3.11 --version 1.0.0
+.\repo.bat install_usdex --usd-version 24.05 --python-version 3.11 --version 1.0.0
 ```
 ````
 `````
@@ -56,7 +56,7 @@ Similarly, to download & assemble a minimal monolithic USD 23.11, with no python
 :sync: windows
 
 ```bat
-.\run.bat install_usdex --usd-flavor usd-minimal --usd-version 23.11 --python-version 0 --version 1.0.0
+.\repo.bat install_usdex --usd-flavor usd-minimal --usd-version 23.11 --python-version 0 --version 1.0.0
 ```
 ````
 `````
@@ -81,7 +81,7 @@ For example, to add on `usdSkel` and `usdPhysics` call:
 :sync: windows
 
 ```bat
-.\run.bat install_usdex --version 1.0.0 --install-extra-plugins usdSkel usdPhysics
+.\repo.bat install_usdex --version 1.0.0 --install-extra-plugins usdSkel usdPhysics
 ```
 ````
 `````
@@ -104,7 +104,7 @@ If you are interested in RTX Rendering via NVIDIA Omniverse, you may want to use
 :sync: windows
 
 ```bat
-.\run.bat install_usdex --version 1.0.0 --install-rtx
+.\repo.bat install_usdex --version 1.0.0 --install-rtx
 ```
 ````
 `````
@@ -127,7 +127,7 @@ If you would like to use our [`usdex.test` python module](./python-usdex-test.rs
 :sync: windows
 
 ```bat
-.\run.bat install_usdex --version 1.0.0 --install-test
+.\repo.bat install_usdex --version 1.0.0 --install-test
 ```
 ````
 `````
@@ -190,7 +190,7 @@ engine = omni.asset_validator.ValidationEngine()
 print(engine.validate(stage))
 ```
 
-There are also CLI examples of the Asset Validator in [OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples).
+There are also [CLI examples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples/blob/main/source/assetValidator/README.md) of the Asset Validator in [OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples).
 
 If you are using Python's [unittest framework](https://docs.python.org/3/library/unittest.html) for your regression testing, consider trying the [`usdex.test` python module](./python-usdex-test.rst) in your test suite. It includes a few `unittest.TestCase` derived classes to simplify some common OpenUSD testing scenarios, including the Asset Validator (e.g `self.assertIsValidUsd()`).
 
