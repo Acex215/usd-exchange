@@ -55,7 +55,7 @@ def run_verify_deps(options: argparse.Namespace, toolConfig: Dict):
                     csv.append(f"{package.name},{package.version},{remote.partition('packman:')[-1]}")
 
     if not csv:
-        omni.repo.man.print_log("Verification Passed")
+        omni.repo.man.print_log(f"Verification Passed for {usd_flavor}_{usd_ver}_py_{python_ver}")
     else:
         with open(f"_repo/missing_deps_{usd_flavor}_{usd_ver}_py_{python_ver}.csv", "w") as f:
             f.write("\n".join(["name,version,remote"] + sorted(csv)))
