@@ -156,7 +156,7 @@ def __install(
     tokens = omni.repo.man.get_tokens()
     tokens["config"] = buildConfig
     platform = tokens["platform"]
-    tokens["platform_target"] = platform
+    tokens["platform_host"] = platform
     tokens["platform_target_abi"] = omni.repo.man.get_abi_platform_translation(platform, tokens.get("abi", "2.35"))
     installDir = omni.repo.man.resolve_tokens(installDir, extra_tokens=tokens)
     targetDepsDir = omni.repo.man.resolve_tokens(f"{stagingDir}/target-deps", extra_tokens=tokens)

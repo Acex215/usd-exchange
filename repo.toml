@@ -114,14 +114,9 @@ generate_python_setup_shell_script = false
 python = "$root/_build/target-deps/python/python${exe_ext}"
 python_env.PATH."++" = [
     "$root/_build/$platform/$config/lib",
-    "$root/_build/target-deps/usd/$config/lib",
-    "$root/_build/target-deps/usd/$config/bin",
-    "$root/_build/target-deps/usd/$config/plugin/usd",
 ]
 python_env.PYTHONPATH."++" = [
     "$root/_build/$platform/$config/python",
-    "$root/_build/target-deps/omni_asset_validator/$config/python",
-    "$root/_build/target-deps/usd/$config/lib/python",
     "$root/_repo/deps/repo_man",
     "$root/_repo/deps/repo_test",
     "$root/_repo/deps/repo_ci",
