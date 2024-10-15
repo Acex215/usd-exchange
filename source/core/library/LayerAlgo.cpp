@@ -36,11 +36,11 @@ void usdex::core::setLayerAuthoringMetadata(pxr::SdfLayerHandle layer, const std
     layer->SetCustomLayerData(data);
 }
 
-bool usdex::core::saveLayer(pxr::SdfLayerHandle layer, const std::string& authoringMetadata, std::optional<std::string_view> comment)
+bool usdex::core::saveLayer(pxr::SdfLayerHandle layer, std::optional<std::string_view> authoringMetadata, std::optional<std::string_view> comment)
 {
-    if (!hasLayerAuthoringMetadata(layer))
+    if (authoringMetadata.has_value())
     {
-        setLayerAuthoringMetadata(layer, authoringMetadata);
+        setLayerAuthoringMetadata(layer, authoringMetadata.value().data());
     }
 
     bool success;

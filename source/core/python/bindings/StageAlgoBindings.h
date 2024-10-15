@@ -34,7 +34,7 @@ void bindStageAlgo(module& m)
         arg("defaultPrimName"),
         arg("upAxis"),
         arg("linearUnits"),
-        arg("authoringMetadata"),
+        arg("authoringMetadata") = nullptr,
         R"(
             Configure a stage so that the defining metadata is explicitly authored.
 
@@ -54,7 +54,6 @@ void bindStageAlgo(module& m)
                 upAxis: The up axis for all the geometry contained in the stage.
                 linearUnits: The meters per unit for all linear measurements in the stage.
                 authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
-                    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 
             Returns:
                 A bool indicating if the metadata was successfully authored.
@@ -67,7 +66,7 @@ void bindStageAlgo(module& m)
         "saveStage",
         &saveStage,
         arg("stage"),
-        arg("authoringMetadata"),
+        arg("authoringMetadata") = nullptr,
         arg("comment") = nullptr,
         R"(
             Save the given ``Usd.Stage`` with metadata applied to all dirty layers.
@@ -82,7 +81,7 @@ void bindStageAlgo(module& m)
             Args:
                 stage: The stage to be saved.
                 authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
-                    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
+                    If the "creator" key already exists on a given layer, it will not be overwritten & this data will be ignored.
                 comment: The comment will be authored in all dirty layers as the ``Sdf.Layer`` comment.
         )"
     );

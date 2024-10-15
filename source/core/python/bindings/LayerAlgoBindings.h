@@ -90,7 +90,7 @@ void bindLayerAlgo(module& m)
         "saveLayer",
         &saveLayer,
         arg("layer"),
-        arg("authoringMetadata"),
+        arg("authoringMetadata") = nullptr,
         arg("comment") = nullptr,
         R"(
             Save the given ``Sdf.Layer`` with an optional comment
@@ -103,7 +103,6 @@ void bindLayerAlgo(module& m)
             Args:
                 layer: The stage to be saved.
                 authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
-                    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
                 comment: The comment will be authored in the layer as the ``Sdf.Layer`` comment.
 
              Returns:

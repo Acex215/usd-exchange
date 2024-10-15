@@ -98,10 +98,36 @@ class LayerAlgoTest(usdex.test.TestCase):
         self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
         self.assertEqual(layer.customLayerData, self.__expectedAuthoringMetadata())
 
+    def testSaveLayerWithoutAuthoringMetadata(self):
+        layer: Sdf.Layer = self.tmpLayer()
+
+        # default authoringMetadata is None
+        self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
+            success = usdex.core.saveLayer(layer)
+        self.assertTrue(success)
+        self.assertEqual(layer.comment, "")
+        self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
+
+        # explicit authoringMetadata=None
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
+            success = usdex.core.saveLayer(layer, authoringMetadata=None)
+        self.assertTrue(success)
+        self.assertEqual(layer.comment, "")
+        self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
+
+        # empty authoringMetadata
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving")]):
+            success = usdex.core.saveLayer(layer, authoringMetadata="")
+        self.assertTrue(success)
+        self.assertEqual(layer.comment, "")
+        self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
+        self.assertEqual(layer.customLayerData, {"creator": ""})
+
     def testSaveLayerWithExistingMetadata(self):
         layer: Sdf.Layer = self.tmpLayer()
 
-        # setting custom metadata using the same keys blocks the automated authoring metadata
+        # setting authoringMetadata overrides existing metadata
         layer.customLayerData = {"creator": "foo bar"}
         self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
         with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, f'Saving.*with comment "{self._testMethodName}"')]):
@@ -109,9 +135,9 @@ class LayerAlgoTest(usdex.test.TestCase):
         self.assertTrue(success)
         self.assertEqual(layer.comment, self._testMethodName)
         self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
-        self.assertEqual(layer.customLayerData, {"creator": "foo bar"})
+        self.assertEqual(layer.customLayerData, self.__expectedAuthoringMetadata())
 
-        # setting custom metadata using unique keys does not block the automated authoring metadata
+        # setting custom metadata does not prevent the automated authoring metadata
         layer.ClearCustomLayerData()
         layer.customLayerData = {"foo": "bar"}
         self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
