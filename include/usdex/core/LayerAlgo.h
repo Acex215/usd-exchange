@@ -81,10 +81,13 @@ USDEX_API void setLayerAuthoringMetadata(pxr::SdfLayerHandle layer, const std::s
 //!
 //! @param layer The layer to be saved.
 //! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
-//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 //! @param comment The comment will be authored in the layer as the `SdfLayer` comment.
 //! @returns A bool indicating if the save was successful.
-USDEX_API bool saveLayer(pxr::SdfLayerHandle layer, const std::string& authoringMetadata, std::optional<std::string_view> comment = std::nullopt);
+USDEX_API bool saveLayer(
+    pxr::SdfLayerHandle layer,
+    std::optional<std::string_view> authoringMetadata = std::nullopt,
+    std::optional<std::string_view> comment = std::nullopt
+);
 
 //! Export the given `SdfLayer` to an identifier with an optional comment.
 //!
@@ -95,7 +98,6 @@ USDEX_API bool saveLayer(pxr::SdfLayerHandle layer, const std::string& authoring
 //! @param layer The layer to be exported.
 //! @param identifier The identifier to be used for the new layer.
 //! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
-//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 //! @param comment The comment will be authored in the layer as the `SdfLayer` comment.
 //! @param fileFormatArgs Additional file format-specific arguments to be supplied during layer export.
 //! @returns A bool indicating if the export was successful.

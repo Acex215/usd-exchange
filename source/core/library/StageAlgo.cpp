@@ -74,7 +74,7 @@ bool uncheckedConfigureStage(
     const std::string& defaultPrimName,
     const TfToken& upAxis,
     const double linearUnits,
-    const std::string& authoringMetadata
+    const std::optional<std::string_view>& authoringMetadata
 )
 {
     // Set stage metrics via the stage
@@ -116,10 +116,9 @@ bool uncheckedConfigureStage(
     // Set the default prim on the root layer
     layer->SetDefaultPrim(defaultPrimToken);
 
-    // Set the authoring metadata only if it hasn't been set before. This is to preserve the original provenance information
-    if (!usdex::core::hasLayerAuthoringMetadata(layer))
+    if (authoringMetadata.has_value())
     {
-        usdex::core::setLayerAuthoringMetadata(layer, authoringMetadata);
+        usdex::core::setLayerAuthoringMetadata(layer, authoringMetadata.value().data());
     }
 
     return true;
@@ -198,7 +197,7 @@ bool usdex::core::configureStage(
     const std::string& defaultPrimName,
     const TfToken& upAxis,
     const double linearUnits,
-    const std::string& authoringMetadata
+    std::optional<std::string_view> authoringMetadata
 )
 {
     // Validate the default prim name
@@ -226,14 +225,17 @@ bool usdex::core::configureStage(
     return uncheckedConfigureStage(stage, defaultPrimName, upAxis, linearUnits, authoringMetadata);
 }
 
-void usdex::core::saveStage(UsdStagePtr stage, const std::string& authoringMetadata, std::optional<std::string_view> comment)
+void usdex::core::saveStage(UsdStagePtr stage, std::optional<std::string_view> authoringMetadata, std::optional<std::string_view> comment)
 {
     SdfLayerHandleVector dirtyLayers = UsdUtilsGetDirtyLayers(stage);
-    for (auto& layer : dirtyLayers)
+    if (authoringMetadata.has_value())
     {
-        if (!layer->IsAnonymous() && !hasLayerAuthoringMetadata(layer))
+        for (auto& layer : dirtyLayers)
         {
-            setLayerAuthoringMetadata(layer, authoringMetadata);
+            if (!layer->IsAnonymous() && !hasLayerAuthoringMetadata(layer))
+            {
+                setLayerAuthoringMetadata(layer, authoringMetadata.value().data());
+            }
         }
     }
 

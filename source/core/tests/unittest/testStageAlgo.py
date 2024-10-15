@@ -426,7 +426,7 @@ class ConfigureStageTestCase(usdex.test.TestCase):
         self.assertIsValidUsd(stage)
 
     def testAuthoringMetadata(self):
-        # The authoring metadata is required
+        # The authoring metadata will be written
         stage = Usd.Stage.CreateInMemory()
         result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata)
         self.assertTrue(result)
@@ -434,8 +434,15 @@ class ConfigureStageTestCase(usdex.test.TestCase):
         self.assertEqual(stage.GetRootLayer().customLayerData, {"creator": self.defaultAuthoringMetadata})
         self.assertIsValidUsd(stage)
 
-        # The value will not be overwritten
-        result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, "foo")
+        # The value will not be overwritten if not supplied
+        result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits)
+        self.assertTrue(result)
+        self.assertTrue(usdex.core.hasLayerAuthoringMetadata(stage.GetRootLayer()))
+        self.assertEqual(stage.GetRootLayer().customLayerData, {"creator": self.defaultAuthoringMetadata})
+        self.assertIsValidUsd(stage)
+
+        # The value will not be overwritten if explicitly supplied as None
+        result = usdex.core.configureStage(stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, authoringMetadata=None)
         self.assertTrue(result)
         self.assertTrue(usdex.core.hasLayerAuthoringMetadata(stage.GetRootLayer()))
         self.assertEqual(stage.GetRootLayer().customLayerData, {"creator": self.defaultAuthoringMetadata})
@@ -561,6 +568,22 @@ class SaveStageTestCase(usdex.test.TestCase):
                 self.assertEqual(layer.customLayerData, {"creator": self.defaultAuthoringMetadata})
                 self.assertEqual(layer.comment, comment)  # retained from previous save
 
+        # Test no authoringMetadata argument
+        stage.SetEditTarget(Usd.EditTarget(rootLayer))  # Root Stage Layer
+        stage.DefinePrim(f"{root.GetPath()}/another9")
+        stage.SetEditTarget(Usd.EditTarget(baseLayer))  # base
+        stage.DefinePrim(f"{root.GetPath()}/another10")
+        stage.SetEditTarget(Usd.EditTarget(overLayer))  # over
+        stage.DefinePrim(f"{root.GetPath()}/another11")
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_STATUS_TYPE, "Saving.*")]):
+            usdex.core.saveStage(stage)
+        for layer in stage.GetLayerStack():
+            if not layer.anonymous:
+                # retained from previous save
+                self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
+                self.assertEqual(layer.customLayerData, {"creator": self.defaultAuthoringMetadata})
+                self.assertEqual(layer.comment, comment)
+
         # setting custom metadata using the same keys blocks the automated authoring metadata
         for layer in stage.GetLayerStack():
             layer.ClearCustomLayerData()
@@ -578,6 +601,8 @@ class SaveStageTestCase(usdex.test.TestCase):
                 self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
                 self.assertEqual(layer.customLayerData, {"creator": "foo bar"})
                 self.assertEqual(layer.comment, comment)
+
+        # validate
         self.assertIsValidUsd(
             stage,
             issuePredicates=[

@@ -83,7 +83,7 @@ USDEX_API bool configureStage(
     const std::string& defaultPrimName,
     const pxr::TfToken& upAxis,
     const double linearUnits,
-    const std::string& authoringMetadata
+    std::optional<std::string_view> authoringMetadata = std::nullopt
 );
 
 //! Save the given `UsdStage` with metadata applied to all dirty layers.
@@ -98,9 +98,13 @@ USDEX_API bool configureStage(
 //!
 //! @param stage The stage to be saved.
 //! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
-//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
+//!    If the "creator" key already exists on a given layer, it will not be overwritten & this data will be ignored.
 //! @param comment The comment will be authored in all dirty layers as the `Sdf.Layer` comment.
-USDEX_API void saveStage(pxr::UsdStagePtr stage, const std::string& authoringMetadata, std::optional<std::string_view> comment = std::nullopt);
+USDEX_API void saveStage(
+    pxr::UsdStagePtr stage,
+    std::optional<std::string_view> authoringMetadata = std::nullopt,
+    std::optional<std::string_view> comment = std::nullopt
+);
 
 //! @}
 
