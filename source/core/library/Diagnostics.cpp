@@ -15,8 +15,6 @@
 #include <pxr/base/arch/debugger.h>
 #include <pxr/base/tf/stackTrace.h>
 
-#include <fmt/format.h>
-
 using namespace pxr;
 
 namespace
@@ -99,11 +97,11 @@ public:
         // TfDiagnosticMgr will log the crash and terminate the process.
         if (context.IsHidden())
         {
-            print(fmt::format("[Fatal] {0}\n", msg));
+            print(TfStringPrintf("[Fatal] %s\n", msg.c_str()));
         }
         else
         {
-            print(fmt::format("[Fatal] [{0}] {1}\n", context.GetPrettyFunction(), msg));
+            print(TfStringPrintf("[Fatal] [%s] %s\n", context.GetPrettyFunction(), msg.c_str()));
         }
     }
 
@@ -137,15 +135,19 @@ private:
         // though it is possible there are other circumstances as well.
         if (diagnostic.GetContext().IsHidden() || diagnostic.GetSourceFileName().empty())
         {
-            return fmt::format("[{0}] {1}\n", TfDiagnosticMgr::GetCodeName(diagnostic.GetDiagnosticCode()), diagnostic.GetCommentary());
+            return TfStringPrintf(
+                "[%s] %s\n",
+                TfDiagnosticMgr::GetCodeName(diagnostic.GetDiagnosticCode()).c_str(),
+                diagnostic.GetCommentary().c_str()
+            );
         }
         else
         {
-            return fmt::format(
-                "[{0}] [{1}] {2}\n",
-                TfDiagnosticMgr::GetCodeName(diagnostic.GetDiagnosticCode()),
-                diagnostic.GetSourceFunction(),
-                diagnostic.GetCommentary()
+            return TfStringPrintf(
+                "[%s] [%s] %s\n",
+                TfDiagnosticMgr::GetCodeName(diagnostic.GetDiagnosticCode()).c_str(),
+                diagnostic.GetSourceFunction().c_str(),
+                diagnostic.GetCommentary().c_str()
             );
         }
     }

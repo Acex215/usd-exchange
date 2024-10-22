@@ -54,7 +54,6 @@
 - OpenUSD 24.08 (default), 24.05, 23.11
 - Omni Transcoding 1.0.0
 - Omni Asset Validator 0.13.3
-- fmt 7.0.3
 - pybind 2.11.1
 
 ### Dev Tools

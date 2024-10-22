@@ -17,6 +17,7 @@
 
 #include <pxr/base/arch/defines.h>
 #include <pxr/base/tf/fileUtils.h>
+#include <pxr/base/tf/stringUtils.h>
 
 #if defined(ARCH_OS_WINDOWS)
 #pragma warning(push)
@@ -26,8 +27,6 @@
 #else
 #include <pxr/base/arch/fileSystem.h>
 #endif
-
-#include <fmt/format.h>
 
 #include <regex>
 #include <string>
@@ -49,7 +48,7 @@ public:
     {
         // Sanitize Version string
         std::string versionString = std::regex_replace(USDEX_BUILD_STRING, std::regex("[^A-Za-z0-9_-]"), "_");
-        std::string prefix = fmt::format("usdex_{0}", versionString);
+        std::string prefix = pxr::TfStringPrintf("usdex_%s", versionString.c_str());
         m_path = pxr::ArchMakeTmpSubdir(pxr::ArchNormPath(pxr::ArchGetTmpDir()), prefix);
     }
 

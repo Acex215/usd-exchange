@@ -48,7 +48,6 @@ group "core"
     namespace = "usdex_core"
 
     project "core_library"
-        usdex_build.use_fmt()
         usdex_build.use_omni_transcoding()
         usdex_build.use_usd({ "ar", "arch", "gf", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "usdUtils", "vt" })
         usdex_build.shared_library{
@@ -71,7 +70,6 @@ group "core"
 
     project "core_test_executable"
         dependson { "core_library" }
-        usdex_build.use_fmt()
         usdex_build.use_cxxopts()
         usdex_build.use_doctest()
         usdex_build.use_usd({"arch", "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "vt"})
@@ -93,7 +91,6 @@ group "rtx"
 
     project "rtx_library"
         dependson { "core_library" }
-        usdex_build.use_fmt()
         usdex_build.use_usd({ "arch", "gf", "sdf", "tf", "usd", "usdShade", "usdUtils", "vt" })
         usdex_build.use_usdex_core()
         usdex_build.shared_library{

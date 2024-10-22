@@ -12,9 +12,6 @@
   <dependency name="pybind11" linkPath="../_build/target-deps/pybind11">
     <package name="pybind11" version="2.11.1-0" />
   </dependency>
-  <dependency name="fmt" linkPath="../_build/target-deps/fmt">
-    <package name="fmt" version="7.0.3+nv2" />
-  </dependency>
   <dependency name="cxxopts" linkPath="../_build/target-deps/cxxopts">
     <package name="cxxopts" version="2.2.0-1" />
   </dependency>

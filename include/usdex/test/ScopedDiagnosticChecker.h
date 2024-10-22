@@ -20,8 +20,6 @@
 #include <pxr/base/tf/errorMark.h>
 #include <pxr/usd/usdUtils/coalescingDiagnosticDelegate.h>
 
-#include <fmt/format.h>
-
 #include <doctest/doctest.h>
 
 #include <regex>
@@ -113,7 +111,7 @@ public:
             CHECK(error.GetErrorCode() == m_expected[i].first);
             CHECK_MESSAGE(
                 std::regex_match(error.GetCommentary(), std::regex(m_expected[i].second)),
-                fmt::format("\n\tPattern: {0}\n\tCommentary: {1}", m_expected[i].second, error.GetCommentary())
+                pxr::TfStringPrintf("\n\tPattern: %s\n\tCommentary: %s", m_expected[i].second.c_str(), error.GetCommentary().c_str())
             );
             ++i;
         }
@@ -128,7 +126,7 @@ public:
             CHECK(diagnostic->GetDiagnosticCode() == m_expected[i].first);
             CHECK_MESSAGE(
                 std::regex_match(diagnostic->GetCommentary(), std::regex(m_expected[i].second)),
-                fmt::format("\n\tPattern: {0}\n\tCommentary: {1}", m_expected[i].second, diagnostic->GetCommentary())
+                pxr::TfStringPrintf("\n\tPattern: %s\n\tCommentary: %s", m_expected[i].second.c_str(), diagnostic->GetCommentary().c_str())
             );
             ++i;
         }
