@@ -42,7 +42,6 @@ These licenses pertain to the `usdex_core` shared library.
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib `(jump to license) <zlib LICENSE_>`_
-- fmt `(jump to license) <fmt LICENSE_>`_
 ```
 
 **Optional Runtime Dependencies**
@@ -69,7 +68,6 @@ These licenses pertain to the `usdex.core` python module, its compiled bindings 
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib `(jump to license) <zlib LICENSE_>`_
-- fmt `(jump to license) <fmt LICENSE_>`_
 - Python `(jump to license) <python LICENSE_>`_
 - Boost `(jump to license) <boost LICENSE_>`_
 - pybind11 `(jump to license) <pybind11 LICENSE_>`_
@@ -96,7 +94,6 @@ These licenses pertain to the `usdex/test` c++ headers and any compiled library 
 ```{eval-rst}
 - OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
 - OpenUSD `(jump to license) <usd LICENSE_>`_
-- fmt `(jump to license) <fmt LICENSE_>`_
 - cxxopts `(jump to license) <cxxopts LICENSE_>`_
 - doctest `(jump to license) <doctest LICENSE_>`_
 ```
@@ -112,7 +109,6 @@ These licenses pertain to the `usdex.test` python module, which is based on pyth
 - Omni Asset Validator `(jump to license) <omni.asset_validator LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib `(jump to license) <zlib LICENSE_>`_
-- fmt `(jump to license) <fmt LICENSE_>`_
 - Python `(jump to license) <python LICENSE_>`_
 - Boost `(jump to license) <boost LICENSE_>`_
 - pybind11 `(jump to license) <pybind11 LICENSE_>`_
@@ -144,8 +140,6 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/*TBB-LICENSE.txt
 
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/zlib-LICENSE.txt
-
-.. include-licenses:: /_build/target-deps/fmt/PACKAGE-LICENSES/fmt-LICENSE.txt
 
 .. include-licenses:: /_build/target-deps/cxxopts/PACKAGE-LICENSES/cxxopts-LICENSE.txt
 

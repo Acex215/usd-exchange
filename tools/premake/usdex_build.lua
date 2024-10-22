@@ -225,11 +225,6 @@ function m.use_python()
     filter {}
 end
 
-function m.use_fmt()
-    externalincludedirs { target_deps.."/fmt/include" }
-    files { target_deps.."/fmt/src/*.cc" }
-end
-
 function m.use_cxxopts()
     externalincludedirs { target_deps.."/cxxopts/include" }
 end

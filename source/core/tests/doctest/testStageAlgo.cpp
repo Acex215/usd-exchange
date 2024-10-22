@@ -25,8 +25,6 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
 
-#include <fmt/format.h>
-
 #include <doctest/doctest.h>
 
 using namespace usdex::test;
@@ -37,7 +35,7 @@ namespace
 
 std::string getAuthoringMetadata()
 {
-    return fmt::format("usdex cpp tests: {0}, usd_ver: {1}, with_python: {2}", usdex::core::version(), PXR_VERSION, usdex::core::withPython());
+    return TfStringPrintf("usdex cpp tests: %s, usd_ver: %d, with_python: %d", usdex::core::version(), PXR_VERSION, usdex::core::withPython());
 }
 
 // FUTURE: this is included in both python and c++ tests. Is it useful at runtime? Maybe it belongs in usdex::core instead
@@ -87,7 +85,7 @@ TEST_CASE("createStage identifier")
 
     // unsupported identifier
     usdex::test::ScopedTmpDir tmpDir;
-    identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.foo");
+    identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.foo");
     {
         ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid identifier" } });
         stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
@@ -96,7 +94,7 @@ TEST_CASE("createStage identifier")
     CHECK(SdfLayer::Find(identifier) == nullptr);
 
     // valid usda
-    identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usda");
+    identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usda");
     stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     REQUIRE(stage != nullptr);
     CHECK(usdex::test::compareIdentifiers(stage->GetRootLayer()->GetIdentifier(), identifier));
@@ -104,7 +102,7 @@ TEST_CASE("createStage identifier")
     CHECK(usdex::core::hasLayerAuthoringMetadata(stage->GetRootLayer()));
 
     // valid usdc
-    identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usdc");
+    identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usdc");
     stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     REQUIRE(stage != nullptr);
     CHECK(usdex::test::compareIdentifiers(stage->GetRootLayer()->GetIdentifier(), identifier));
@@ -112,7 +110,7 @@ TEST_CASE("createStage identifier")
     CHECK(usdex::core::hasLayerAuthoringMetadata(stage->GetRootLayer()));
 
     // valid usd results in usdc
-    identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usd");
+    identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usd");
     stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, authoringMetadata);
     REQUIRE(stage != nullptr);
     CHECK(usdex::test::compareIdentifiers(stage->GetRootLayer()->GetIdentifier(), identifier));
@@ -124,7 +122,7 @@ TEST_CASE("createStage identifier")
 TEST_CASE("createStage defaultPrim")
 {
     usdex::test::ScopedTmpDir tmpDir;
-    const std::string identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usda");
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usda");
     const TfToken& upAxis = UsdGeomTokens->y;
     const double linearUnits = UsdGeomLinearUnits::meters;
     const std::string authoringMetadata = ::getAuthoringMetadata();
@@ -155,7 +153,7 @@ TEST_CASE("createStage defaultPrim")
 TEST_CASE("createStage upAxis")
 {
     usdex::test::ScopedTmpDir tmpDir;
-    const std::string identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usda");
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usda");
     const std::string defaultPrimName = "Root";
     const double linearUnits = UsdGeomLinearUnits::meters;
     const std::string authoringMetadata = ::getAuthoringMetadata();
@@ -215,7 +213,7 @@ TEST_CASE("createStage upAxis")
 TEST_CASE("createStage linearUnits")
 {
     usdex::test::ScopedTmpDir tmpDir;
-    const std::string identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usda");
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usda");
     const std::string defaultPrimName = "Root";
     const TfToken& upAxis = UsdGeomTokens->y;
     const std::string authoringMetadata = ::getAuthoringMetadata();
@@ -253,7 +251,7 @@ TEST_CASE("createStage linearUnits")
 TEST_CASE("createStage authoringMetadata")
 {
     usdex::test::ScopedTmpDir tmpDir;
-    const std::string identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usd");
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usd");
     const std::string defaultPrimName = "Root";
     const TfToken& upAxis = UsdGeomTokens->y;
     const double linearUnits = UsdGeomLinearUnits::meters;
@@ -278,7 +276,7 @@ TEST_CASE("createStage authoringMetadata")
 TEST_CASE("createStage fileFormatArgs")
 {
     usdex::test::ScopedTmpDir tmpDir;
-    const std::string identifier = fmt::format("{0}/{1}", tmpDir.getPath(), "test.usd");
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usd");
     const std::string defaultPrimName = "Root";
     const TfToken& upAxis = UsdGeomTokens->y;
     const double linearUnits = UsdGeomLinearUnits::meters;

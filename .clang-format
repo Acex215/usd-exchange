@@ -69,12 +69,10 @@ IncludeCategories:
     Priority:        8
   - Regex:           '<pybind11\/.+>'
     Priority:        9
-  - Regex:           '<fmt\/.+>'
-    Priority:        10
   - Regex:           '<doctest\/.+>'
-    Priority:        11
+    Priority:        10
   - Regex:           '<.+>'
-    Priority:        12
+    Priority:        11
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentFunctionDeclarationAfterType: false

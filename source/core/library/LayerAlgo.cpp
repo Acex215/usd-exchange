@@ -12,8 +12,6 @@
 
 #include <pxr/usd/usd/stage.h>
 
-#include <fmt/format.h>
-
 using namespace pxr;
 
 namespace
