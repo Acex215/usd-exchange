@@ -24,9 +24,11 @@ def main(arguments: argparse.Namespace):
 
     omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
-    # copy internal packman config into place
+    # copy internal configs into place
     if omni.repo.ci.is_running_on_ci():
         shutil.copyfile("usd-exchange-ci/configs/config.packman.xml", "tools/packman/config.packman.xml")
+        if omni.repo.man.is_windows():
+            shutil.copyfile("usd-exchange-ci/configs/host-deps.packman.xml", "deps/host-deps.packman.xml")
 
     # clean build of the specified usd & python flavors, in docker when on linux, with licensing force enabled
     build = [
@@ -49,6 +51,8 @@ def main(arguments: argparse.Namespace):
         build.append("--/repo_build/docker/enabled=true")
         if abi:
             build.append(f"--/repo_build/docker/image_url={omni.repo.man.resolve_tokens('${env:REPO_BUILD_IMAGE}')}")
+    elif omni.repo.man.is_windows():
+        build.append("--/repo_build/msbuild/link_host_toolchain=")
 
     build = [omni.repo.man.resolve_tokens(x) for x in build]
     omni.repo.ci.launch(build)

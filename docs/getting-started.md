@@ -34,7 +34,10 @@ This project requires "make" and "g++".
 ````{tab-item} Windows
 :sync: windows
 
-Use the provided build script to download all dependencies (e.g OpenUSD), create the projects, and compile the code:
+This project requires Microsoft Visual Studio 2019 or newer.
+
+1. Download & install [Visual Studio with C++](https://visualstudio.microsoft.com/vs/features/cplusplus).
+2. Use the provided build script to download all dependencies (e.g OpenUSD), create the projects, and compile the code:
 ```bash
 .\repo.bat build
 ```
