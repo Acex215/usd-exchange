@@ -84,10 +84,12 @@ post_build.commands = [
     ["$root/repo${shell_ext}", "--set-token", "python_ver:${python_ver}", "stubgen", "-c", "$config"],
 ]
 
+msbuild.link_host_toolchain = true
 msbuild.sln_file = "${conf:repo.name}.sln"
-msbuild.vs_version = 'vs2019'
+msbuild.vs_version = ""  # choose the latest on the system
 
 fetch.generated_packman_file = "$root/_build/$platform/$config/dev/deps/all-deps.packman.xml"
+fetch.strip_deps = ["msvc", "winsdk", "linbuild"]  # internal-only deps
 
 [[repo_build.argument]]
 name = "usd_flavor"
@@ -155,8 +157,6 @@ library_paths = [
     # required because the CI runners don't necessarily match the python flavor requested
     "$root/_build/target-deps/python/lib",  # for linux
     "$root/_build/target-deps/python",  # for windows
-    # this is for windows only, when running on basic machines without c/c++ runtimes
-    "$root/_build/host-deps/msvc/VC/Tools/MSVC/14.29.30133/bin/HostX64/x64",
 ]
 python_paths = [
     "${test_root}/python",

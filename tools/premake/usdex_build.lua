@@ -38,8 +38,6 @@ function m.setup_workspace(args)
         linux_x86_64_enabled = args.linux_x86_64_enabled or true,
         linux_aarch64_enabled = args.linux_aarch64_enabled or false,
         macos_universal_enabled = args.macos_universal_enabled or false,
-        msvc_version = args.msvc_version or "14.29.30133",
-        winsdk_version = args.winsdk_version or "10.0.20348.0",
         copy_windows_debug_libs = args.copy_windows_debug_libs or false,
         allow_undefined_symbols_linux = args.allow_undefined_symbols_linux or true,
         extra_warnings = args.extra_warnings or true,
@@ -263,6 +261,9 @@ function m.use_usd(usd_libs)
 
     filter { "system:linux" }
         linkoptions { "-Wl,-rpath-link,"..repo_build.get_abs_path(usd_lib_path) }
+    -- repo_usd should be doing this eventually
+    filter { "system:windows" }
+        defines { "BOOST_LIB_TOOLSET=\"vc142\"" }
     filter {}
 end
 
