@@ -385,7 +385,7 @@ Create a new Visual Studio 2019 or 2022 project based on the `C++ Console App`, 
 
 ```{eval-rst}
 .. note::
-  The OpenUSD Exchange Samples include `Visual Studio solution and project files <https://github.com/NVIDIA-Omniverse/usd-exchange-samples/source/usdTraverse>`_ with all of the below build configuration settings setup.  Because Visual Studio solutions aren't as portable as Makefiles, your mileage may vary with them and you may need to start from scratch with a new solution.
+  The OpenUSD Exchange Samples include `Visual Studio solution and project files <https://github.com/NVIDIA-Omniverse/usd-exchange-samples/tree/main/source/usdTraverse>`_ with all of the below build configuration settings setup.  Because Visual Studio solutions aren't as portable as Makefiles, your mileage may vary with them and you may need to start from scratch with a new solution.
 ```
 
 ##### Header Include Paths
