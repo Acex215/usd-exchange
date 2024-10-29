@@ -1,4 +1,4 @@
-# 1.0.0-rc3
+# 1.0.0-rc4
 
 ## Core
 
@@ -65,4 +65,4 @@
 - Premake 5.0.0-beta2
 - GCC 11.4.0
 - MSVC 2019-16.11
-- Python 3.10.14 (default), 3.11.9
+- Python 3.10.15 (default), 3.11.10
