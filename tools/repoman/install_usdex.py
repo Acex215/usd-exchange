@@ -16,6 +16,7 @@ from typing import Callable, Dict, List
 
 import omni.repo.man
 import packmanapi
+import pkg_resources
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
@@ -284,6 +285,8 @@ def __install(
             "usdLux",
             "usdShade",
         ]
+        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+            usdLibs.append("ts")
 
     if installTestModules and python_ver != "0":
         # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
@@ -330,11 +333,10 @@ def __install(
         if installRtxModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
-        prebuild_dict["copy"].extend(
-            [
-                [usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir],
-            ]
-        )
+        if pkg_resources.parse_version(usd_ver) < pkg_resources.parse_version("24.11"):
+            prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir])
+        else:
+            prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "python${lib_ext}", libInstallDir])
         if installPythonLibs:
             prebuild_dict["copy"].extend(
                 [
@@ -362,6 +364,8 @@ def __install(
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
         ]
+        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+            usdModules.append(("pxr/Ts", "_ts"))
 
         # usdex.test
         if installTestModules:
@@ -443,7 +447,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument(
         "--usd-version",
         dest="usd_ver",
-        choices=["24.08", "24.05", "23.11"],  # public versions only
+        default=usd_ver,
+        choices=["24.11", "24.08", "24.05", "23.11"],  # public versions only
         help=f"The OpenUSD version to install. Defaults to `{usd_ver}`",
     )
     parser.add_argument(

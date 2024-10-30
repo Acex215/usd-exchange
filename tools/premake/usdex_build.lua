@@ -263,7 +263,9 @@ function m.use_usd(usd_libs)
         linkoptions { "-Wl,-rpath-link,"..repo_build.get_abs_path(usd_lib_path) }
     -- repo_usd should be doing this eventually
     filter { "system:windows" }
-        defines { "BOOST_LIB_TOOLSET=\"vc142\"" }
+        if USD_VERSION < "24.11" then
+            defines { "BOOST_LIB_TOOLSET=\"vc142\"" }
+        end
     filter {}
 end
 
