@@ -141,6 +141,11 @@ See [CONTRIBUTING.md](https://github.com/NVIDIA-Omniverse/usd-exchange/blob/main
 
 [TBB](https://oneapi-src.github.io/oneTBB) and [Boost](https://www.boost.org) are open source software that OpenUSD requires. While OpenUSD Exchange does not use them directly, several critical OpenUSD libraries do link & require them.
 
+```{eval-rst}
+.. note::
+  In OpenUSD 24.11 the use of Boost was eliminated from many modules. It is still required for OpenVDB and OpenImageIO, but none of the modules used by OpenUSD Exchange SDK require Boost as of this version. If you want to avoid Boost, consider using the 24.11 flavors.
+```
+
 If your application ships its own TBB or Boost, you _might_ be able to use the prebuilt binaries from [`install_usdex`](./devtools.md#install_usdex), it works out more often than not.
 
 However, some applications use an older TBB or Boost library that is incompatible. There isn't any great way to detect this, other than to try & see if you hit issues. If you do, you should re-compile OpenUSD against your application's TBB and/or Boost libraries, then re-compile the OpenUSD Exchange SDK from source code, making sure to compile & link against your new USD distribution.

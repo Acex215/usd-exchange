@@ -4,14 +4,15 @@
         :sync: linux
 
         .. code-block:: bash
-            :caption: Note the python runtime is optional, as is the `usdex_rtx` library and module.
+            :caption:
+                In all flavors the python runtime is optional, as is the `usdex_rtx` library and module.
 
             ├── lib
             │   ├── libusdex_core.so
             │   ├── libusdex_rtx.so
             │   ├── libomni_transcoding.so
-            │   ├── libboost_python310.so -> libboost_python310.so.1.78.0
-            │   ├── libboost_python310.so.1.78.0
+            │   ├── libboost_python310.so -> libboost_python310.so.1.78.0   <-- USD 24.08 & older
+            │   ├── libboost_python310.so.1.78.0                            <-- USD 24.08 & older
             │   ├── libpython3.10.so -> libpython3.10.so.1.0
             │   ├── libpython3.10.so.1.0
             │   ├── libpython3.so
@@ -24,9 +25,11 @@
             │   ├── libusd_ndr.so
             │   ├── libusd_pcp.so
             │   ├── libusd_plug.so
+            │   ├── libusd_python.so                                        <-- USD 24.11 & newer
             │   ├── libusd_sdf.so
             │   ├── libusd_sdr.so
             │   ├── libusd_tf.so
+            │   ├── libusd_ts.so                                            <-- USD 24.11 & newer
             │   ├── libusd_trace.so
             │   ├── libusd_usdGeom.so
             │   ├── libusd_usdLux.so
@@ -61,7 +64,8 @@
     .. tab-item:: Linux `usd-minimal`
 
         .. code-block:: bash
-            :caption: Note OpenUSD is a minimal build with compact dependencies. The `usdex_rtx` library is optional.
+            :caption:
+                OpenUSD is a minimal build with compact dependencies. The `usdex_rtx` library is optional.
 
             └── lib
                 ├── libusdex_core.so
@@ -79,13 +83,14 @@
         :sync: windows
 
         .. code-block:: bash
-            :caption: Note the python runtime is optional, as is the `usdex_rtx` library and module.
+            :caption:
+                In all flavors the python runtime is optional, as is the `usdex_rtx` library and module.
 
             ├── lib
             │   ├── usdex_core.dll
             │   ├── usdex_rtx.dll
             │   ├── omni_transcoding.dll
-            |   ├── boost_python310-vc142-mt-x64-1_78.dll
+            |   ├── boost_python310-vc142-mt-x64-1_78.dll   <-- USD 24.08 & older
             │   ├── python3.dll
             │   ├── python310.dll
             │   ├── tbb.dll
@@ -97,9 +102,11 @@
             │   ├── usd_ndr.dll
             │   ├── usd_pcp.dll
             │   ├── usd_plug.dll
+            │   ├── usd_python.dll                          <-- USD 24.11 & newer
             │   ├── usd_sdf.dll
             │   ├── usd_sdr.dll
             │   ├── usd_tf.dll
+            │   ├── usd_ts.dll                              <-- USD 24.11 & newer
             │   ├── usd_trace.dll
             │   ├── usd_usd.dll
             │   ├── usd_usdGeom.dll
@@ -134,7 +141,8 @@
     .. tab-item:: Windows `usd-minimal`
 
         .. code-block:: bash
-            :caption: Note OpenUSD is a minimal build with compact dependencies. The `usdex_rtx` library is optional.
+            :caption:
+                OpenUSD is a minimal build with compact dependencies. The `usdex_rtx` library is optional.
 
             └── lib
                 ├── usdex_core.dll
