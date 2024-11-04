@@ -246,6 +246,7 @@ only_preprocessor_enabled = true
 api_root_page = {docname = "api", title = "OpenUSD Exchange C++ API", toc_docnames = "*"}
 doxygen_input = [
     "include/usdex/core",
+    "include/usdex/pybind/UsdBindings.h",
     "include/usdex/rtx",
     "include/usdex/test",
 ]

@@ -101,3 +101,10 @@ Debug logs are emitted via OpenUSD's `TfDebug` mechanism, which is separate from
 ## Runtime Settings
 
 Some OpenUSD Exchange behaviors (such as name transcoding) are controllable via global static [runtime settings](../api/group__settings.rebreather_rst), using OpenUSD’s `TfEnvSetting` mechanism, which relies on setting Environment Variables before the USD libraries are loaded into an application.
+
+## Python Interoperability
+
+Many projects use `pybind11` for python bindings, but OpenUSD 24.08 and older uses `boost::python`, while OpenUSD 24.11 and newer
+uses a fork of `boost::python` called `pxr_python`.
+
+We often need to pass the python objects in and out of c++ between a mix of bound functions. OpenUSD Exchange provides [`usdex/pybind` C++ headers](../api/group__pybind.rebreather_rst) to enable pybind11 to consume & to produce OpenUSD bound objects.

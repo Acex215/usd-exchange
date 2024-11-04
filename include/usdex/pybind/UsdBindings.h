@@ -11,13 +11,7 @@
 #pragma once
 
 //! @file usdex/pybind/UsdBindings.h
-//! @brief Provides pybind11 and boost::python interoperability for OpenUSD types.
-//!
-//! Many projects use pybind11 for python bindings, but OpenUSD uses boost::python. We often need to pass the python objects in and out of c++
-//! between a mix of bound functions. These casters enable pybind11 to consume & to product boost::python bound objects.
-//!
-//! @note We bind the minimal set of OpenUSD types required by the OpenUSD Exchange SDK public C++ API. Not all types are supported, though more
-//! will be added as needed by the public entry points.
+//! @brief Provides pybind11 interoperability for OpenUSD's bound python objects.
 
 #include <pxr/base/arch/defines.h>
 
@@ -56,92 +50,109 @@
 namespace pybind11::detail
 {
 
-//! pybind11 / boost::python interop for GfCamera
-PYBOOST11_TYPE_CASTER(pxr::GfCamera, _("pxr.Gf.Camera"));
-//! pybind11 / boost::python interop for GfVec3d
-PYBOOST11_TYPE_CASTER(pxr::GfVec3d, _("pxr.Gf.Vec3d"));
-//! pybind11 / boost::python interop for GfVec3f
-PYBOOST11_TYPE_CASTER(pxr::GfVec3f, _("pxr.Gf.Vec3f"));
-//! pybind11 / boost::python interop for GfVec3i
-PYBOOST11_TYPE_CASTER(pxr::GfVec3i, _("pxr.Gf.Vec3i"));
-//! pybind11 / boost::python interop for GfMatrix4d
-PYBOOST11_TYPE_CASTER(pxr::GfMatrix4d, _("pxr.Gf.Matrix4d"));
-//! pybind11 / boost::python interop for GfTransform
-PYBOOST11_TYPE_CASTER(pxr::GfTransform, _("pxr.Gf.Transform"));
-//! pybind11 / boost::python interop for SdfAssetPath
-PYBOOST11_TYPE_CASTER(pxr::SdfAssetPath, _("pxr.Sdf.AssetPath"));
-//! pybind11 / boost::python interop for SdfLayerHandle
-PYBOOST11_TYPE_CASTER(pxr::SdfLayerHandle, _("pxr.Sdf.Layer"));
-//! pybind11 / boost::python interop for SdfPath
-PYBOOST11_TYPE_CASTER(pxr::SdfPath, _("pxr.Sdf.Path"));
-//! pybind11 / boost::python interop for SdfValueTypeNames
-PYBOOST11_TYPE_CASTER(pxr::SdfValueTypeName, _("pxr.Sdf.ValueTypeName"));
-//! pybind11 / boost::python interop for TfToken
+//! @defgroup pybind Python Interoperability for pybind11
 //!
-//! Note we want to inform python clients that regular python strings are the expected value type, not TfTokens
+//! Provides pybind11 interoperability for OpenUSD's bound python objects.
+//!
+//! Many projects use `pybind11` for python bindings, but OpenUSD 24.08 and older uses `boost::python`, while OpenUSD 24.11 and newer
+//! uses a fork of `boost::python` called `pxr_python`.
+//!
+//! We often need to pass the python objects in and out of c++ between a mix of bound functions.
+//! These casters enable pybind11 to consume & to produce OpenUSD bound objects.
+//!
+//! @note We bind the minimal set of OpenUSD types required by the OpenUSD Exchange SDK public C++ API. Not all types are supported, though more
+//! will be added as needed by the public entry points.
+//!
+//! @{
+
+//! pybind11 interoperability for `GfCamera`
+PYBOOST11_TYPE_CASTER(pxr::GfCamera, _("pxr.Gf.Camera"));
+//! pybind11 interoperability for `GfVec3d`
+PYBOOST11_TYPE_CASTER(pxr::GfVec3d, _("pxr.Gf.Vec3d"));
+//! pybind11 interoperability for `GfVec3f`
+PYBOOST11_TYPE_CASTER(pxr::GfVec3f, _("pxr.Gf.Vec3f"));
+//! pybind11 interoperability for `GfVec3i`
+PYBOOST11_TYPE_CASTER(pxr::GfVec3i, _("pxr.Gf.Vec3i"));
+//! pybind11 interoperability for `GfMatrix4d`
+PYBOOST11_TYPE_CASTER(pxr::GfMatrix4d, _("pxr.Gf.Matrix4d"));
+//! pybind11 interoperability for `GfTransform`
+PYBOOST11_TYPE_CASTER(pxr::GfTransform, _("pxr.Gf.Transform"));
+//! pybind11 interoperability for `SdfAssetPath`
+PYBOOST11_TYPE_CASTER(pxr::SdfAssetPath, _("pxr.Sdf.AssetPath"));
+//! pybind11 interoperability for `SdfLayerHandle`
+PYBOOST11_TYPE_CASTER(pxr::SdfLayerHandle, _("pxr.Sdf.Layer"));
+//! pybind11 interoperability for `SdfPath`
+PYBOOST11_TYPE_CASTER(pxr::SdfPath, _("pxr.Sdf.Path"));
+//! pybind11 interoperability for `SdfValueTypeNames`
+PYBOOST11_TYPE_CASTER(pxr::SdfValueTypeName, _("pxr.Sdf.ValueTypeName"));
+//! pybind11 interoperability for `TfToken`
+//!
+//! Note we want to inform python clients that regular python strings are the expected value type, not `TfToken`
 PYBOOST11_TYPE_CASTER(pxr::TfToken, _("str"));
-//! pybind11 / boost::python interop for TfTokenVector
+//! pybind11 interoperability for `TfTokenVector`
 //!
 //! Note we want to inform python clients that regular python a list of strings are the expected value type
 PYBOOST11_TYPE_CASTER(pxr::TfTokenVector, _("list(str)"));
-//! pybind11 / boost::python interop for UsdAttribute
+//! pybind11 interoperability for `UsdAttribute`
 PYBOOST11_TYPE_CASTER(pxr::UsdAttribute, _("pxr.Usd.Attribute"));
-//! pybind11 / boost::python interop for UsdGeomBasisCurves
+//! pybind11 interoperability for `UsdGeomBasisCurves`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomBasisCurves, _("pxr.UsdGeom.BasisCurves"));
-//! pybind11 / boost::python interop for UsdGeomCamera
+//! pybind11 interoperability for `UsdGeomCamera`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomCamera, _("pxr.UsdGeom.Camera"));
-//! pybind11 / boost::python interop for UsdGeomMesh
+//! pybind11 interoperability for `UsdGeomMesh`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomMesh, _("pxr.UsdGeom.Mesh"));
-//! pybind11 / boost::python interop for UsdGeomPoints
+//! pybind11 interoperability for `UsdGeomPoints`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomPoints, _("pxr.UsdGeom.Points"));
-//! pybind11 / boost::python interop for UsdGeomPrimvar
+//! pybind11 interoperability for `UsdGeomPrimvar`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomPrimvar, _("pxr.UsdGeom.Primvar"));
-//! pybind11 / boost::python interop for UsdGeomXform
+//! pybind11 interoperability for `UsdGeomXform`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomXform, _("pxr.UsdGeom.Xform"));
-//! pybind11 / boost::python interop for UsdLuxDistantLight
+//! pybind11 interoperability for `UsdLuxDistantLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxDistantLight, _("pxr.UsdLux.DistantLight"));
-//! pybind11 / boost::python interop for UsdLuxDomeLight
+//! pybind11 interoperability for `UsdLuxDomeLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxDomeLight, _("pxr.UsdLux.DomeLight"));
 #if PXR_VERSION >= 2111
-//! pybind11 / boost::python interop for UsdLuxLightAPI
+//! pybind11 interoperability for `UsdLuxLightAPI`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxLightAPI, _("pxr.UsdLux.LightAPI"));
 #else
-//! pybind11 / boost::python interop for UsdLuxLight
+//! pybind11 interoperability for `UsdLuxLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxLight, _("pxr.UsdLux.Light"));
 #endif // PXR_VERSION >= 2111
-//! pybind11 / boost::python interop for UsdLuxRectLight
+//! pybind11 interoperability for `UsdLuxRectLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxRectLight, _("pxr.UsdLux.RectLight"));
-//! pybind11 / boost::python interop for UsdLuxSphereLight
+//! pybind11 interoperability for `UsdLuxSphereLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxSphereLight, _("pxr.UsdLux.SphereLight"));
-//! pybind11 / boost::python interop for UsdLuxShapingAPI
+//! pybind11 interoperability for `UsdLuxShapingAPI`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxShapingAPI, _("pxr.UsdLux.ShapingAPI"));
-//! pybind11 / boost::python interop for UsdPrim
+//! pybind11 interoperability for `UsdPrim`
 PYBOOST11_TYPE_CASTER(pxr::UsdPrim, _("pxr.Usd.Prim"));
-//! pybind11 / boost::python interop for UsdStagePtr
+//! pybind11 interoperability for `UsdStagePtr`
 PYBOOST11_TYPE_CASTER(pxr::UsdStagePtr, _("pxr.Usd.Stage"));
-//! pybind11 / boost::python interop for UsdTimeCode
+//! pybind11 interoperability for `UsdTimeCode`
 PYBOOST11_TYPE_CASTER(pxr::UsdTimeCode, _("pxr.Usd.TimeCode"));
-//! pybind11 / boost::python interop for VtFloatArray
+//! pybind11 interoperability for `VtFloatArray`
 PYBOOST11_TYPE_CASTER(pxr::VtFloatArray, _("pxr.Vt.FloatArray"));
-//! pybind11 / boost::python interop for VtIntArray
+//! pybind11 interoperability for `VtIntArray`
 PYBOOST11_TYPE_CASTER(pxr::VtIntArray, _("pxr.Vt.IntArray"));
-//! pybind11 / boost::python interop for VtInt64Array
+//! pybind11 interoperability for `VtInt64Array`
 PYBOOST11_TYPE_CASTER(pxr::VtInt64Array, _("pxr.Vt.Int64Array"));
-//! pybind11 / boost::python interop for VtStringArray
+//! pybind11 interoperability for `VtStringArray`
 PYBOOST11_TYPE_CASTER(pxr::VtStringArray, _("pxr.Vt.StringArray"));
-//! pybind11 / boost::python interop for VtTokenArray
+//! pybind11 interoperability for `VtTokenArray`
 PYBOOST11_TYPE_CASTER(pxr::VtTokenArray, _("pxr.Vt.TokenArray"));
-//! pybind11 / boost::python interop for VtVec3fArray
+//! pybind11 interoperability for `VtVec3fArray`
 PYBOOST11_TYPE_CASTER(pxr::VtVec3fArray, _("pxr.Vt.Vec3fArray"));
-//! pybind11 / boost::python interop for VtVec2fArray
+//! pybind11 interoperability for `VtVec2fArray`
 PYBOOST11_TYPE_CASTER(pxr::VtVec2fArray, _("pxr.Vt.Vec2fArray"));
-//! pybind11 / boost::python interop for UsdShadeInput
+//! pybind11 interoperability for `UsdShadeInput`
 PYBOOST11_TYPE_CASTER(pxr::UsdShadeInput, _("pxr.UsdShade.Input"));
-//! pybind11 / boost::python interop for UsdShadeMaterial
+//! pybind11 interoperability for `UsdShadeMaterial`
 PYBOOST11_TYPE_CASTER(pxr::UsdShadeMaterial, _("pxr.UsdShade.Material"));
-//! pybind11 / boost::python interop for UsdShadeShader
+//! pybind11 interoperability for `UsdShadeShader`
 PYBOOST11_TYPE_CASTER(pxr::UsdShadeShader, _("pxr.UsdShade.Shader"));
-//! pybind11 / boost::python interop for VtValue
+//! pybind11 interoperability for `VtValue`
 PYBOOST11_TYPE_CASTER(pxr::VtValue, _("pxr.Vt.Value"));
+
+//! @}
 
 } // namespace pybind11::detail
