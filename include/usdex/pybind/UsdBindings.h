@@ -29,6 +29,7 @@
 #include <pxr/usd/sdf/assetPath.h>
 #include <pxr/usd/sdf/layer.h>
 #include <pxr/usd/sdf/path.h>
+#include <pxr/usd/sdf/primSpec.h>
 #include <pxr/usd/sdf/valueTypeName.h>
 #include <pxr/usd/usd/attribute.h>
 #include <pxr/usd/usd/prim.h>
@@ -85,6 +86,8 @@ PYBOOST11_TYPE_CASTER(pxr::SdfLayerHandle, _("pxr.Sdf.Layer"));
 PYBOOST11_TYPE_CASTER(pxr::SdfPath, _("pxr.Sdf.Path"));
 //! pybind11 interoperability for `SdfValueTypeNames`
 PYBOOST11_TYPE_CASTER(pxr::SdfValueTypeName, _("pxr.Sdf.ValueTypeName"));
+//! pybind11 interoperability for `SdfPrimSpecHandle`
+PYBOOST11_TYPE_CASTER(pxr::SdfPrimSpecHandle, _("pxr.Sdf.PrimSpec"));
 //! pybind11 interoperability for `TfToken`
 //!
 //! Note we want to inform python clients that regular python strings are the expected value type, not `TfToken`

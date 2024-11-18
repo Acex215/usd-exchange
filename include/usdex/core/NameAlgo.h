@@ -16,6 +16,8 @@
 #include "Api.h"
 
 #include <pxr/base/tf/token.h>
+#include <pxr/usd/sdf/path.h>
+#include <pxr/usd/sdf/primSpec.h>
 #include <pxr/usd/usd/prim.h>
 
 #include <string>
@@ -124,6 +126,221 @@ USDEX_API pxr::TfToken getValidChildName(const pxr::UsdPrim& prim, const std::st
 //! @param names A vector of preferred prim names.
 //! @returns A vector of valid and unique names.
 USDEX_API pxr::TfTokenVector getValidChildNames(const pxr::UsdPrim& prim, const std::vector<std::string>& names);
+
+//! The `NameCache` class provides a mechanism for generating unique and valid names for `UsdPrims` and their `UsdProperties`.
+//!
+//! The class ensures that generated names are valid according to OpenUSD name requirements and are unique within the context of sibling Prim and
+//! Property names.
+//!
+//! The cache provides a performant alternative to repeated queries by caching generated names and managing reserved names for Prims and Properties.
+//!
+//! Because reserved names are held in the cache, collisions can be avoided in cases where the Prim or Property has not been authored in the Stage.
+//! Names can be requested individually or in bulk, supporting a range of authoring patterns.
+//! Cache entries are based on prim path and are not unique between stages or layers.
+//!
+//! The name cache can be used in several authoring contexts, by providing a particular `parent` type:
+//! - `SdfPath`: Useful when generating names before authoring anything in USD.
+//! - `UsdPrim`: Useful when authoring in a `UsdStage`.
+//! - `SdfPrimSpec`: Useful when authoring in an `SdfLayer`
+//!
+//! When a cache entry is first created it will be populated with existing names depending on the scope of the supplied parent.
+//! - Given an `SdfPath` no names will be reserved
+//! - Given a `UsdPrim` it's existing child Prim and Property names (after composition) will be reserved
+//! - Given an `SdfPrimSpec` it's existing child Prim and Property names (before composition) will be reserved
+//!
+//! The parent must be stable to be useable as a cache key.
+//! - An `SdfPath` must be an absolute prim path containing no variant selections.
+//! - A `UsdPrim` must be valid.
+//! - An `SdfPrimSpec` must not be NULL or dormant.
+//!
+//! The pseudo root cannot have properties, therefore it is not useable as a parent for property related functions.
+//!
+//! @warning This class does not automatically invalidate cached values based on changes to the prims from which values were cached.
+//! Additionally, a separate instance of this class should be used per-thread, calling methods from multiple threads is not safe.
+class USDEX_API NameCache
+{
+
+public:
+
+    NameCache();
+    ~NameCache();
+
+    //! Make a name valid and unique for use as the name of a child of the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The parent path
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPrimName(const pxr::SdfPath& parent, const std::string& name);
+
+    //! Make a name valid and unique for use as the name of a child of the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The parent prim
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPrimName(const pxr::UsdPrim& parent, const std::string& name);
+
+    //! Make a name valid and unique for use as the name of a child of the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The parent prim spec
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPrimName(const pxr::SdfPrimSpecHandle parent, const std::string& name);
+
+    //! Make a list of names valid and unique for use as the names of a children of the given prim.
+    //!
+    //! @param parent The parent path
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPrimNames(const pxr::SdfPath& parent, const std::vector<std::string>& names);
+
+    //! Make a list of names valid and unique for use as the names of a children of the given prim.
+    //!
+    //! @param parent The parent prim
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPrimNames(const pxr::UsdPrim& parent, const std::vector<std::string>& names);
+
+    //! Make a list of names valid and unique for use as the names of a children of the given prim.
+    //!
+    //! @param parent The parent prim spec
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPrimNames(const pxr::SdfPrimSpecHandle parent, const std::vector<std::string>& names);
+
+    //! Make a name valid and unique for use as the name of a property on the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The prim path
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPropertyName(const pxr::SdfPath& parent, const std::string& name);
+
+    //! Make a name valid and unique for use as the name of a property on the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The parent prim
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPropertyName(const pxr::UsdPrim& parent, const std::string& name);
+
+    //! Make a name valid and unique for use as the name of a property on the given prim.
+    //!
+    //! An invalid token is returned on failure.
+    //!
+    //! @param parent The parent prim spec
+    //! @param name Preferred name
+    //! @returns Valid and unique name token
+    pxr::TfToken getPropertyName(const pxr::SdfPrimSpecHandle parent, const std::string& name);
+
+    //! Make a list of names valid and unique for use as the names of properties on the given prim.
+    //!
+    //! @param parent The parent path
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPropertyNames(const pxr::SdfPath& parent, const std::vector<std::string>& names);
+
+    //! Make a list of names valid and unique for use as the names of properties on the given prim.
+    //!
+    //! @param parent The parent prim
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPropertyNames(const pxr::UsdPrim& parent, const std::vector<std::string>& names);
+
+    //! Make a list of names valid and unique for use as the names of properties on the given prim.
+    //!
+    //! @param parent The parent prim spec
+    //! @param names Preferred names
+    //! @returns A vector of Valid and unique name tokens ordered to match the preferred names
+    pxr::TfTokenVector getPropertyNames(const pxr::SdfPrimSpecHandle parent, const std::vector<std::string>& names);
+
+    //! Update the reserved child names for a prim to include existing children.
+    //!
+    //! @param parent The parent prim.
+    void updatePrimNames(const pxr::UsdPrim& parent);
+
+    //! Update the reserved child names for a prim to include existing children.
+    //!
+    //! @param parent The parent prim spec.
+    void updatePrimNames(const pxr::SdfPrimSpecHandle parent);
+
+    //! Update the reserved property names for a prim to include existing properties.
+    //!
+    //! @param parent The parent prim.
+    void updatePropertyNames(const pxr::UsdPrim& parent);
+
+    //! Update the reserved property names for a prim to include existing properties.
+    //!
+    //! @param parent The parent prim spec.
+    void updatePropertyNames(const pxr::SdfPrimSpecHandle parent);
+
+    //! Update the reserved child and property names for a prim to include existing children and properties.
+    //!
+    //! @param parent The parent prim.
+    void update(const pxr::UsdPrim& parent);
+
+    //! Update the reserved child and property names for a prim to include existing children and properties.
+    //!
+    //! @param parent The parent prim spec.
+    void update(const pxr::SdfPrimSpecHandle parent);
+
+    //! Clear the reserved child names for a prim.
+    //!
+    //! @param parent The parent prim path
+    void clearPrimNames(const pxr::SdfPath& parent);
+
+    //! Clear the reserved child names for a prim.
+    //!
+    //! @param parent The parent prim
+    void clearPrimNames(const pxr::UsdPrim& parent);
+
+    //! Clear the reserved child names for a prim.
+    //!
+    //! @param parent The parent prim spec
+    void clearPrimNames(const pxr::SdfPrimSpecHandle parent);
+
+    //! Clear the reserved property names for a prim.
+    //!
+    //! @param parent The parent prim path
+    void clearPropertyNames(const pxr::SdfPath& parent);
+
+    //! Clear the reserved property names for a prim.
+    //!
+    //! @param parent The parent prim
+    void clearPropertyNames(const pxr::UsdPrim& parent);
+
+    //! Clear the reserved property names for a prim.
+    //!
+    //! @param parent The parent prim spec
+    void clearPropertyNames(const pxr::SdfPrimSpecHandle parent);
+
+    //! Clear the reserved prim and property names for a prim.
+    //!
+    //! @param parent The parent prim path
+    void clear(const pxr::SdfPath& parent);
+
+    //! Clear the reserved prim and property names for a prim.
+    //!
+    //! @param parent The parent prim
+    void clear(const pxr::UsdPrim& parent);
+
+    //! Clear the reserved prim and property names for a prim.
+    //!
+    //! @param parent The parent prim spec
+    void clear(const pxr::SdfPrimSpecHandle parent);
+
+private:
+
+    class NameCacheImpl;
+    NameCacheImpl* m_impl;
+};
 
 //! A caching mechanism for valid and unique child prim names.
 //!

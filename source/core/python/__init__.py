@@ -44,6 +44,7 @@ __all__ = [
     "getValidPrimNames",
     "getValidChildName",
     "getValidChildNames",
+    "NameCache",
     "ValidChildNameCache",
     "getValidPropertyName",
     "getValidPropertyNames",

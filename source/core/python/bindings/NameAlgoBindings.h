@@ -122,6 +122,442 @@ void bindNameAlgo(module& m)
         )"
     );
 
+    ::class_<NameCache>(
+        m,
+        "NameCache",
+        R"(
+            The `NameCache` class provides a mechanism for generating unique and valid names for `UsdPrims` and their `UsdProperties`.
+
+            The class ensures that generated names are valid according to OpenUSD name requirements and are unique within the context of sibling Prim and Property names.
+
+            The cache provides a performant alternative to repeated queries by caching generated names and managing reserved names for Prims and Properties.
+
+            Because reserved names are held in the cache, collisions can be avoided in cases where the Prim or Property has not been authored in the Stage.
+            Names can be requested individually or in bulk, supporting a range of authoring patterns.
+            Cache entries are based on prim path and are not unique between stages or layers.
+
+            The name cache can be used in several authoring contexts, by providing a particular `parent` type:
+            - `SdfPath`: Useful when generating names before authoring anything in USD.
+            - `UsdPrim`: Useful when authoring in a `UsdStage`.
+            - `SdfPrimSpec`: Useful when authoring in an `SdfLayer`
+
+            When a cache entry is first created it will be populated with existing names depending on the scope of the supplied parent.
+            - Given an `SdfPath` no names will be reserved
+            - Given a `UsdPrim` it's existing child Prim and Property names (after composition) will be reserved
+            - Given an `SdfPrimSpec` it's existing child Prim and Property names (before composition) will be reserved
+
+            The parent must be stable to be useable as a cache key.
+            - An `SdfPath` must be an absolute prim path containing no variant selections.
+            - A `UsdPrim` must be valid.
+            - An `SdfPrimSpec` must not be NULL or dormant.
+
+            The pseudo root cannot have properties, therefore it is not useable as a parent for property related functions.
+
+            Warning:
+
+                This class does not automatically invalidate cached values based on changes to the prims from which values were cached.
+                Additionally, a separate instance of this class should be used per-thread, calling methods from multiple threads is not safe.
+        )"
+    )
+
+        .def(::init())
+
+        .def(
+            "getPrimName",
+            overload_cast<const SdfPath&, const std::string&>(&NameCache::getPrimName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a child of the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim path
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPrimName",
+            overload_cast<const UsdPrim&, const std::string&>(&NameCache::getPrimName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a child of the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPrimName",
+            overload_cast<const SdfPrimSpecHandle, const std::string&>(&NameCache::getPrimName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a child of the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim spec
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPrimNames",
+            overload_cast<const SdfPath&, const std::vector<std::string>&>(&NameCache::getPrimNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of a children of the given prim.
+
+                Args:
+                    parent: The parent prim path
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "getPrimNames",
+            overload_cast<const UsdPrim&, const std::vector<std::string>&>(&NameCache::getPrimNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of a children of the given prim.
+
+                Args:
+                    parent: The parent prim
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "getPrimNames",
+            overload_cast<const SdfPrimSpecHandle, const std::vector<std::string>&>(&NameCache::getPrimNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of a children of the given prim.
+
+                Args:
+                    parent: The parent prim spec
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "getPropertyName",
+            overload_cast<const SdfPath&, const std::string&>(&NameCache::getPropertyName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a property on the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim path
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPropertyName",
+            overload_cast<const UsdPrim&, const std::string&>(&NameCache::getPropertyName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a property on the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPropertyName",
+            overload_cast<const SdfPrimSpecHandle, const std::string&>(&NameCache::getPropertyName),
+            arg("parent"),
+            arg("name"),
+            R"(
+                Make a name valid and unique for use as the name of a property on the given prim.
+
+                An invalid token is returned on failure.
+
+                Args:
+                    parent: The parent prim spec
+                    name: Preferred name
+
+                Returns:
+                    Valid and unique name token
+            )"
+        )
+
+        .def(
+            "getPropertyNames",
+            overload_cast<const SdfPath&, const std::vector<std::string>&>(&NameCache::getPropertyNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of properties on the given prim.
+
+                Args:
+                    parent: The parent prim path
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "getPropertyNames",
+            overload_cast<const UsdPrim&, const std::vector<std::string>&>(&NameCache::getPropertyNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of properties on the given prim.
+
+                Args:
+                    parent: The parent prim
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "getPropertyNames",
+            overload_cast<const SdfPrimSpecHandle, const std::vector<std::string>&>(&NameCache::getPropertyNames),
+            arg("parent"),
+            arg("names"),
+            R"(
+                Make a list of names valid and unique for use as the names of properties on the given prim.
+
+                Args:
+                    parent: The parent prim spec
+                    names: Preferred names
+
+                Returns:
+                    A vector of Valid and unique name tokens ordered to match the preferred names
+            )"
+        )
+
+        .def(
+            "updatePrimNames",
+            overload_cast<const UsdPrim&>(&NameCache::updatePrimNames),
+            arg("parent"),
+            R"(
+                Update the reserved child names for a prim to include existing children.
+
+                Args:
+                    parent: The parent prim
+            )"
+        )
+
+        .def(
+            "updatePrimNames",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::updatePrimNames),
+            arg("parent"),
+            R"(
+                Update the reserved child names for a prim to include existing children.
+
+                Args:
+                    parent: The parent prim spec
+            )"
+        )
+
+        .def(
+            "updatePropertyNames",
+            overload_cast<const UsdPrim&>(&NameCache::updatePropertyNames),
+            arg("parent"),
+            R"(
+                Update the reserved property names for a prim to include existing properties.
+
+                Args:
+                    parent: The parent prim
+            )"
+        )
+
+        .def(
+            "updatePropertyNames",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::updatePropertyNames),
+            arg("parent"),
+            R"(
+                Update the reserved property names for a prim to include existing properties.
+
+                Args:
+                    parent: The parent prim spec
+            )"
+        )
+
+        .def(
+            "update",
+            overload_cast<const UsdPrim&>(&NameCache::update),
+            arg("parent"),
+            R"(
+                Update the reserved child and property names for a prim to include existing children and properties.
+
+                Args:
+                    parent: The parent prim
+            )"
+        )
+
+        .def(
+            "update",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::update),
+            arg("parent"),
+            R"(
+                Update the reserved child and property names for a prim to include existing children and properties.
+
+                Args:
+                    parent: The parent prim spec
+            )"
+        )
+
+        .def(
+            "clearPrimNames",
+            overload_cast<const SdfPath&>(&NameCache::clearPrimNames),
+            arg("parent"),
+            R"(
+                Clear the reserved child names for a prim.
+
+                Args:
+                    parent: The parent prim path
+            )"
+        )
+
+        .def(
+            "clearPrimNames",
+            overload_cast<const UsdPrim&>(&NameCache::clearPrimNames),
+            arg("parent"),
+            R"(
+                Clear the reserved child names for a prim.
+
+                Args:
+                    parent: The parent prim path
+            )"
+        )
+
+        .def(
+            "clearPrimNames",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::clearPrimNames),
+            arg("parent"),
+            R"(
+                Clear the reserved child names for a prim.
+
+                Args:
+                    parent: The parent prim path
+            )"
+        )
+
+        .def(
+            "clearPropertyNames",
+            overload_cast<const SdfPath&>(&NameCache::clearPropertyNames),
+            arg("parent"),
+            R"(
+                Clear the reserved property names for a prim.
+
+                Args:
+                    parent: The parent prim path
+            )"
+        )
+
+        .def(
+            "clearPropertyNames",
+            overload_cast<const UsdPrim&>(&NameCache::clearPropertyNames),
+            arg("parent"),
+            R"(
+                Clear the reserved property names for a prim.
+
+                Args:
+                    parent: The parent prim
+            )"
+        )
+
+        .def(
+            "clearPropertyNames",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::clearPropertyNames),
+            arg("parent"),
+            R"(
+                Clear the reserved property names for a prim.
+
+                Args:
+                    parent: The parent prim spec
+            )"
+        )
+
+        .def(
+            "clear",
+            overload_cast<const SdfPath&>(&NameCache::clear),
+            arg("parent"),
+            R"(
+                Clear the reserved prim and property names for a prim.
+
+                Args:
+                    parent: The parent prim path
+            )"
+        )
+
+        .def(
+            "clear",
+            overload_cast<const UsdPrim&>(&NameCache::clear),
+            arg("parent"),
+            R"(
+                Clear the reserved prim and property names for a prim.
+
+                Args:
+                    parent: The parent prim
+            )"
+        )
+
+        .def(
+            "clear",
+            overload_cast<const SdfPrimSpecHandle>(&NameCache::clear),
+            arg("parent"),
+            R"(
+                Clear the reserved prim and property names for a prim.
+
+                Args:
+                    parent: The parent prim spec
+            )"
+        );
+
     ::class_<ValidChildNameCache>(
         m,
         "ValidChildNameCache",

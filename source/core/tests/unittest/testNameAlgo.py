@@ -383,6 +383,580 @@ class ValidChildNameCacheTestCase(usdex.test.TestCase):
         self.assertEqual(names, ["foo_5", "bar"])
 
 
+class NameCacheTestCase(usdex.test.TestCase):
+    """
+    Assert the expected behavior of the NameCache class
+
+    The test in this case assume that the underlying getValidChildNames() and getValidPropertyNames() behave as expected.
+    Only the interface and caching behavior of the NameCache class are exercised.
+    """
+
+    def setUp(self):
+        super().setUp()
+
+        self.layer: Sdf.Layer = Sdf.Layer.CreateAnonymous()
+        self.stage: Usd.Stage = Usd.Stage.Open(self.layer)
+        self.nameCache = usdex.core.NameCache()
+
+    def assertInvalidPathParentArg(self, func, args, result, msg, root):
+        # A non-absolute SdfPath cannot be used as a stable cache key, so will return an invalid token
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path(), *args), result)
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path("relative/path"), *args), result)
+
+        # A non-prim SdfPath cannot be used as a meaningful cache key, so will return an invalid token
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path("/path.property"), *args), result)
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path(".property"), *args), result)
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path("/foo{color=red}"), *args), result)
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Sdf.Path("/foo{color=red}bar"), *args), result)
+
+        # The absolute root path is not valid for some functions because it cannot have properties
+        if not root:
+            with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+                self.assertEqual(func(Sdf.Path.absoluteRootPath, *args), result)
+
+    def assertInvalidPrimParentArg(self, func, args, result, msg, root):
+        # An invalid UsdPrim does not have a path that can be used as a stable cache key, so will return an invalid token
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+            self.assertEqual(func(Usd.Prim(), *args), result)
+
+        # The pseudo root prim is not valid for some functions because it cannot have properties
+        if not root:
+            with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+                self.assertEqual(func(self.stage.GetPseudoRoot(), *args), result)
+
+    def assertInvalidPrimSpecParentArg(self, func, args, result, msg, root):
+        # An invalid SdfPrimSpec does not have a path that can be used as a stable cache key, so will return an invalid token
+        # TODO: Find a way to pass an invalid SdfPrimSpec through to c++
+
+        # The pseudo root prim spec is not valid for some functions because it cannot have properties
+        if not root:
+            with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, msg)]):
+                self.assertEqual(func(self.layer.pseudoRoot, *args), result)
+
+    def testGetPrimNameParentTypes(self):
+        # An SdfPath can be passed as the parent and a valid an unique name will be returned
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_1")
+
+        # A UsdPrim can be passed as the parent and a valid an unique name will be returned
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_1")
+
+        # An SdfPrimSpec can be passed as the parent and a valid an unique name will be returned
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_1")
+
+        # A mixture of the three parent types can be used to get unique names, provided they have the same path
+        path: Sdf.Path = Sdf.Path("/mixed")
+        prim: Usd.Prim = self.stage.DefinePrim(path)
+        primSpec: Sdf.PrimSpec = self.layer.GetPrimAtPath(path)
+        self.assertEqual(self.nameCache.getPrimName(path, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(prim, "foo"), "foo_1")
+        self.assertEqual(self.nameCache.getPrimName(primSpec, "foo"), "foo_2")
+
+    def testGetPrimNameExistingChildren(self):
+        # If a UsdPrim has existing children, then those names will be reserved when the names for that path are requested
+        # Existing child prim names are reserved regardless of specifier, active state, or being instance proxies. Composition is respected.
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        self.stage.OverridePrim(parent.GetPath().AppendChild("foo_1"))
+        self.stage.CreateClassPrim(parent.GetPath().AppendChild("foo_2"))
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo_3")).SetActive(False)
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_4")
+        # TODO: Add instance proxy and composition example
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo_5"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo_5"), "foo_5")
+
+        # If an SdfPrimSpec has existing children, then those names will be reserved when the names for that path are requested
+        # Existing child prim names are reserved regardless of specifier or active state. Composition is NOT respected.
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo")).specifier = Sdf.SpecifierDef
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_1")).specifier = Sdf.SpecifierOver
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_2")).specifier = Sdf.SpecifierClass
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_3")).active = False
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_4")
+        # TODO: Add composition example
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_5"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo_5"), "foo_5")
+
+    def testGetPrimNameInvalidParent(self):
+        func, args, result, message = self.nameCache.getPrimName, ["foo"], "", "Unable to get prim name:"
+        self.assertInvalidPathParentArg(func, args, result, message, True)
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+    def testGetPrimNamePseudoRootParent(self):
+        # The absolute root path, pseudo root prim and pseudo root prim spec are all valid and equal
+        self.assertEqual(self.nameCache.getPrimName(Sdf.Path.absoluteRootPath, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(self.stage.GetPseudoRoot(), "foo"), "foo_1")
+        self.assertEqual(self.nameCache.getPrimName(self.layer.pseudoRoot, "foo"), "foo_2")
+
+    def testGetPrimNameReservedNameCollision(self):
+        # Because names are requested one at a time it is not possible to check that future preferred names are not reserved
+        # This means that the names returned by repeated calls to `getPrimName()` can differ from a single call to `getPrimNames()`
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo_1")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo_1"), "foo_1_1")
+
+    def testGetPrimNamesReservedNameCollision(self):
+        # When making a name unique we check for the new name in the preferred names list to maximizes the number of preferred names returned.
+        # This means that the names returned by a single call to `getPrimNames()` can differ from repeated calls to `getPrimName()`
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo", "foo_1"]), ["foo", "foo_2", "foo_1"])
+
+    def testGetPrimNamesParentTypes(self):
+        # An SdfPath can be passed as the parent and valid an unique names will be returned
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # A UsdPrim can be passed as the parent and valid an unique names will be returned
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # An SdfPrimSpec can be passed as the parent and a valid an unique name will be returned
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # A mixture of the three parent types can be used to get unique names, provided they have the same path
+        path: Sdf.Path = Sdf.Path("/mixed")
+        prim: Usd.Prim = self.stage.DefinePrim(path)
+        primSpec: Sdf.PrimSpec = self.layer.GetPrimAtPath(path)
+        self.assertEqual(self.nameCache.getPrimNames(path, ["foo", "foo"]), ["foo", "foo_1"])
+        self.assertEqual(self.nameCache.getPrimNames(prim, ["foo", "foo"]), ["foo_2", "foo_3"])
+        self.assertEqual(self.nameCache.getPrimNames(primSpec, ["foo", "foo"]), ["foo_4", "foo_5"])
+
+    def testGetPrimNamesExistingChildren(self):
+        # If a UsdPrim has existing children, then those names will be reserved when the names for that path are requested
+        # Existing child prim names are reserved regardless of specifier, active state, or being instance proxies. Composition is respected.
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        self.stage.OverridePrim(parent.GetPath().AppendChild("foo_1"))
+        self.stage.CreateClassPrim(parent.GetPath().AppendChild("foo_2"))
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo_3")).SetActive(False)
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo"]), ["foo_4", "foo_5"])
+        # TODO: Add instance proxy and composition example
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo_6"))
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo_7"))
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo_6", "foo_7"]), ["foo_6", "foo_7"])
+
+        # If an SdfPrimSpec has existing children, then those names will be reserved when the names for that path are requested
+        # Existing child prim names are reserved regardless of specifier or active state. Composition is NOT respected.
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo")).specifier = Sdf.SpecifierDef
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_1")).specifier = Sdf.SpecifierOver
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_2")).specifier = Sdf.SpecifierClass
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_3")).active = False
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo", "foo"]), ["foo_4", "foo_5"])
+        # TODO: Add composition example
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_6"))
+        Sdf.CreatePrimInLayer(self.layer, parent.path.AppendChild("foo_7"))
+        self.assertEqual(self.nameCache.getPrimNames(parent, ["foo_6", "foo_7"]), ["foo_6", "foo_7"])
+
+    def testGetPrimNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.getPrimNames, [["foo", "foo"]], [], "Unable to get prim names:"
+        self.assertInvalidPathParentArg(func, args, result, message, True)
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+    def testGetPrimNamesPseudoRootParent(self):
+        # The absolute root path, pseudo root prim and pseudo root prim spec are all valid and equal
+        self.assertEqual(self.nameCache.getPrimNames(Sdf.Path.absoluteRootPath, ["foo", "foo"]), ["foo", "foo_1"])
+        self.assertEqual(self.nameCache.getPrimNames(self.stage.GetPseudoRoot(), ["foo", "foo"]), ["foo_2", "foo_3"])
+        self.assertEqual(self.nameCache.getPrimNames(self.layer.pseudoRoot, ["foo", "foo"]), ["foo_4", "foo_5"])
+
+    def testGetPropertyNameParentTypes(self):
+        # An SdfPath can be passed as the parent and a valid an unique name will be returned
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo_1")
+
+        # A UsdPrim can be passed as the parent and a valid an unique name will be returned
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo_1")
+
+        # An SdfPrimSpec can be passed as the parent and a valid an unique name will be returned
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo_1")
+
+        # A mixture of the three parent types can be used to get unique names, provided they have the same path
+        path: Sdf.Path = Sdf.Path("/mixed")
+        prim: Usd.Prim = self.stage.DefinePrim(path)
+        primSpec: Sdf.PrimSpec = self.layer.GetPrimAtPath(path)
+        self.assertEqual(self.nameCache.getPropertyName(path, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(prim, "foo"), "foo_1")
+        self.assertEqual(self.nameCache.getPropertyName(primSpec, "foo"), "foo_2")
+
+    def testGetPropertyNameExistingChildren(self):
+        # If a UsdPrim has existing properties, then those names will be reserved when the names for that path are requested
+        # Existing property names are reserved regardless of them being relationships, attributes, authored, un-authored or blocked.
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        parent.CreateRelationship("foo")
+        parent.CreateAttribute("foo_1", Sdf.ValueTypeNames.Bool)
+        parent.CreateAttribute("foo_2", Sdf.ValueTypeNames.Bool).Set(False)
+        parent.CreateAttribute("foo_3", Sdf.ValueTypeNames.Bool).Block()
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo_4")
+
+        # However property names are not reserved if the path exists in the NameCache before the properties are defined
+        parent.CreateRelationship("foo_5")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo_5"), "foo_5")
+
+        # Schema properties are reserved for concrete and applied schema
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/meshPrim"), "Mesh")
+        Usd.CollectionAPI.Apply(parent, "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "points"), "points_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "collection:foo:expansionRule"), "collection:foo:expansionRule_1")
+
+        # Composition is respected.
+        # # TODO: Add composition example
+
+        # If an SdfPrimSpec has existing children, then those names will be reserved when the names for that path are requested
+        # Existing child prim names are reserved regardless of specifier or active state.
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        Sdf.RelationshipSpec(parent, "foo")
+        Sdf.AttributeSpec(parent, "foo_1", Sdf.ValueTypeNames.Bool)
+        Sdf.AttributeSpec(parent, "foo_2", Sdf.ValueTypeNames.Bool).defaultValue = True
+        Sdf.AttributeSpec(parent, "foo_3", Sdf.ValueTypeNames.Bool).defaultValue = Sdf.ValueBlock
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo_4")
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        Sdf.RelationshipSpec(parent, "foo_5")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo_5"), "foo_5")
+
+        # Schema properties are NOT reserved for concrete and applied schema
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/meshPrimSpec"), "Mesh")
+        Usd.CollectionAPI.Apply(parent, "foo")
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/meshPrimSpec"))
+        parent.typeName == "Mesh"
+        Usd.CollectionAPI.Apply(self.stage.GetPrimAtPath(parent.path), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "points"), "points")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "collection:foo:expansionRule"), "collection:foo:expansionRule")
+
+        # Composition is NOT respected.
+        # TODO: Add composition example
+
+    def testGetPropertyNameInvalidParent(self):
+        func, args, result, message = self.nameCache.getPropertyName, ["foo"], "", "Unable to get property name:"
+        self.assertInvalidPathParentArg(func, args, result, message, False)
+        self.assertInvalidPrimParentArg(func, args, result, message, False)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, False)
+
+    def testGetPropertyNamesParentTypes(self):
+        # An SdfPath can be passed as the parent and valid and unique names will be returned
+        parent: Sdf.Path = Sdf.Path("/path")
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # A UsdPrim can be passed as the parent and valid and unique names will be returned
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # An SdfPrimSpec can be passed as the parent and valid and unique names will be returned
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo", "foo"]), ["foo", "foo_1"])
+
+        # A mixture of the three parent types can be used to get unique names, provided they have the same path
+        path: Sdf.Path = Sdf.Path("/mixed")
+        prim: Usd.Prim = self.stage.DefinePrim(path)
+        primSpec: Sdf.PrimSpec = self.layer.GetPrimAtPath(path)
+        self.assertEqual(self.nameCache.getPropertyNames(path, ["foo", "foo"]), ["foo", "foo_1"])
+        self.assertEqual(self.nameCache.getPropertyNames(prim, ["foo", "foo"]), ["foo_2", "foo_3"])
+        self.assertEqual(self.nameCache.getPropertyNames(primSpec, ["foo", "foo"]), ["foo_4", "foo_5"])
+
+    def testGetPropertyNamesExistingChildren(self):
+        # If a UsdPrim has existing properties, then those names will be reserved when the names for that path are requested
+        # Existing property names are reserved regardless of them being relationships, attributes, authored, un-authored or blocked.
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/prim"))
+        parent.CreateRelationship("foo")
+        parent.CreateAttribute("foo_1", Sdf.ValueTypeNames.Bool)
+        parent.CreateAttribute("foo_2", Sdf.ValueTypeNames.Bool).Set(False)
+        parent.CreateAttribute("foo_3", Sdf.ValueTypeNames.Bool).Block()
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo", "foo"]), ["foo_4", "foo_5"])
+
+        # However property names are not reserved if the path exists in the NameCache before the properties are defined
+        parent.CreateRelationship("foo_6")
+        parent.CreateRelationship("foo_7")
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo_6", "foo_7"]), ["foo_6", "foo_7"])
+
+        # Schema properties are reserved for concrete and applied schema
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/meshPrim"), "Mesh")
+        Usd.CollectionAPI.Apply(parent, "foo")
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["points"]), ["points_1"])
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["collection:foo:expansionRule"]), ["collection:foo:expansionRule_1"])
+
+        # Composition is respected.
+        # # TODO: Add composition example
+
+        # If a SdfPrimSpec has existing properties, then those names will be reserved when the names for that path are requested
+        # Existing property names are reserved regardless of them being relationships, attributes, authored, un-authored or blocked.
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/primSpec"))
+        Sdf.RelationshipSpec(parent, "foo")
+        Sdf.AttributeSpec(parent, "foo_1", Sdf.ValueTypeNames.Bool)
+        Sdf.AttributeSpec(parent, "foo_2", Sdf.ValueTypeNames.Bool).defaultValue = True
+        Sdf.AttributeSpec(parent, "foo_3", Sdf.ValueTypeNames.Bool).defaultValue = Sdf.ValueBlock
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo", "foo"]), ["foo_4", "foo_5"])
+
+        # However child names are not reserved if the path exists in the NameCache before the prims are defined
+        Sdf.RelationshipSpec(parent, "foo_6")
+        Sdf.RelationshipSpec(parent, "foo_7")
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["foo_6", "foo_7"]), ["foo_6", "foo_7"])
+
+        # Schema properties are NOT reserved for concrete and applied schema
+        parent: Usd.Prim = self.stage.DefinePrim(Sdf.Path("/meshPrimSpec"), "Mesh")
+        Usd.CollectionAPI.Apply(parent, "foo")
+        parent: Sdf.PrimSpec = Sdf.CreatePrimInLayer(self.layer, Sdf.Path("/meshPrimSpec"))
+        parent.typeName == "Mesh"
+        Usd.CollectionAPI.Apply(self.stage.GetPrimAtPath(parent.path), "foo")
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["points"]), ["points"])
+        self.assertEqual(self.nameCache.getPropertyNames(parent, ["collection:foo:expansionRule"]), ["collection:foo:expansionRule"])
+
+        # Composition is NOT respected.
+        # TODO: Add composition example
+
+    def testGetPropertyNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.getPropertyNames, [["foo", "foo"]], [], "Unable to get property names:"
+        self.assertInvalidPathParentArg(func, args, result, message, False)
+        self.assertInvalidPrimParentArg(func, args, result, message, False)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, False)
+
+    def testUpdatePrimNames(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The updatePrimNames() function forces the names of existing child prims to be added to the reserved names
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPrimName(parent, "test")
+
+        # Defining a child does not stop that name from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+
+        # Defining a child then calling updatePrimNames() does stop that name from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("bar"))
+        self.nameCache.updatePrimNames(parent)
+        self.assertEqual(self.nameCache.getPrimName(parent, "bar"), "bar_1")
+
+        # The update does not clear already reserved names that are not child prim names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test_1")
+
+        # An SdfPrimSpec can also be passed to updatePrimNames()
+        self.stage.DefinePrim(parent.GetPath().AppendChild("baz"))
+        self.nameCache.updatePrimNames(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPrimName(parent, "baz"), "baz_1")
+
+        # The update does not clear already reserved names that are not existing prim names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test_2")
+
+    def testUpdatePrimNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.updatePrimNames, [], None, "Unable to update prim names:"
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+    def testUpdatePropertyNames(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The updatePropertyNames() function forces the names of existing properties to be added to the reserved names
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPropertyName(parent, "test")
+
+        # Defining a property does not stop that name from being returned
+        parent.CreateRelationship("foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+
+        # Defining a property then calling updatePrimNames() does stop that name from being returned
+        parent.CreateRelationship("bar")
+        self.nameCache.updatePropertyNames(parent)
+        self.assertEqual(self.nameCache.getPropertyName(parent, "bar"), "bar_1")
+
+        # The update does not clear already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test_1")
+
+        # An SdfPrimSpec can also be passed to updatePropertyNames()
+        parent.CreateRelationship("baz")
+        self.nameCache.updatePropertyNames(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPropertyName(parent, "baz"), "baz_1")
+
+        # The update does not clear already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test_2")
+
+    def testUpdatePropertyNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.updatePropertyNames, [], None, "Unable to update property names:"
+        self.assertInvalidPrimParentArg(func, args, result, message, False)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, False)
+
+    def testUpdate(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The update() function forces the names of existing prims and properties to be added to the reserved names
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPrimName(parent, "test")
+        self.nameCache.getPropertyName(parent, "test")
+
+        # Defining a prim or property does not stop those names from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        parent.CreateRelationship("foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+
+        # Defining a prim or property then calling update() does stop those names from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("bar"))
+        parent.CreateRelationship("bar")
+        self.nameCache.update(parent)
+        self.assertEqual(self.nameCache.getPrimName(parent, "bar"), "bar_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "bar"), "bar_1")
+
+        # The update does not clear already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test_1")
+
+        # An SdfPrimSpec can also be passed to update()
+        self.stage.DefinePrim(parent.GetPath().AppendChild("baz"))
+        parent.CreateRelationship("baz")
+        self.nameCache.update(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPrimName(parent, "baz"), "baz_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "baz"), "baz_1")
+
+        # The update does not clear already reserved names that are not existing prim or property names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test_2")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test_2")
+
+    def testUpdateInvalidParent(self):
+        func, args, result, message = self.nameCache.update, [], None, "Unable to update prim and property names:"
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+    def testClearPrimNames(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The clearPrimNames() function removes the path from the cache
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPrimName(parent, "test")
+
+        # Defining a child does not stop that name from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+
+        # Defining a child then calling clearPrimNames() does stop that name from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("bar"))
+        self.nameCache.clearPrimNames(parent)
+        self.assertEqual(self.nameCache.getPrimName(parent, "bar"), "bar_1")
+
+        # The update clears already reserved names that are not child prim names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test")
+
+        # An SdfPrimSpec can also be passed to clearPrimNames()
+        self.stage.DefinePrim(parent.GetPath().AppendChild("baz"))
+        self.nameCache.clearPrimNames(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPrimName(parent, "baz"), "baz_1")
+
+        # The update clears already reserved names that are not existing prim names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test")
+
+    def testClearPrimNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.clearPrimNames, [], None, "Unable to clear prim names:"
+        self.assertInvalidPathParentArg(func, args, result, message, True)
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+    def testClearPropertyNames(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The clearPropertyNames() function removes the path from the cache
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPropertyName(parent, "test")
+
+        # Defining a property does not stop that name from being returned
+        parent.CreateRelationship("foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+
+        # Defining a property then calling updatePrimNames() does stop that name from being returned
+        parent.CreateRelationship("bar")
+        self.nameCache.clearPropertyNames(parent)
+        self.assertEqual(self.nameCache.getPropertyName(parent, "bar"), "bar_1")
+
+        # The update clears already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test")
+
+        # An SdfPrimSpec can also be passed to updatePropertyNames()
+        parent.CreateRelationship("baz")
+        self.nameCache.clearPropertyNames(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPropertyName(parent, "baz"), "baz_1")
+
+        # The update clears already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test")
+
+    def testClearPropertyNamesInvalidParent(self):
+        func, args, result, message = self.nameCache.clearPropertyNames, [], None, "Unable to clear property names:"
+        self.assertInvalidPathParentArg(func, args, result, message, False)
+        self.assertInvalidPrimParentArg(func, args, result, message, False)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, False)
+
+    def testClear(self):
+        # Updates to the stage are not reflected in the reserved names if a path exists in the NameCache
+        # The clear() function removes the path from the cache
+
+        # Add path to the NameCache
+        parent = self.stage.DefinePrim("/parent")
+        self.nameCache.getPrimName(parent, "test")
+        self.nameCache.getPropertyName(parent, "test")
+
+        # Defining a prim or property does not stop those names from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("foo"))
+        parent.CreateRelationship("foo")
+        self.assertEqual(self.nameCache.getPrimName(parent, "foo"), "foo")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "foo"), "foo")
+
+        # Defining a prim or property then calling update() does stop those names from being returned
+        self.stage.DefinePrim(parent.GetPath().AppendChild("bar"))
+        parent.CreateRelationship("bar")
+        self.nameCache.clear(parent)
+        self.assertEqual(self.nameCache.getPrimName(parent, "bar"), "bar_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "bar"), "bar_1")
+
+        # The update does not clear already reserved names that are not existing property names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test")
+
+        # An SdfPrimSpec can also be passed to update()
+        self.stage.DefinePrim(parent.GetPath().AppendChild("baz"))
+        parent.CreateRelationship("baz")
+        self.nameCache.clear(self.layer.GetPrimAtPath(parent.GetPath()))
+        self.assertEqual(self.nameCache.getPrimName(parent, "baz"), "baz_1")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "baz"), "baz_1")
+
+        # The update does not clear already reserved names that are not existing prim or property names
+        self.assertEqual(self.nameCache.getPrimName(parent, "test"), "test")
+        self.assertEqual(self.nameCache.getPropertyName(parent, "test"), "test")
+
+    def testClearInvalidParent(self):
+        func, args, result, message = self.nameCache.clear, [], None, "Unable to clear prim and property names:"
+        self.assertInvalidPathParentArg(func, args, result, message, True)
+        self.assertInvalidPrimParentArg(func, args, result, message, True)
+        self.assertInvalidPrimSpecParentArg(func, args, result, message, True)
+
+
 class DisplayNameTestCase(usdex.test.TestCase):
 
     def testDisplayName(self):
