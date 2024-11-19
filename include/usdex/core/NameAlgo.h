@@ -350,11 +350,13 @@ private:
 //!
 //! @warning This class does not automatically invalidate cached values based on changes to the stage from which values were cached.
 //! Additionally, a separate instance of this class should be used per-thread, calling methods from multiple threads is not safe.
+//! \deprecated Use the NameCache class instead
 class USDEX_API ValidChildNameCache
 {
 
 public:
 
+    USDEX_DEPRECATED("1.1", "Use the NameCache class instead")
     ValidChildNameCache();
     ~ValidChildNameCache();
 

@@ -11,7 +11,7 @@
 import omni.transcoding
 import usdex.core
 import usdex.test
-from pxr import Sdf, Usd, UsdGeom
+from pxr import Sdf, Tf, Usd, UsdGeom
 
 
 class ValidPrimNamesTestCase(usdex.test.TestCase):
@@ -351,7 +351,8 @@ class ValidChildNameCacheTestCase(usdex.test.TestCase):
         prim = usdex.core.defineXform(stage, "/Root").GetPrim()
         self.assertIsValidUsd(stage)
 
-        validChildNameCache = usdex.core.ValidChildNameCache()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".* Use the NameCache class instead")]):
+            validChildNameCache = usdex.core.ValidChildNameCache()
 
         # When there are no child prims the names preferred names are returned
         names = validChildNameCache.getValidChildNames(prim, ["foo", "bar"])

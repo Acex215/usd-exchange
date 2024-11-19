@@ -162,9 +162,9 @@ TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& nam
 
 TfToken usdex::core::getValidChildName(const pxr::UsdPrim& prim, const std::string& name)
 {
-    ValidChildNameCache cache;
-    cache.update(prim);
-    TfToken result = cache.getValidChildName(prim, name);
+    NameCache cache;
+    cache.updatePrimNames(prim);
+    TfToken result = cache.getPrimName(prim, name);
     if (result == _tokens->error)
     {
         TF_RUNTIME_ERROR(

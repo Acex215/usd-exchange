@@ -14,6 +14,8 @@
 
 #include "usdex/pybind/UsdBindings.h"
 
+#include "pxr/base/arch/pragmas.h"
+
 #include <pybind11/pybind11.h>
 
 using namespace usdex::core;
@@ -558,6 +560,10 @@ void bindNameAlgo(module& m)
             )"
         );
 
+    // FUTURE: Remove when the deprecated ValidChildNameCache class is removed
+    ARCH_PRAGMA_PUSH
+    ARCH_PRAGMA_DEPRECATED_POSIX_NAME
+
     ::class_<ValidChildNameCache>(
         m,
         "ValidChildNameCache",
@@ -638,6 +644,9 @@ void bindNameAlgo(module& m)
                 prim: The prim that child names should be cleared for.
         )"
         );
+
+    // FUTURE: Remove when the deprecated ValidChildNameCache class is removed
+    ARCH_PRAGMA_POP
 
     m.def(
         "getDisplayName",
