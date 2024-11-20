@@ -135,16 +135,22 @@ def deprecated(version: str, message: str):
     """
 
     def _wrap(func):
-        warning = f"`{func.__name__}` was deprecated in v{version} and will be removed in the future. {message}"
 
-        def wrapper(*args, **kwargs):
+        # For init functions report the name of the class
+        func_name = func.__name__
+        if func_name == "__init__":
+            func_name, _, _ = func.__qualname__.partition(".")
+
+        warning = f"`{func_name}` was deprecated in v{version} and will be removed in the future. {message}"
+
+        def deprecation(*args, **kwargs):
             from pxr import Tf
 
-            Tf.warn(warning)
+            Tf.Warn(warning)
             return func(*args, **kwargs)
 
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = warning
-        return wrapper
+        deprecation.__name__ = func.__name__
+        deprecation.__doc__ = warning
+        return deprecation
 
     return _wrap
