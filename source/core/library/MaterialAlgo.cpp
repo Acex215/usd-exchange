@@ -107,7 +107,7 @@ UsdShadeShader acquireTexCoordReader(UsdShadeMaterial& material)
 
     // Whether the shader already existed or not, make sure that the attributes work for the primvar reader
     uvReader.SetShaderId(_tokens->uvReaderId);
-    uvReader.CreateInput(_tokens->varname, SdfValueTypeNames->Token).Set(UsdUtilsGetPrimaryUVSetName());
+    uvReader.CreateInput(_tokens->varname, SdfValueTypeNames->String).Set(UsdUtilsGetPrimaryUVSetName().GetString());
     uvReader.CreateOutput(_tokens->result, SdfValueTypeNames->Float2);
 
     return uvReader;
