@@ -13,7 +13,7 @@
 #include "TfUtils.h"
 
 #include <pxr/base/tf/stringUtils.h>
-#include <pxr/usd/sdf/primSpec.h>
+#include <pxr/usd/sdf/childrenView.h>
 #include <pxr/usd/sdf/schema.h>
 #include <pxr/usd/sdf/spec.h>
 
@@ -51,11 +51,45 @@ void reserveNames(ValidNameCache& cache, const TfTokenVector& names)
     }
 }
 
+// Implemented as a pass through to support template functions
+void reserveChildNames(ValidNameCache&, const SdfPath&)
+{
+}
+
 void reserveChildNames(ValidNameCache& cache, const UsdPrim& prim)
 {
     reserveNames(cache, prim.GetAllChildrenNames());
 }
 
+void reserveChildNames(ValidNameCache& cache, const SdfPrimSpecHandle parent)
+{
+    TfTokenVector names;
+    for (const auto& child : parent->GetNameChildren().values())
+    {
+        names.push_back(child->GetNameToken());
+    }
+    reserveNames(cache, names);
+}
+
+// Implemented as a pass through to support template functions
+void reserveChildPropertyNames(ValidNameCache&, const SdfPath&)
+{
+}
+
+void reserveChildPropertyNames(ValidNameCache& cache, const UsdPrim& prim)
+{
+    reserveNames(cache, prim.GetPropertyNames());
+}
+
+void reserveChildPropertyNames(ValidNameCache& cache, const SdfPrimSpecHandle parent)
+{
+    TfTokenVector names;
+    for (const auto& child : parent->GetProperties().values())
+    {
+        names.push_back(child->GetNameToken());
+    }
+    reserveNames(cache, names);
+}
 
 TfTokenVector getValidNames(
     const std::vector<std::string>& names,
@@ -128,9 +162,9 @@ TfTokenVector usdex::core::getValidPrimNames(const std::vector<std::string>& nam
 
 TfToken usdex::core::getValidChildName(const pxr::UsdPrim& prim, const std::string& name)
 {
-    ValidChildNameCache cache;
-    cache.update(prim);
-    TfToken result = cache.getValidChildName(prim, name);
+    NameCache cache;
+    cache.updatePrimNames(prim);
+    TfToken result = cache.getPrimName(prim, name);
     if (result == _tokens->error)
     {
         TF_RUNTIME_ERROR(
@@ -147,6 +181,465 @@ TfTokenVector usdex::core::getValidChildNames(const UsdPrim& prim, const std::ve
     ValidNameCache cache;
     reserveChildNames(cache, prim);
     return getValidNames(names, usdex::core::getValidPrimName, cache);
+}
+
+
+class usdex::core::NameCache::NameCacheImpl
+{
+public:
+
+    NameCacheImpl()
+    {
+    }
+
+    ~NameCacheImpl()
+    {
+    }
+
+    template <class T>
+    TfToken getPrimName(const T& parent, const std::string& name)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to get prim name: %s", reason.c_str());
+            return TfToken();
+        }
+
+        const TfTokenVector validNames = uncheckedGetPrimNames(parent, { name });
+        return validNames.size() > 0 ? validNames[0] : TfToken();
+    }
+
+    template <class T>
+    TfTokenVector getPrimNames(const T& parent, const std::vector<std::string>& names)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to get prim names: %s", reason.c_str());
+            return TfTokenVector();
+        }
+        return uncheckedGetPrimNames(parent, names);
+    }
+
+    template <class T>
+    TfToken getPropertyName(const T& parent, const std::string& name)
+    {
+        std::string reason;
+        if (!isValidParent(parent, false, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to get property name: %s", reason.c_str());
+            return TfToken();
+        }
+
+        const TfTokenVector validNames = uncheckedGetPropertyNames(parent, { name });
+        return validNames.size() > 0 ? validNames[0] : TfToken();
+    }
+
+    template <class T>
+    TfTokenVector getPropertyNames(const T& parent, const std::vector<std::string>& names)
+    {
+        std::string reason;
+        if (!isValidParent(parent, false, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to get property names: %s", reason.c_str());
+            return TfTokenVector();
+        }
+        return uncheckedGetPropertyNames(parent, names);
+    }
+
+    template <class T>
+    void updatePrimNames(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to update prim names: %s", reason.c_str());
+            return;
+        }
+
+        auto insertIt = m_primNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        reserveChildNames(insertIt.first->second, parent);
+    }
+
+    template <class T>
+    void updatePropertyNames(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, false, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to update property names: %s", reason.c_str());
+            return;
+        }
+
+        auto insertIt = m_propertyNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        reserveChildPropertyNames(insertIt.first->second, parent);
+    }
+
+    template <class T>
+    void update(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to update prim and property names: %s", reason.c_str());
+            return;
+        }
+
+        auto insertPrimIt = m_primNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        reserveChildNames(insertPrimIt.first->second, parent);
+
+        auto insertPropertyIt = m_propertyNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        reserveChildPropertyNames(insertPropertyIt.first->second, parent);
+    }
+
+    template <class T>
+    void clearPrimNames(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to clear prim names: %s", reason.c_str());
+            return;
+        }
+
+        m_primNameCache.erase(getCacheKey(parent));
+    }
+
+    template <class T>
+    void clearPropertyNames(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, false, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to clear property names: %s", reason.c_str());
+            return;
+        }
+
+        m_propertyNameCache.erase(getCacheKey(parent));
+    }
+
+    template <class T>
+    void clear(const T& parent)
+    {
+        std::string reason;
+        if (!isValidParent(parent, true, &reason))
+        {
+            TF_RUNTIME_ERROR("Unable to clear prim and property names: %s", reason.c_str());
+            return;
+        }
+
+        m_primNameCache.erase(getCacheKey(parent));
+        m_propertyNameCache.erase(getCacheKey(parent));
+    }
+
+private:
+
+    bool isValidParent(const SdfPath& parent, bool allowPseudoRoot, std::string* reason)
+    {
+        // The absolute root path is always valid despite not being a prim path
+        if (parent.IsAbsoluteRootPath())
+        {
+            if (allowPseudoRoot)
+            {
+                return true;
+            }
+            else
+            {
+                if (reason != nullptr)
+                {
+                    *reason = TfStringPrintf(
+                        "Parent path \"%s\" is not usable as a name cache key, must not be pseudo root.",
+                        parent.GetAsString().c_str()
+                    );
+                }
+                return false;
+            }
+        }
+
+        // Only prim paths represent a stable cache key
+        if (!parent.IsPrimPath())
+        {
+            if (reason != nullptr)
+            {
+                *reason = TfStringPrintf("Parent path \"%s\" is not usable as a name cache key, must be a prim path.", parent.GetAsString().c_str());
+            }
+            return false;
+        }
+
+        // Paths containing variant selections do not represent a stable cache key
+        if (parent.ContainsPrimVariantSelection())
+        {
+            if (reason != nullptr)
+            {
+                *reason = TfStringPrintf(
+                    "Parent path \"%s\" is not usable as a name cache key, must not contain variant selections.",
+                    parent.GetAsString().c_str()
+                );
+            }
+            return false;
+        }
+
+        // Relative paths do not represent a stable cache key
+        if (!parent.IsAbsolutePath())
+        {
+            if (reason != nullptr)
+            {
+                *reason = TfStringPrintf("Parent path \"%s\" is not usable as a name cache key, must be absolute.", parent.GetAsString().c_str());
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    bool isValidParent(const UsdPrim& parent, bool allowPseudoRoot, std::string* reason)
+    {
+        // Invalid prims do not represent a stable cache key
+        if (!parent.IsValid())
+        {
+            if (reason != nullptr)
+            {
+                *reason = "Parent prim is not usable as a name cache key. Prim must be valid.";
+            }
+            return false;
+        }
+
+        if (!allowPseudoRoot && parent.IsPseudoRoot())
+        {
+            if (reason != nullptr)
+            {
+                *reason = TfStringPrintf(
+                    "Parent prim \"%s\" is not usable as a name cache key, must not be pseudo root.",
+                    parent.GetPath().GetAsString().c_str()
+                );
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    bool isValidParent(const SdfPrimSpecHandle parent, bool allowPseudoRoot, std::string* reason)
+    {
+        // Check for null pointer
+        if (parent == nullptr)
+        {
+            if (reason != nullptr)
+            {
+                *reason = "Parent prim spec is not usable as a name cache key. Prim spec must not be null.";
+            }
+            return false;
+        }
+
+        // Invalid or expired objects do not represent a stable cache key
+        if (parent->IsDormant())
+        {
+            if (reason != nullptr)
+            {
+                *reason = "Parent prim spec is not usable as a name cache key. Prim spec must be valid.";
+            }
+            return false;
+        }
+
+        if (!allowPseudoRoot && parent->GetPath() == SdfPath::AbsoluteRootPath())
+        {
+            if (reason != nullptr)
+            {
+                *reason = TfStringPrintf(
+                    "Parent prim spec \"%s\" is not usable as a name cache key, must not be pseudo root.",
+                    parent->GetPath().GetAsString().c_str()
+                );
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    const SdfPath getCacheKey(const SdfPath& parent)
+    {
+        return parent;
+    }
+
+    const SdfPath getCacheKey(const UsdPrim& parent)
+    {
+        return parent.GetPath();
+    }
+
+    const SdfPath getCacheKey(const SdfPrimSpecHandle parent)
+    {
+        return parent->GetPath();
+    }
+
+    template <class T>
+    TfTokenVector uncheckedGetPrimNames(const T& parent, const std::vector<std::string>& names)
+    {
+        auto insertIt = m_primNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        if (insertIt.second)
+        {
+            reserveChildNames(insertIt.first->second, parent);
+        }
+        return getValidNames(names, usdex::core::getValidPrimName, insertIt.first->second);
+    }
+
+    template <class T>
+    TfTokenVector uncheckedGetPropertyNames(const T& parent, const std::vector<std::string>& names)
+    {
+        auto insertIt = m_propertyNameCache.insert(std::make_pair(getCacheKey(parent), ::ValidNameCache()));
+        if (insertIt.second)
+        {
+            reserveChildPropertyNames(insertIt.first->second, parent);
+        }
+        return getValidNames(names, usdex::core::getValidPropertyName, insertIt.first->second);
+    }
+
+    std::map<SdfPath, ::ValidNameCache> m_primNameCache;
+    std::map<SdfPath, ::ValidNameCache> m_propertyNameCache;
+};
+
+usdex::core::NameCache::NameCache() : m_impl(new NameCacheImpl)
+{
+}
+
+usdex::core::NameCache::~NameCache()
+{
+    delete m_impl;
+}
+
+TfToken usdex::core::NameCache::getPrimName(const SdfPath& parent, const std::string& name)
+{
+    return m_impl->getPrimName(parent, name);
+}
+
+TfToken usdex::core::NameCache::getPrimName(const UsdPrim& parent, const std::string& name)
+{
+    return m_impl->getPrimName(parent, name);
+}
+
+TfToken usdex::core::NameCache::getPrimName(const SdfPrimSpecHandle parent, const std::string& name)
+{
+    return m_impl->getPrimName(parent, name);
+}
+
+TfTokenVector usdex::core::NameCache::getPrimNames(const SdfPath& parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPrimNames(parent, names);
+}
+
+TfTokenVector usdex::core::NameCache::getPrimNames(const UsdPrim& parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPrimNames(parent, names);
+}
+
+TfTokenVector usdex::core::NameCache::getPrimNames(const SdfPrimSpecHandle parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPrimNames(parent, names);
+}
+
+TfToken usdex::core::NameCache::getPropertyName(const SdfPath& parent, const std::string& name)
+{
+    return m_impl->getPropertyName(parent, name);
+}
+
+TfToken usdex::core::NameCache::getPropertyName(const UsdPrim& parent, const std::string& name)
+{
+    return m_impl->getPropertyName(parent, name);
+}
+
+TfToken usdex::core::NameCache::getPropertyName(const SdfPrimSpecHandle parent, const std::string& name)
+{
+    return m_impl->getPropertyName(parent, name);
+}
+
+TfTokenVector usdex::core::NameCache::getPropertyNames(const SdfPath& parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPropertyNames(parent, names);
+}
+
+TfTokenVector usdex::core::NameCache::getPropertyNames(const UsdPrim& parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPropertyNames(parent, names);
+}
+
+TfTokenVector usdex::core::NameCache::getPropertyNames(const SdfPrimSpecHandle parent, const std::vector<std::string>& names)
+{
+    return m_impl->getPropertyNames(parent, names);
+}
+
+void usdex::core::NameCache::updatePrimNames(const UsdPrim& parent)
+{
+    return m_impl->updatePrimNames(parent);
+}
+
+void usdex::core::NameCache::updatePrimNames(const SdfPrimSpecHandle parent)
+{
+    return m_impl->updatePrimNames(parent);
+}
+
+void usdex::core::NameCache::updatePropertyNames(const UsdPrim& parent)
+{
+    return m_impl->updatePropertyNames(parent);
+}
+
+void usdex::core::NameCache::updatePropertyNames(const SdfPrimSpecHandle parent)
+{
+    return m_impl->updatePropertyNames(parent);
+}
+
+void usdex::core::NameCache::update(const UsdPrim& parent)
+{
+    return m_impl->update(parent);
+}
+
+void usdex::core::NameCache::update(const SdfPrimSpecHandle parent)
+{
+    return m_impl->update(parent);
+}
+
+void usdex::core::NameCache::clearPrimNames(const SdfPath& parent)
+{
+    return m_impl->clearPrimNames(parent);
+}
+
+void usdex::core::NameCache::clearPrimNames(const UsdPrim& parent)
+{
+    return m_impl->clearPrimNames(parent);
+}
+
+void usdex::core::NameCache::clearPrimNames(const SdfPrimSpecHandle parent)
+{
+    return m_impl->clearPrimNames(parent);
+}
+
+void usdex::core::NameCache::clearPropertyNames(const SdfPath& parent)
+{
+    return m_impl->clearPropertyNames(parent);
+}
+
+void usdex::core::NameCache::clearPropertyNames(const UsdPrim& parent)
+{
+    return m_impl->clearPropertyNames(parent);
+}
+
+void usdex::core::NameCache::clearPropertyNames(const SdfPrimSpecHandle parent)
+{
+    return m_impl->clearPropertyNames(parent);
+}
+
+void usdex::core::NameCache::clear(const SdfPath& parent)
+{
+    return m_impl->clear(parent);
+}
+
+void usdex::core::NameCache::clear(const UsdPrim& parent)
+{
+    return m_impl->clear(parent);
+}
+
+void usdex::core::NameCache::clear(const SdfPrimSpecHandle parent)
+{
+    return m_impl->clear(parent);
 }
 
 class usdex::core::ValidChildNameCache::CacheImpl

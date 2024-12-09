@@ -44,6 +44,7 @@ __all__ = [
     "getValidPrimNames",
     "getValidChildName",
     "getValidChildNames",
+    "NameCache",
     "ValidChildNameCache",
     "getValidPropertyName",
     "getValidPropertyNames",
@@ -154,3 +155,10 @@ def deprecated(version: str, message: str):
         return deprecation
 
     return _wrap
+
+
+class ValidChildNameCache(_usdex_core.ValidChildNameCache):
+
+    @deprecated("1.1", "Use the NameCache class instead")
+    def __init__(self) -> None:
+        super().__init__()
