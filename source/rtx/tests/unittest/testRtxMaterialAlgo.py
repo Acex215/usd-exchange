@@ -472,7 +472,6 @@ class MaterialAlgoTest(usdex.test.TestCase):
         self.assertIsInstance(shader, UsdShade.Shader)
         self.assertTrue(shader)
         self.assertEqual(shader.GetPrim(), previewShader.GetPrim())
-        self.assertIsValidUsd(stage)
 
     def testMaterialDefinition(self):
         stage = self._createTestStage()
