@@ -2,7 +2,7 @@
 
   <!-- Cross platform -->
   <dependency name="premake" linkPath="../_build/host-deps/premake" tags="non-redist">
-    <package name="premake" version="5.0.0-beta2+nv1-${platform}" platforms="windows-x86_64 linux-x86_64 linux-aarch64" />
+    <package name="premake" version="5.0.0-beta4-0-${platform_target_abi}-release" />
   </dependency>
 
 </project>
