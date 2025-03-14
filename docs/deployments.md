@@ -143,7 +143,7 @@ See [CONTRIBUTING.md](https://github.com/NVIDIA-Omniverse/usd-exchange/blob/main
 
 ```{eval-rst}
 .. note::
-  In OpenUSD 24.11 the use of Boost was eliminated from many modules. It is still required for OpenVDB and OpenImageIO, but none of the modules used by OpenUSD Exchange SDK require Boost as of this version. If you want to avoid Boost, consider using the 24.11 flavors.
+  In OpenUSD 24.11 the use of Boost was eliminated from many modules. It is still required for OpenVDB and OpenImageIO, but none of the modules used by OpenUSD Exchange SDK require Boost as of this version. If you want to avoid Boost, consider using 24.11 flavors (or newer).
 ```
 
 If your application ships its own TBB or Boost, you _might_ be able to use the prebuilt binaries from [`install_usdex`](./devtools.md#install_usdex), it works out more often than not.
