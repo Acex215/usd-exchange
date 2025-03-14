@@ -1,16 +1,14 @@
 # OpenUSD Exchange License Notices
 
-## NVIDIA Software License Agreement
+## Apache 2.0 License
 
-The NVIDIA OpenUSD Exchange SDK is governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
-
-As the NVIDIA OpenUSD Exchange SDK is made source available, “Derivative Samples” can be produced from its source code, and all modifications, derivatives, adaptations, extensions or enhancements to that source code are permissible, provided the “Derivative Samples” requirements of license is adhered to.
+The NVIDIA OpenUSD Exchange SDK is provided under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Runtime License Notices
 
 The NVIDIA OpenUSD Exchange SDK makes direct use of several 3rd Party Open Source Software (OSS). Each of these 3rd Party OSS may use other OSS internally.
 
-In addition, the NVIDIA OpenUSD Exchange SDK uses some NVIDIA proprietary technologies. All such proprietary technologies fall under the NVIDIA Software License Agreement and, for redistribution purposes, can be considered a part of the NVIDIA OpenUSD Exchange SDK itself. Some of these proprietary technologies may use 3rd Party OSS as well.
+In addition, the NVIDIA OpenUSD Exchange SDK uses some NVIDIA proprietary technologies (see [Optional NVIDIA Dependencies](#optional-nvidia-dependencies)).
 
 Some of the runtime dependencies are compile-time optional, and some only apply to individual modules.
 
@@ -28,7 +26,7 @@ Detailed below are the licenses of all runtime dependencies of each OpenUSD Exch
 The versions of some dependencies can vary across each build flavor of OpenUSD Exchange:
 - Many are static/common to all flavors and are listed in the source code [target-deps xml file](https://github.com/NVIDIA-Omniverse/usd-exchange/blob/main/deps/target-deps.packman.xml).
 - OpenUSD and Python versions vary per flavor, with all official flavors listed in [usd_flavors.json](https://github.com/NVIDIA-Omniverse/usd-exchange/blob/main/deps/usd_flavors.json).
-- Additionally, as OpenUSD Exchange is source available, it can be recompiled against newer, older, or customized versions of any of its dependencies.
+- Additionally, as OpenUSD Exchange is open source, it can be recompiled against newer, older, or customized versions of any of its dependencies.
 
 ### Core C++ Shared Library
 
@@ -37,7 +35,7 @@ These licenses pertain to the `usdex_core` shared library.
 **Mandatory Runtime Dependencies**
 
 ```{eval-rst}
-- OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
+- OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
@@ -63,7 +61,7 @@ These licenses are optional in that the python-less flavors of `usdex_core` do n
 These licenses pertain to the `usdex.core` python module, its compiled bindings library, and its use of the `usdex_core` shared library.
 
 ```{eval-rst}
-- OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
+- OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
@@ -79,7 +77,7 @@ These licenses pertain to the `usdex.core` python module, its compiled bindings 
 These licenses pertain to the `usdex/pybind` c++ headers and any compiled library or executable in which they are used (e.g. the `usdex.core` python binding library).
 
 ```{eval-rst}
-- OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
+- OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Python `(jump to license) <python LICENSE_>`_
 - Boost :ref:`(jump to license) <boostlicense>`
@@ -92,7 +90,7 @@ These licenses pertain to the `usdex/pybind` c++ headers and any compiled librar
 These licenses pertain to the `usdex/test` c++ headers and any compiled library or executable in which they are used (i.e. [doctest](https://github.com/doctest/doctest) executable binaries).
 
 ```{eval-rst}
-- OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
+- OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - cxxopts `(jump to license) <cxxopts LICENSE_>`_
 - doctest `(jump to license) <doctest LICENSE_>`_
@@ -103,7 +101,7 @@ These licenses pertain to the `usdex/test` c++ headers and any compiled library 
 These licenses pertain to the `usdex.test` python module, which is based on python's `unittest` framework.
 
 ```{eval-rst}
-- OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
+- OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - Omni Asset Validator `(jump to license) <omni.asset_validator LICENSE_>`_
@@ -124,7 +122,39 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 - Gaffer `(jump to license) <gaffer LICENSE_>`_
 ```
 
+## Optional NVIDIA Dependencies
+
+While the NVIDIA OpenUSD Exchange SDK is Open Source Software (OSS), it optionally depends on some NVIDIA proprietary technologies:
+- NVIDIA Omniverse Asset Validator (python module)
+- NVIDIA Omniverse Transcoding Library (compiled binary)
+
+These two dependencies are governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
+
+```{eval-rst}
+.. note::
+  They are both optional add-ons for the NVIDIA OpenUSD Exchange SDK which can be trivially disabled.
+```
+
+To disable the NVIDIA Omniverse Asset Validator, simply avoid using the [usdex.test](./python-usdex-test.rst) python module in your runtime. The Asset Validator is not used at all in [usdex.core](./python-usdex-core.rst), so no source code changes are required.
+
+To disable the NVIDIA Omniverse Transcoding Library for your runtime, see [Runtime Settings](./authoring-usd.md#runtime-settings). Alternatively, you can remove the library entirely with the following source changes:
+- Edit `source/core/library/TfUtils.cpp` to remove `#include <omni/transcoding/transcoding.h>` and the `encodeBootstringIdentifier` call
+- Edit `premake5.lua` to remove `usdex_build.use_omni_transcoding()`
+- Recompile OpenUSD Exchange SDK from source.
+
 ## Individual Licenses
+
+```{eval-rst}
+.. _usdexlicense:
+
+usd-exchange License
+--------------------
+
+.. dropdown:: usd-exchange License
+
+   .. literalinclude:: /LICENSE.md
+      :language: text
+```
 
 ```{eval-rst}
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/usd-license.txt
