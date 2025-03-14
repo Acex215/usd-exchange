@@ -76,20 +76,13 @@ product = ""
 macro_namespace = ""
 
 # The preamble must contain only lines either starting with "SPDX" or containing the word "Copyright" in some form.
-license_preamble = """
+license_preamble = '''
 SPDX-FileCopyrightText: Copyright (c) {years} NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-SPDX-License-Identifier: LicenseRef-NvidiaProprietary
-"""
+SPDX-License-Identifier: Apache-2.0
+'''
 
 # license_text will always be after the spdx_license_text or copyright line, separated by a single newline
-license_text = """
-NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
-property and proprietary rights in and to this material, related
-documentation and any modifications thereto. Any use, reproduction,
-disclosure or distribution of this material and related documentation
-without an express license agreement from NVIDIA CORPORATION or
-its affiliates is strictly prohibited.
-"""
+license_text = ""
 
 # Generates a sidecar `$root/VERSION` file.
 #
