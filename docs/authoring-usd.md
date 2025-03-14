@@ -18,11 +18,11 @@ In either approach, your Layers should contain particular metadata to ensure the
 
 When authoring [UsdPrims](https://openusd.org/release/api/class_usd_prim.html) to a Stage, you will need to specify an [SdfPath](https://openusd.org/release/api/class_sdf_path.html) that identifies a unique location for the Prim. The nature of OpenUSD's [composition algorithm](https://openusd.org/release/glossary.html#composition) (know as "LIVRPS") makes it fairly complex to determine whether your chosen location is valid for authoring. We provide [UsdStage Prim Hierarchy](../api/group__stage__hierarchy.rebreather_rst) functions to assist.
 
-### Binary vs ASCII Layers
+### Binary vs Text Layers
 
-`SdfLayers` can be written in several formats, the most common of which is `.usd`. However, any `.usd` file could be either ASCII encoded (USDA) or binary "crate" encoded (USDC). Both encodings are also available as their own dedicated file extensions (`.usda` and `.usdc`), which help clarify the intent of content & prevent encoding mistakes.
+`SdfLayers` can be written in several formats, the most common of which is `.usd`. However, any `.usd` file could be either USDA encoded (human-readable text) or USDC encoded (a binary [Crate](https://openusd.org/release/glossary.html#crate-file-format) encoding). Both encodings are also available as their own dedicated file extensions (`.usda` and `.usdc`), which help clarify the intent of content & prevent encoding mistakes.
 
-It is important to consider your content when choosing the encoding for your `SdfLayer`. A good default is to always prefer USDC encoding, but for lightweight "interface" layers or quick debugging layers it may be preferable to choose USDA encoding.
+It is important to consider your content when choosing the encoding for your `SdfLayer`. A good default is to always prefer USDC encoding, but for lightweight "interface" layers or quick debugging layers it may be preferable to choose USDA encoding. Further guidance can be found [here](https://openusd.org/release/maxperf.html#use-binary-usd-files-for-geometry-and-shading-caches).
 
 #### USDC Crate Version
 
