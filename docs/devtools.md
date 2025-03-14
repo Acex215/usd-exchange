@@ -41,7 +41,7 @@ By default, the tool will install the core library and module from OpenUSD Excha
 `````
 ``````
 
-Similarly, to download & assemble a minimal monolithic USD 23.11, with no python support, for OpenUSD Exchange v1.0.0 call:
+Similarly, to download & assemble a minimal monolithic USD 24.11, with no python support, for OpenUSD Exchange v1.0.0 call:
 
 ``````{card}
 `````{tab-set}
@@ -49,14 +49,14 @@ Similarly, to download & assemble a minimal monolithic USD 23.11, with no python
 :sync: linux
 
 ```bash
-./repo.sh install_usdex --usd-flavor usd-minimal --usd-version 23.11 --python-version 0 --version 1.0.0
+./repo.sh install_usdex --usd-flavor usd-minimal --usd-version 24.11 --python-version 0 --version 1.0.0
 ```
 ````
 ````{tab-item} Windows
 :sync: windows
 
 ```bat
-.\repo.bat install_usdex --usd-flavor usd-minimal --usd-version 23.11 --python-version 0 --version 1.0.0
+.\repo.bat install_usdex --usd-flavor usd-minimal --usd-version 24.11 --python-version 0 --version 1.0.0
 ```
 ````
 `````

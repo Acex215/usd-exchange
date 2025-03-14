@@ -337,7 +337,7 @@ USD_LIBS = \
 #  -lusd_python \
 #  -lusd_ts
 
-# For USD 24.08 and older. Remove if using USD 24.11 and replace with the block above.
+# For USD 24.08 and older. Remove if using USD 24.11 or newer, and replace with the block above.
 USDEX_INCLUDE_DIRS += \
  -isystem $(DEPSDIR)/usd/$(CONFIG)/include/boost-1_78
 USD_LIBS += \

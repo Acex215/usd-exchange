@@ -2,6 +2,24 @@
     "flavors": [
         {
             "usd_flavor": "usd",
+            "usd_ver": "25.02",
+            "python_ver": "3.11",
+            "platforms": ["windows-x86_64", "linux-x86_64"]
+        },
+        {
+            "usd_flavor": "usd",
+            "usd_ver": "25.02",
+            "python_ver": "3.10",
+            "platforms": ["windows-x86_64", "linux-x86_64"]
+        },
+        {
+            "usd_flavor": "usd-minimal",
+            "usd_ver": "25.02",
+            "python_ver": "0",
+            "platforms": ["windows-x86_64", "linux-x86_64"]
+        },
+        {
+            "usd_flavor": "usd",
             "usd_ver": "24.11",
             "python_ver": "3.11",
             "platforms": ["windows-x86_64", "linux-x86_64"]

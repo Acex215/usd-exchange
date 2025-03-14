@@ -49,7 +49,7 @@ To build OpenUSD Exchange SDK for different flavors of the upstream dependencies
 - `$usd_ver`: many options, see details below
 - `$python_ver`: 3.11, 3.10, 0 (disable python)
 
-For example, to build with USD 23.11 and Python 3.10, call `repo --set-token usd_flavor:usd --set-token usd_ver:23.11 --set-token python_ver:3.10 build`.
+For example, to build with USD 24.11 and Python 3.10, call `repo --set-token usd_flavor:usd --set-token usd_ver:24.11 --set-token python_ver:3.10 build`.
 
 Similarly, for a minimal monothlicic build of USD 24.05 with no python support, call `repo --set-token usd_flavor:usd-minimal --set-token usd_ver:24.05 --set-token python_ver:0 build`.
 
