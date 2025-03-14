@@ -137,13 +137,13 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 
 .. _tbblicense:
 
-.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/*TBB-LICENSE.txt
+.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/*tbb-LICENSE*
 
 .. Workaround for zlib as the name of the license file varies between packages
 
 .. _zliblicense:
 
-.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/zlib-LICENSE*
+.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/zlib-LICENSE
 
 .. include-licenses:: /_build/target-deps/cxxopts/PACKAGE-LICENSES/cxxopts-LICENSE.txt
 
