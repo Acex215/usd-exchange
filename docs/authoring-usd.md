@@ -18,6 +18,22 @@ In either approach, your Layers should contain particular metadata to ensure the
 
 When authoring [UsdPrims](https://openusd.org/release/api/class_usd_prim.html) to a Stage, you will need to specify an [SdfPath](https://openusd.org/release/api/class_sdf_path.html) that identifies a unique location for the Prim. The nature of OpenUSD's [composition algorithm](https://openusd.org/release/glossary.html#composition) (know as "LIVRPS") makes it fairly complex to determine whether your chosen location is valid for authoring. We provide [UsdStage Prim Hierarchy](../api/group__stage__hierarchy.rebreather_rst) functions to assist.
 
+### Binary vs ASCII Layers
+
+`SdfLayers` can be written in several formats, the most common of which is `.usd`. However, any `.usd` file could be either ASCII encoded (USDA) or binary "crate" encoded (USDC). Both encodings are also available as their own dedicated file extensions (`.usda` and `.usdc`), which help clarify the intent of content & prevent encoding mistakes.
+
+It is important to consider your content when choosing the encoding for your `SdfLayer`. A good default is to always prefer USDC encoding, but for lightweight "interface" layers or quick debugging layers it may be preferable to choose USDA encoding.
+
+#### USDC Crate Version
+
+When using USDC encoding, any new layers will be saved with the default Crate Version of the running process. As the default Crate Version differs across USD runtimes, this has implications on which USD Ecosystem products will be able to load the layer. [UsdCrateInfo](https://openusd.org/release/api/class_usd_crate_info.html) is a useful class to help determine your software's USDC capabilities.
+
+- Use `UsdCrateInfo::GetSoftwareVersion` to determine the newest possible Crate Version that your runtime could read.
+- Use `UsdCrateInfo::GetFileVersion` to determine the Crate Version with which a given `SdfLayer` was serialized.
+- To determine your current default Crate Version, serialize a new layer and check `UsdCrateInfo::GetFileVersion`.
+  - Note this will not necessarily match `GetSoftwareVersion`; it is common for a runtime to serialize an older Crate Version than it can read, to maximize portability to other runtimes.
+- If you need to target older runtimes than your default allows, be sure to set the [TfEnvSetting](https://openusd.org/release/api/env_setting_8h.html#details) `USD_WRITE_NEW_USDC_FILES_AS_VERSION` _before starting the process_.
+
 ## Valid and Unique Names
 
 OpenUsd has strict requirements on what names are valid for a `UsdObject`, which includes both `UsdPrim` and `UsdProperty` objects.
