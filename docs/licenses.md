@@ -41,7 +41,7 @@ These licenses pertain to the `usdex_core` shared library.
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
-- zlib `(jump to license) <zlib LICENSE_>`_
+- zlib :ref:`(jump to license) <zliblicense>`
 ```
 
 **Optional Runtime Dependencies**
@@ -55,7 +55,7 @@ These licenses are optional in that the python-less flavors of `usdex_core` do n
 
 ```{eval-rst}
 - Python `(jump to license) <python LICENSE_>`_
-- Boost `(jump to license) <boost LICENSE_>`_
+- Boost :ref:`(jump to license) <boostlicense>`
 ```
 
 ### Core Python Module
@@ -67,9 +67,9 @@ These licenses pertain to the `usdex.core` python module, its compiled bindings 
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
-- zlib `(jump to license) <zlib LICENSE_>`_
+- zlib :ref:`(jump to license) <zliblicense>`
 - Python `(jump to license) <python LICENSE_>`_
-- Boost `(jump to license) <boost LICENSE_>`_
+- Boost :ref:`(jump to license) <boostlicense>`
 - pybind11 `(jump to license) <pybind11 LICENSE_>`_
 - pyboost11 `(jump to license) <pyboost11 LICENSE_>`_
 ```
@@ -82,7 +82,7 @@ These licenses pertain to the `usdex/pybind` c++ headers and any compiled librar
 - OpenUSD Exchange `(jump to license) <https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement>`_
 - OpenUSD `(jump to license) <usd LICENSE_>`_
 - Python `(jump to license) <python LICENSE_>`_
-- Boost `(jump to license) <boost LICENSE_>`_
+- Boost :ref:`(jump to license) <boostlicense>`
 - pybind11 `(jump to license) <pybind11 LICENSE_>`_
 - pyboost11 `(jump to license) <pyboost11 LICENSE_>`_
 ```
@@ -108,9 +108,9 @@ These licenses pertain to the `usdex.test` python module, which is based on pyth
 - Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - Omni Asset Validator `(jump to license) <omni.asset_validator LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
-- zlib `(jump to license) <zlib LICENSE_>`_
+- zlib :ref:`(jump to license) <zliblicense>`
 - Python `(jump to license) <python LICENSE_>`_
-- Boost `(jump to license) <boost LICENSE_>`_
+- Boost :ref:`(jump to license) <boostlicense>`
 - pybind11 `(jump to license) <pybind11 LICENSE_>`_
 - pyboost11 `(jump to license) <pyboost11 LICENSE_>`_
 ```
@@ -139,7 +139,11 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/*TBB-LICENSE.txt
 
-.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/zlib-LICENSE.txt
+.. Workaround for zlib as the name of the license file varies between packages
+
+.. _zliblicense:
+
+.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/zlib-LICENSE*
 
 .. include-licenses:: /_build/target-deps/cxxopts/PACKAGE-LICENSES/cxxopts-LICENSE.txt
 
@@ -147,7 +151,11 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/python-LICENSE.txt
 
-.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/boost-LICENSE.txt
+.. Workaround for Boost as the name of the license file varies between packages
+
+.. _boostlicense:
+
+.. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/boost-LICENSE*.txt
 
 .. include-licenses:: /_build/target-deps/pybind11/PACKAGE-LICENSES/pybind11-LICENSE.txt
 

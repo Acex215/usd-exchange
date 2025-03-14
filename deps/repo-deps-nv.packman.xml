@@ -1,9 +1,9 @@
 <project toolsVersion="5.0">
   <dependency name="repo_licensing" linkPath="../_repo/deps/repo_licensing">
-    <package name="repo_licensing" version="1.16.3" />
+    <package name="repo_licensing" version="1.17.0" />
   </dependency>
   <dependency name="repo_docs" linkPath="../_repo/deps/repo_docs">
-    <package name="repo_docs" version="1.6.1" />
+    <package name="repo_docs" version="2.0.0" />
   </dependency>
   <dependency name="repo_codesign" linkPath="../_repo/deps/repo_codesign">
     <package name="repo_codesign" version="7.2.3" />
