@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: Copyright (c) 2023-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: LicenseRef-NvidiaProprietary
 #
 # NVIDIA CORPORATION, its affiliates and licensors retain all intellectual
@@ -162,7 +162,7 @@ class TestCase(unittest.TestCase):
         Returns:
             The ``Sdf.Layer`` object
         """
-        return Sdf.Layer.CreateNew(self.tmpFile(name=name, ext="usda"))
+        return Sdf.Layer.CreateNew(self.tmpFile(name=name, ext=ext))
 
     def tmpFile(self, name: str = "", ext: str = "") -> str:
         """
