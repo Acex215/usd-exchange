@@ -198,6 +198,11 @@ name = "rtx"
 executables = []  # no cpp tests currently
 
 [repo_format]
+license_preamble = '''
+SPDX-FileCopyrightText: Copyright (c) {years} NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+SPDX-License-Identifier: Apache-2.0
+'''
+license_text = ""
 cpp.files.exclude = [
     "include/usdex/pybind/BindingUtils.h",
     "_*/**",

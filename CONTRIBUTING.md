@@ -8,17 +8,65 @@ into three categories:
 
 In all cases, first search the existing [GitHub Issues](https://github.com/NVIDIA-Omniverse/usd-exchange/issues) to see if anyone has reported something similar.
 
-If not, create a new [GitHub Issue](https://github.com/NVIDIA-Omniverse/usd-exchange/issues/new/choose) describing what you encountered or what you want to see changed.
+If not, create a new [GitHub Issue](https://github.com/NVIDIA-Omniverse/usd-exchange/issues/new/choose) describing what you encountered or what you want to see changed. If you have feedback that is best explained in code, feel free to fork the repository on GitHub, create a branch demonstrating your intent, and either link it to the GitHub Issue or open a Pull Request back upstream. See [Code Contributions](#code-contributions) for more details.
 
 Whether adding details to an existing issue or creating a new one, please let us know what companies are impacted.
 
 ## Code contributions
 
-We are not currently accepting direct code contributions to OpenUSD Exchange SDK. If you have feedback that is best explained in code, feel free to fork the repository on GitHub, create a branch demonstrating your intent, and either link it to a GitHub Issue or open a Pull Request back upstream.
-
-We will not merge any GitHub Pull Requests directly, but we will take the suggestion under advisement and discuss internally. If you require attribution for such code, should it be adopted internally, please be sure that both your own legal team & NVIDIA legal team finds this acceptable prior to suggesting the changes.
-
 If you want to implement a feature, or change the logic of existing features, you are welcome to modify the code on a personal clone/mirror/fork & re-build the libraries from source. See [Building](#building) for more details.
+
+If you want to contribute your changes back upstream, please first start a GitHub Issue as described above.
+
+If you intend to submit a Pull Request:
+- First, ensure alignment with the Code Owners on the associated Issue, to avoid redundant work or wasted iterations.
+- Develop your changes on a well named [development branch](#development-branches) within your personal clone/mirror/fork.
+- Run all test suites locally & ensure passing results in your dev environment.
+- Ensure all commits have a sign-off (see [Developer Certificate of Origin](#developer-certificate-of-origin))
+
+Please note that in some cases, we may not merge GitHub Pull Requests directly. We will take suggestions under advisement and discuss internally. We may rebase your commits to provide alignment with internal development branches.
+
+### Developer Certificate of Origin
+
+Rather than requiring a formal Contributor License Agreement (CLA), we use the [Developer Certificate of Origin](https://developercertificate.org/) to ensure contributors have the right to submit their contributions to this project.
+
+Please ensure that all commits have a [sign-off](https://git-scm.com/docs/git-commit#Documentation/git-commit.txt-code--signoffcode) added with an email address that matches the commit author to agree to the DCO terms for each particular contribution.
+
+```text
+Version 1.1
+
+Copyright (C) 2004, 2006 The Linux Foundation and its contributors.
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+
+Developer's Certificate of Origin 1.1
+
+By making a contribution to this project, I certify that:
+
+(a) The contribution was created in whole or in part by me and I
+    have the right to submit it under the open source license
+    indicated in the file; or
+
+(b) The contribution is based upon previous work that, to the best
+    of my knowledge, is covered under an appropriate open source
+    license and I have the right under that license to submit that
+    work with modifications, whether created in whole or in part
+    by me, under the same open source license (unless I am
+    permitted to submit under a different license), as indicated
+    in the file; or
+
+(c) The contribution was provided directly to me by some other
+    person who certified (a), (b) or (c) and I have not modified
+    it.
+
+(d) I understand and agree that this project and the contribution
+    are public and that a record of the contribution (including all
+    personal information I submit with it, including my sign-off) is
+    maintained indefinitely and may be redistributed consistent with
+    this project or the open source license(s) involved.
+```
 
 ### Branches and Versions
 
@@ -32,7 +80,11 @@ Long term support of any existing releases is done using a maintenance branch. T
 
 ### Development Branches
 
-For all development, changes are pushed into a branch in personal development forks of usd-exchange, and code is submitted upstream for code review and CI verification before being merged into `main` or the target release branch. All code changes must contain either new unittests, or updates to existing tests, and we won't merge any code changes that have failing CI pipelines or sub-standard code coverage.
+For all development, changes are pushed into a branch in personal development forks of usd-exchange, and code is submitted upstream for code review and CI verification before being merged into `main` or the target release branch.
+
+We do not enforce any particular naming convention for development branches, other than avoiding the reserved branch patterns `main` and `release/*`. We recommend using legible branch names that imply the feature or fix being developed.
+
+All code changes must contain either new unittests, or updates to existing tests, and we won't merge any code changes that have failing CI pipelines or sub-standard code coverage.
 
 ## Building
 
