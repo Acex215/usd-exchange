@@ -1,5 +1,63 @@
 # 1.1.0-pre
 
+OpenUSD Exchange SDK is now provided under the Apache License, Version 2.0
+
+## Core
+
+### Features
+
+- Added USD 25.02 support
+- Added USD 24.11 support
+- Added `NameCache` class for generating unique and valid names for `UsdPrims` and their `UsdProperties`
+  - It can be used in several authoring contexts, with overloads for `SdfPath`, `UsdPrim` and `SdfPrimSpecHandle`
+  - Deprecated `ValidChildNameCache` in favor of `NameCache`
+- Improved python deprecation warnings
+
+### Fixes
+
+- Fixed attribute type for `UsdUvTexture.inputs:varname`
+
+## Pybind
+
+### Features
+
+- Added support for `pxr_python` in USD 24.11+
+
+## Test
+
+### Fixes
+
+- Fixed file extension bug in `TestCase.tmpLayer`
+
+## Documentation
+
+- Added `pybind` section to C++ API docs
+- Updated docs to explain `boost::python` vs `pxr_python`
+- Added guidance around `SdfLayer` encoding & Crate Version portability to the Authoring USD Data Guide
+- Updated all license notices & attributions associated with change to Apache License, Version 2.0
+- Updated Contributing Guide to accept code contributions via Developer Certificate of Origin
+- Added explanation of optional NVIDIA SLA dependencies & how to disable them.
+
+## Dependencies
+
+### Runtime Deps
+
+- OpenUSD 25.02, 24.11, 24.08 (default), 24.05, 23.11
+- Omni Transcoding 1.0.0
+- Omni Asset Validator 0.16.2
+- pybind 2.11.1
+
+### Dev Tools
+
+- packman 7.27
+- repo_tools (all matching latest public)
+- doctest 2.4.5
+- cxxopts 2.2.0
+- Premake 5.0.0-beta4
+- GCC 11.4.0
+- MSVC 2019-16.11
+- Python 3.10.16 (default), 3.11.11
+
 # 1.0.0
 
 ## Core
