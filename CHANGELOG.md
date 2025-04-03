@@ -1,4 +1,4 @@
-# 1.1.0-rc3
+# 1.1.0
 
 OpenUSD Exchange SDK is now provided under the Apache License, Version 2.0
 
