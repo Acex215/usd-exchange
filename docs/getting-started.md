@@ -203,7 +203,7 @@ The application performs a few simple things with OpenUSD and the OpenUSD Exchan
 It is included here to copy into a `UsdTraverse.cpp` file within `$project_root`
 
 ```cpp
-// SPDX-FileCopyrightText: Copyright (c) 2021-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-FileCopyrightText: Copyright (c) 2021-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: MIT
 //
 
@@ -269,7 +269,7 @@ The build configurations below apply to the default flavor of OpenUSD Exchange S
 For Linux, all of the build configuration settings are described in the Makefile included here:
 
 ```makefile
-# SPDX-FileCopyrightText: Copyright (c) 2023-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-FileCopyrightText: Copyright (c) 2023-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # SPDX-License-Identifier: MIT
 
 # This makefile is a simple example for an application, or converter for including, linking, and executing with
