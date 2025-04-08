@@ -306,23 +306,12 @@ Stderr:
             """
         )
 
-        if self.isUsdOlderThan("0.23.11"):
-            # Fatal Error diagnostics do not cause the subprocess to abort
-            expectSuccess = True
-            expectedStderr = [
-                "[Fatal] [__main__.emitDiagnostics] Python Fatal Error: Will cause the process to Abort in modern USD versions",
-                "[Warning] [__main__.emitDiagnostics] Will only be emitted in older USD versions",
-            ]
-        else:
-            # Fatal Error diagnostics cause the subprocess to abort
-            expectSuccess = False
-            expectedStderr = [
-                "[Fatal] [__main__.emitDiagnostics] Python Fatal Error: Will cause the process to Abort in modern USD versions",
-            ]
-
+        # Fatal Error diagnostics cause the subprocess to abort
         self.assertOutputStreams(
             command=command,
             expectedStdout=[],
-            expectedStderr=expectedStderr,
-            expectSuccess=expectSuccess,
+            expectedStderr=[
+                "[Fatal] [__main__.emitDiagnostics] Python Fatal Error: Will cause the process to Abort in modern USD versions",
+            ],
+            expectSuccess=False,
         )
