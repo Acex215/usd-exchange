@@ -333,15 +333,15 @@ USD_LIBS = \
  -lusd_work
 
 # For USD 24.11 and newer
-# USD_LIBS += \
-#  -lusd_python \
-#  -lusd_ts
-
-# For USD 24.08 and older. Remove if using USD 24.11 or newer, and replace with the block above.
-USDEX_INCLUDE_DIRS += \
- -isystem $(DEPSDIR)/usd/$(CONFIG)/include/boost-1_78
 USD_LIBS += \
- -lboost_python310
+ -lusd_python \
+ -lusd_ts
+
+# For USD 24.08 and older, uncomment and remove the block above.
+# USDEX_INCLUDE_DIRS += \
+#  -isystem $(DEPSDIR)/usd/$(CONFIG)/include/boost-1_78
+# USD_LIBS += \
+#  -lboost_python310
 
 USDEX_LIBS = \
  -lusdex_core \
@@ -410,7 +410,6 @@ Create a new Visual Studio 2019 or 2022 project based on the `C++ Console App`, 
 usdex/target-deps/usd-exchange/$(CONFIGURATION)/include
 usdex/target-deps/python/include
 usdex/target-deps/usd/$(CONFIGURATION)/include
-usdex/target-deps/usd/$(CONFIGURATION)/include/boost-1_78
 ```
 
 ##### Library Include Paths
@@ -430,7 +429,6 @@ usdex/target-deps/usd/$(CONFIGURATION)/lib
 
 `C/C++ > Preprocessor > Preprocessor Definitions` (all configurations)
 ```text
-BOOST_LIB_TOOLSET="vc142"
 NOMINMAX
 TBB_SUPPRESS_DEPRECATED_MESSAGES
 ```
