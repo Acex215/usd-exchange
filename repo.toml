@@ -308,6 +308,11 @@ files = [
 ]
 warn_if_not_exist = true
 
+[repo_py_package]
+enabled = true
+staging_dir = "$root/_build/pyproject"
+install_dir = "$root/_build/packages"
+
 [repo_codesign]
 enabled = true
 folder_input = "${root}/_build/unsignedpackages"
