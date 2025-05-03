@@ -119,7 +119,7 @@ If none of the existing flavors meet the requirements of your application, you h
 
 ## Testing
 
-To run all the unittest suites, use `repo.bat test` or `repo.sh test`, depending on your local platform. We currently have 2 suites, `main` and `cpp`. Both suites run by default. Any failure in any suite will fail the test process.
+To run all the unittest suites, use `repo.bat test` or `repo.sh test`, depending on your local platform. We currently have 3 suites, `main`, `cpp`, and `whl`. Only the `main` suite runs by default, but a special `--suite all` argument will run them all. Any failure in any suite will fail the test process.
 
 > Note: `repo test` uses the same `$usd_flavor`, `$usd_ver`, and `$python_ver` tokens as `repo build`. If you are building for a non-default flavor it is critical to supply the same token values to `repo test`. For example, `repo --set-token usd_ver:24.05 --set-token python_ver:3.11 test -s main`
 
@@ -136,6 +136,12 @@ If you want to isolate the `main` tests even further, `repo test -s main -f <pat
 The `cpp` suite is a [doctest](https://github.com/doctest/doctest) suite, and is only used to exercise those functions in OpenUSD Exchange SDK which cannot be bound to python, or those for which performance or multithreading requires using C++ entry points.
 
 To run the `cpp` suite use `repo test -s cpp`.
+
+### Wheel Test Suite
+
+The `whl` suite is the same set of python unittests as in the `main` suite, but it is run from an isolated virtual environment using pip to install the .whl package.
+
+To run the `whl` suite you must first build the wheel using `repo py_package` and then run the tests with `repo test -s whl`.
 
 ## Internal release instructions for Code Owners
 
