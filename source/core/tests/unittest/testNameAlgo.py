@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import omni.transcoding
+from typing import List
+
 import usdex.core
 import usdex.test
 from pxr import Sdf, Tf, Usd, UsdGeom
@@ -15,6 +16,16 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
         if msg is None:
             msg = f"Appending '{name}' as a property of an SdfPath produces an invalid path."
         self.assertTrue(path, msg=msg)
+
+    def assertDecoding(self, inputNames: List[str], expectNames: List[str]):
+        try:
+            import omni.transcoding
+        except ImportError:
+            # the tests might be run from an environement without the transcoding bindings
+            # we already assert that transcoding works, this is purely to demonstrate decoding
+            return
+        for inputName, expectName in zip(inputNames, expectNames):
+            self.assertEqual(omni.transcoding.decodeBootstringIdentifier(inputName), expectName)
 
     def testGetValidPrimName(self):
         # An empty string will return the minimal valid name
@@ -39,7 +50,7 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 characters are correctly encoded and decoded.
         self.assertEqual(usdex.core.getValidPrimName("カーテンウォール"), "tn__sxB76l2Y5o0X16")
-        self.assertEqual(omni.transcoding.decodeBootstringIdentifier(usdex.core.getValidPrimName("カーテンウォール")), "カーテンウォール")
+        self.assertDecoding([usdex.core.getValidPrimName("カーテンウォール")], ["カーテンウォール"])
 
         # ISO-8859-1 encoding will cause encoding to fail resulting in the fallback character substitution being used.
         # The fallback character substitution slightly differs from pxr::TfMakeValidIdentifier in how it handles leading numerics
@@ -50,10 +61,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
         def assertEqualPrimNames(inputNames, reservedNames, expectNames):
             self.assertEqual(usdex.core.getValidPrimNames(inputNames, reservedNames), expectNames)
 
-        def assertDecoding(inputNames, expectNames):
-            for inputName, expectName in zip(inputNames, expectNames):
-                self.assertEqual(omni.transcoding.decodeBootstringIdentifier(inputName), expectName)
-
         # Basic tests
         assertEqualPrimNames(["cube", "cube_1", "sphere", "cube_3"], [], ["cube", "cube_1", "sphere", "cube_3"])
 
@@ -63,7 +70,7 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
             [],
             ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
         )
-        assertDecoding(
+        self.assertDecoding(
             ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
             ["123cube", "cube1", r"sphere%$%#ad@$1", "cube_3", "cube$3"],
         )
@@ -99,7 +106,7 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 words
         assertEqualPrimNames(["カーテンウォール", "カーテンウォール"], [], ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"])
-        assertDecoding(
+        self.assertDecoding(
             ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"],
             ["カーテンウォール", "カーテンウォール_1"],
         )
@@ -217,7 +224,7 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
             # A combination of illegal characters and leading numerics
             ("1 name", "tn__1name_c5"),
             # A property SdfPath will be encoded as it contains additional delimiters that a property name cannot support
-            # These tests are included to assert our requirements that differ from the behavior of omni.transcoding.encodeBootstringPath()
+            # These tests are included to assert our requirements that differ from the behavior of default transcoding
             ("/foo/bar.property:name:space", "tn__foobarproperty_jLG4:name:space"),
             ("/foo/bar.property[/target].relAttr", "tn__foobarpropertytargetrelAttr_se0LU4Hhk0V2"),
             ("/foo/bar{var=sel}", "tn__foobarvarsel_rI4Z6dV0o0"),
