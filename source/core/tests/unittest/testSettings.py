@@ -39,7 +39,7 @@ class SettingsTest(usdex.test.TestCase):
         if expectedOutputPattern == "":
             self.assertEqual(result.stderr, "")
         else:
-            self.assertRegexpMatches(result.stderr, expectedOutputPattern)
+            self.assertRegex(result.stderr, expectedOutputPattern)
 
     def testOmniTranscodingSetting(self):
         self.assertEqual(usdex.core.enableOmniTranscodingSetting, "USDEX_ENABLE_OMNI_TRANSCODING")
