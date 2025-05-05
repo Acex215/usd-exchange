@@ -7,7 +7,7 @@ extra_tool_paths."++" = [
 ]
 
 # keep in-sync with the tokens below
-default_flavor = "usd_24.08_py_3.10"
+default_flavor = "usd_25.02_py_3.10"
 
 [repo.tokens]
 usd_flavor = "usd"
