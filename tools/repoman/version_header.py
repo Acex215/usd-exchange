@@ -149,6 +149,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         else:
             raise RuntimeError(f"Invalid version specification: {tokens}. repo_version_header requires at major.minor or major.minor.patch syntax")
 
+        if not macro_namespace:
+            raise RuntimeError(f"No specified macro namespace. repo_version_header requires a value to ensure defined variables are unique")
+
         generate_version_h(macro_namespace, target_version_header_file, major, minor, patch, version, package_version, license_preamble, license_text)
 
         if generate_version_stub_file:
