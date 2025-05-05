@@ -175,7 +175,7 @@ Stderr:
         command = inspect.cleandoc(
             """
             import usdex.core
-            from pxr import Tf, Usd
+            from pxr import Tf, Usd, UsdGeom
 
             usdex.core.activateDiagnosticsDelegate()
             assert usdex.core.isDiagnosticsDelegateActive()

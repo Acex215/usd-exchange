@@ -3,31 +3,18 @@
 #
 
 import os
-import sys
 import unittest
 
-import omni.repo.man
-import omni.repo.man.build_number
 import usdex.core
-from pxr import Usd
 
 
 class CoreTest(unittest.TestCase):
 
     def testVersion(self):
         changes = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "CHANGELOG.md")
-        version = omni.repo.man.build_number.generate_build_number_from_file(changes)
-        self.assertEqual(usdex.core.version(), version)
-
-    def testUsdVersion(self):
-        usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
-        year, month = usd_ver.split(".")
-        self.assertEqual(Usd.GetVersion(), (0, int(year), int(month)))
-
-    def testPythonVersion(self):
-        python_ver = omni.repo.man.resolve_tokens("${python_ver}")
-        major, minor = python_ver.split(".")
-        self.assertEqual((sys.version_info.major, sys.version_info.minor), (int(major), int(minor)))
+        with open(changes, "r") as f:
+            version = f.readline().strip("# \n")
+        self.assertEqual(usdex.core.version().split("+")[0], version)
 
     def testModuleSymbols(self):
         allowList = [

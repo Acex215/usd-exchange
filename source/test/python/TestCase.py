@@ -52,6 +52,8 @@ class TestCase(unittest.TestCase):
     def setUpClass(cls):
         # activate the usdex delegate to affect OpenUSD diagnostic logs
         usdex.core.activateDiagnosticsDelegate()
+        # called to cache a computed result before any tests run
+        tempfile.gettempdir()
 
     def setUp(self):
         super().setUp()
