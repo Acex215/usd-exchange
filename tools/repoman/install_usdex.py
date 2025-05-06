@@ -51,7 +51,7 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, repoVersionFile,
                 "usd-exchange",
                 "deps/target-deps.packman.xml",
                 platform=tokens["platform_target_abi"],
-                remotes=["cloudfront"],
+                remotes=["packman:cloudfront"],
                 tokens=tokens,
             )
         if "remote_filename" in info:
@@ -88,7 +88,7 @@ def __acquireUSDEX(installDir, useExistingBuild, targetDepsDir, repoVersionFile,
         packageVersion = f"{version}+{tokens['platform_target_abi']}.{buildConfig}"
     print(f"Download and Link usd-exchange {packageVersion} to {linkPath}")
     try:
-        result = packmanapi.install(name=packageName, package_version=packageVersion, remotes=["cloudfront"], link_path=linkPath)
+        result = packmanapi.install(name=packageName, package_version=packageVersion, remotes=["packman:cloudfront"], link_path=linkPath)
         return list(result.values())[0]
     except packmanapi.PackmanErrorFileNotFound:
         raise omni.repo.man.exceptions.ConfigurationError(f"Unable to download {packageName}, version {packageVersion}")
