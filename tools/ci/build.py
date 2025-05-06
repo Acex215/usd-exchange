@@ -3,6 +3,7 @@
 #
 
 import argparse
+import os
 import shutil
 
 import omni.repo.ci
@@ -43,8 +44,9 @@ def main(arguments: argparse.Namespace):
     ]
     if omni.repo.man.is_linux():
         build.append("--/repo_build/docker/enabled=true")
-        if abi:
-            build.append(f"--/repo_build/docker/image_url={omni.repo.man.resolve_tokens('${env:REPO_BUILD_IMAGE}')}")
+        image = os.environ.get("REPO_BUILD_IMAGE")
+        if abi and image:
+            build.append(f"--/repo_build/docker/image_url={image}")
     elif omni.repo.man.is_windows():
         build.append("--/repo_build/msbuild/link_host_toolchain=")
 
@@ -59,7 +61,7 @@ def main(arguments: argparse.Namespace):
             if omni.repo.man.is_linux():
                 omni.repo.ci.launch([repo, "package", "--mode", "docs"])
 
-    # generate the package
+    # generate the packman package
     omni.repo.ci.launch(
         [
             repo,
@@ -77,6 +79,22 @@ def main(arguments: argparse.Namespace):
             arguments.build_config,
         ]
     )
+
+    if arguments.build_config == "release" and python_ver != "0":
+        # generate the python wheel
+        omni.repo.ci.launch(
+            [
+                repo,
+                "--set-token",
+                f"usd_flavor:{usd_flavor}",
+                "--set-token",
+                f"usd_ver:{usd_ver}",
+                "--set-token",
+                f"python_ver:{python_ver}",
+                f"--abi={abi}",
+                "py_package",
+            ]
+        )
 
     # clean the build so it can't influence the tests,
     # but retain the packages and the sidecar binaries
