@@ -12,6 +12,7 @@
 
 TEST_CASE("Version and Features")
 {
-    CHECK(std::string(usdex::core::version()) == USDEX_BUILD_STRING);
+    CHECK(std::string(usdex::core::version()) == USDEX_VERSION_STRING);
+    CHECK(std::string(usdex::core::buildVersion()) == USDEX_BUILD_STRING);
     CHECK(usdex::core::withPython() == USDEX_WITH_PYTHON);
 }
