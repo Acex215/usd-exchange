@@ -24,7 +24,7 @@ def replace_file(filename, new_file_contents):
             f.write(new_file_contents)
 
 
-def generate_version_h(macro_namespace, target_file, major, minor, patch, package_version, license_preamble, license_text):
+def generate_version_h(macro_namespace, target_file, major, minor, patch, version, package_version, license_preamble, license_text):
     license_preamble = "\n".join([f"// {x}" for x in license_preamble.strip("\n").split("\n")])
     license_text = "\n".join([f"// {x}" for x in license_text.strip("\n").split("\n")])
     new_file_contents = f"""{license_preamble}
@@ -45,6 +45,9 @@ def generate_version_h(macro_namespace, target_file, major, minor, patch, packag
 
 //! Patch number. This will normally be 0, but can change if a fix is back-ported to a previous release.
 #define {macro_namespace}_VERSION_PATCH {patch}
+
+//! This is the full version string
+#define {macro_namespace}_VERSION_STRING "{version}"
 
 //! This is the full build string
 #define {macro_namespace}_BUILD_STRING "{package_version}"
@@ -135,8 +138,9 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         license_preamble = config["repo_version_header"]["license_preamble"].replace("{years}", years)
         license_text = config["repo_version_header"]["license_text"]
 
-        version = package_version.split("+")[0].split("-")[0]
-        tokens = version.split(".")
+        version = package_version.split("+")[0]
+        semantic_version = version.split("-")[0]
+        tokens = semantic_version.split(".")
         if len(tokens) == 3:
             (major, minor, patch) = tokens
         elif len(tokens) == 2:
@@ -145,7 +149,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         else:
             raise RuntimeError(f"Invalid version specification: {tokens}. repo_version_header requires at major.minor or major.minor.patch syntax")
 
-        generate_version_h(macro_namespace, target_version_header_file, major, minor, patch, package_version, license_preamble, license_text)
+        if not macro_namespace:
+            raise RuntimeError(f"No specified macro namespace. repo_version_header requires a value to ensure defined variables are unique")
+
+        generate_version_h(macro_namespace, target_version_header_file, major, minor, patch, version, package_version, license_preamble, license_text)
 
         if generate_version_stub_file:
             # this is only necessary because repo_docs doesn't respect repo.folders.version_file

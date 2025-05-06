@@ -8,13 +8,23 @@ import unittest
 import usdex.core
 
 
+def get_changelog_version_string():
+    """Get the version string from the CHANGELOG.md"""
+    changes = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "CHANGELOG.md")
+    with open(changes, "r") as f:
+        version = f.readline().strip("# \n")
+    return version
+
+
 class CoreTest(unittest.TestCase):
 
     def testVersion(self):
-        changes = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "CHANGELOG.md")
-        with open(changes, "r") as f:
-            version = f.readline().strip("# \n")
-        self.assertEqual(usdex.core.version().split("+")[0], version)
+        version = get_changelog_version_string()
+        self.assertEqual(usdex.core.version(), version)
+
+    def testBuildVersion(self):
+        version = get_changelog_version_string()
+        self.assertEqual(usdex.core.buildVersion().split("+")[0], version)
 
     def testModuleSymbols(self):
         allowList = [

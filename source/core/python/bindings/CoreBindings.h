@@ -26,6 +26,17 @@ void bindCore(module& m)
                 A human-readable version string for the usdex modules.
         )"
     );
+
+    m.def(
+        "buildVersion",
+        &buildVersion,
+        R"(
+            Verify the expected usdex modules are being loaded at runtime.
+
+            Returns:
+                A human-readable build version string for the usdex modules.
+        )"
+    );
 }
 
 } // namespace usdex::core::bindings

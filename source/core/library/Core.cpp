@@ -9,6 +9,11 @@
 
 const char* usdex::core::version()
 {
+    return USDEX_VERSION_STRING;
+}
+
+const char* usdex::core::buildVersion()
+{
     return USDEX_BUILD_STRING;
 }
 

@@ -10,6 +10,7 @@ when mapping their native data sources to OpenUSD-legible data models.
 __all__ = [
     # core
     "version",
+    "buildVersion",
     "deprecated",
     # settings
     "enableOmniTranscodingSetting",

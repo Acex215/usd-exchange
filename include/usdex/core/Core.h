@@ -29,6 +29,10 @@ namespace usdex::core
 //! @returns A human-readable version string for the usdex modules.
 USDEX_API const char* version();
 
+//! Verify the expected usdex modules are being loaded at runtime.
+//! @returns A human-readable build version string for the usdex modules.
+USDEX_API const char* buildVersion();
+
 //! Verify whether Python support is available.
 //! @returns A bool indicating whether Python support is available.
 USDEX_API bool withPython();
