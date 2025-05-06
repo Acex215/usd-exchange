@@ -187,15 +187,8 @@ name = "rtx"
 kind = "catch2"
 tests_per_process = 0
 executables = [
-	"$root/_build/$platform/$config/bin/test_usdex_${bucket_name}",
+	"$root/_build/$platform/$config/bin/test_usdex_core",
 ]
-
-[[repo_test.suites.cpp.bucket]]
-name = "core"
-
-[[repo_test.suites.cpp.bucket]]
-name = "rtx"
-executables = []  # no cpp tests currently
 
 [repo_test.suites.whl]
 kind = "glob_and_exec"
