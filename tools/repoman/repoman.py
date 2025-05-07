@@ -22,7 +22,7 @@ def bootstrap():
     with contextlib.redirect_stdout(io.StringIO()):
         deps = packmanapi.pull(REPO_DEPS_FILE)
         with contextlib.suppress(packmanapi.PackmanErrorFileNotFound):
-            deps.update(packmanapi.pull(REPO_DEPS_OPTIONAL_FILE, remotes=["cloudfront"]))
+            deps.update(packmanapi.pull(REPO_DEPS_OPTIONAL_FILE, remotes=["packman:cloudfront"]))
 
     for dep_path in deps.values():
         if dep_path not in sys.path:
