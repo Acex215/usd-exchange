@@ -132,7 +132,7 @@ stubgen_exclude = [
 
 [repo_test]
 default_config = "release"
-default_suite = "all"
+default_suite = "main"
 test_root = "$root/_build/$platform/$config"
 catch2.junit_output = true
 aggregated_log_file = "$root/_build/tests/test_results.xml"
@@ -187,15 +187,16 @@ name = "rtx"
 kind = "catch2"
 tests_per_process = 0
 executables = [
-	"$root/_build/$platform/$config/bin/test_usdex_${bucket_name}",
+	"$root/_build/$platform/$config/bin/test_usdex_core",
 ]
 
-[[repo_test.suites.cpp.bucket]]
-name = "core"
-
-[[repo_test.suites.cpp.bucket]]
-name = "rtx"
-executables = []  # no cpp tests currently
+[repo_test.suites.whl]
+kind = "glob_and_exec"
+path = "$root/tools/pyproject"
+include = [
+    "pytest${shell_ext}"
+]
+args = ["${test_root}"]
 
 [repo_format]
 license_preamble = '''
@@ -307,6 +308,11 @@ files = [
     ["_build/docs"]
 ]
 warn_if_not_exist = true
+
+[repo_py_package]
+enabled = true
+staging_dir = "$root/_build/pyproject"
+install_dir = "$root/_build/packages"
 
 [repo_codesign]
 enabled = true

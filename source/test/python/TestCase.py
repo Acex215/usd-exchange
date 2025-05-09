@@ -8,6 +8,7 @@ __all__ = [
 
 import os
 import pathlib
+import platform
 import re
 import shutil
 import sys
@@ -15,10 +16,26 @@ import tempfile
 import unittest
 from typing import List, Optional
 
-import omni.asset_validator
 import pkg_resources
 import usdex.core
 from pxr import Sdf, Usd, UsdGeom
+
+# usdex.test uses omni.asset_validator, which has a dependency on pxr.UsdSkel
+# When usdex.core initializes, it attempts to load all required libraries
+# with a special check for python whl installations on Windows.
+#
+# However, usdex.core does not have a dependency on UsdSkel, so the temporarily
+# added DLL directory goes out of scope before usdSkel.dll is loaded. In order
+# to support virtual environments on Windows, we need to re-scope this directory
+# and force import UsdSkel to load the required DLLs. We do this by importing
+# omni.asset_validator incase other similar dependencies arise in the future.
+#
+# This is not an issue on Linux because the bindings use rpaths to locate the libs.
+if platform.system().lower() == "windows":
+    if os.path.exists(usdex.core.__whl_libdir):
+        with os.add_dll_directory(usdex.core.__whl_libdir):
+            __import__("omni.asset_validator")
+import omni.asset_validator
 
 
 class TestCase(unittest.TestCase):

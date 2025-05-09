@@ -52,7 +52,11 @@ def main(arguments: argparse.Namespace):
         arguments.build_config,
         "--/repo_test/suites/main/verbosity=2",
     ]
-    # disable python tests for nopy builds
-    if python_ver == "0":
-        test.extend(["--suite", "cpp"])
+    suites = ["--suite", "cpp"]
+    if python_ver != "0":
+        suites.append("main")
+        if arguments.build_config == "release":
+            suites.append("whl")
+    test.extend(suites)
+
     omni.repo.ci.launch(test)
