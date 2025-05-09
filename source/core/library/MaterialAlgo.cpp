@@ -215,6 +215,14 @@ bool usdex::core::bindMaterial(UsdPrim prim, const UsdShadeMaterial& material)
         TF_WARN("UsdPrim <%s> is not valid, cannot bind material to prim", prim.GetPath().GetAsString().c_str());
         return false;
     }
+
+    std::string reason;
+    if (!usdex::core::isEditablePrimLocation(prim.GetStage(), prim.GetPath(), &reason))
+    {
+        TF_WARN("Cannot bind material due to an invalid location: %s", reason.c_str());
+        return false;
+    }
+
     UsdShadeMaterialBindingAPI materialBinding = UsdShadeMaterialBindingAPI::Apply(prim);
     return materialBinding.Bind(material);
 }
