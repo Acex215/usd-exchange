@@ -7,8 +7,7 @@
 #include "usdex/core/Settings.h"
 
 #include "Debug.h"
-
-#include <omni/transcoding/transcoding.h>
+#include "Transcoding.h"
 
 namespace
 {
@@ -70,7 +69,7 @@ std::string usdex::core::detail::makeValidIdentifier(const std::string& in)
     static bool s_enableOmniTranscoding = TfGetEnvSetting(USDEX_ENABLE_OMNI_TRANSCODING);
     if (s_enableOmniTranscoding)
     {
-        std::string out = omni::transcoding::encodeBootstringIdentifier(in, omni::transcoding::Format::ASCII);
+        std::string out = usdex::core::detail::encodeIdentifier(in, usdex::core::detail::TranscodingFormat::ASCII);
         if (out.empty())
         {
             // It is possible that the encoding fails, in which case we should fall back to replacing invalid characters.

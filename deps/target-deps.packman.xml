@@ -23,8 +23,5 @@
   <dependency name="omni_asset_validator" linkPath="../_build/target-deps/omni_asset_validator" tags="non-redist">
     <package name="omni.asset_validator" version="0.16.2+v0162.3366.c12de203.gl.${platform_host}" />
   </dependency>
-  <dependency name="omni_transcoding" linkPath="../_build/target-deps/omni_transcoding/${config}" tags="non-redist">
-    <package name="omni_transcoding.${platform_target_abi}.${config}" version="1.0.0+main.263.c07a0c0a.gl" />
-  </dependency>
 
 </project>
