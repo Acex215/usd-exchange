@@ -209,7 +209,6 @@ def __install(
 
     python_path = f"{targetDepsDir}/python"
     usd_path = f"{targetDepsDir}/usd/{buildConfig}"
-    transcoding_path = f"{targetDepsDir}/omni_transcoding/{buildConfig}"
     validator_path = f"{targetDepsDir}/omni_asset_validator"
 
     libInstallDir = "${install_dir}/lib"
@@ -218,9 +217,6 @@ def __install(
 
     prebuild_dict = {
         "copy": [
-            # transcoding
-            [transcoding_path + "/lib/${lib_prefix}omni_transcoding${lib_ext}", libInstallDir],
-            # usdex
             [usd_exchange_path + "/lib/${lib_prefix}usdex_core${lib_ext}", libInstallDir],
         ],
     }
@@ -365,7 +361,6 @@ def __install(
         if installTestModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
             __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
-            __installPythonModule(prebuild_dict["copy"], f"{transcoding_path}/python", "omni/transcoding", "_omni_transcoding")
 
         # allow for extra user supplied plugins
         for extra in extraPlugins:

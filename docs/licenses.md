@@ -37,7 +37,6 @@ These licenses pertain to the `usdex_core` shared library.
 ```{eval-rst}
 - OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
-- Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib :ref:`(jump to license) <zliblicense>`
 ```
@@ -63,7 +62,6 @@ These licenses pertain to the `usdex.core` python module, its compiled bindings 
 ```{eval-rst}
 - OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
-- Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib :ref:`(jump to license) <zliblicense>`
 - Python `(jump to license) <python LICENSE_>`_
@@ -103,7 +101,6 @@ These licenses pertain to the `usdex.test` python module, which is based on pyth
 ```{eval-rst}
 - OpenUSD Exchange :ref:`(jump to license) <usdexlicense>`
 - OpenUSD `(jump to license) <usd LICENSE_>`_
-- Omni Transcoding `(jump to license) <omni_transcoding LICENSE_>`_
 - Omni Asset Validator `(jump to license) <omni.asset_validator LICENSE_>`_
 - TBB :ref:`(jump to license) <tbblicense>`
 - zlib :ref:`(jump to license) <zliblicense>`
@@ -126,21 +123,15 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 
 While the NVIDIA OpenUSD Exchange SDK is Open Source Software (OSS), it optionally depends on some NVIDIA proprietary technologies:
 - NVIDIA Omniverse Asset Validator (python module)
-- NVIDIA Omniverse Transcoding Library (compiled binary)
 
 These two dependencies are governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
 
 ```{eval-rst}
 .. note::
-  They are both optional add-ons for the NVIDIA OpenUSD Exchange SDK which can be trivially disabled.
+  They are optional add-ons for the NVIDIA OpenUSD Exchange SDK which can be trivially disabled.
 ```
 
 To disable the NVIDIA Omniverse Asset Validator, simply avoid using the [usdex.test](./python-usdex-test.rst) python module in your runtime. The Asset Validator is not used at all in [usdex.core](./python-usdex-core.rst), so no source code changes are required.
-
-To disable the NVIDIA Omniverse Transcoding Library for your runtime, see [Runtime Settings](./authoring-usd.md#runtime-settings). Alternatively, you can remove the library entirely with the following source changes:
-- Edit `source/core/library/TfUtils.cpp` to remove `#include <omni/transcoding/transcoding.h>` and the `encodeBootstringIdentifier` call
-- Edit `premake5.lua` to remove `usdex_build.use_omni_transcoding()`
-- Recompile OpenUSD Exchange SDK from source.
 
 ## Individual Licenses
 
@@ -158,8 +149,6 @@ usd-exchange License
 
 ```{eval-rst}
 .. include-licenses:: /_build/target-deps/usd/release/PACKAGE-LICENSES/usd-license.txt
-
-.. include-licenses:: /_build/target-deps/omni_transcoding/release/PACKAGE-LICENSES/omni_transcoding-LICENSE.txt
 
 .. include-licenses:: /_build/target-deps/omni_asset_validator/PACKAGE-LICENSES/omni.asset_validator-LICENSE.txt
 

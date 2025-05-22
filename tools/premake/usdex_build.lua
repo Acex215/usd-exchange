@@ -184,7 +184,6 @@ end
 -- usd-exchange artifacts
 
 function m.use_usdex_core()
-    m.use_omni_transcoding()
     links { "usdex_core" }
 
     if client == true then
@@ -266,17 +265,6 @@ function m.use_usd(usd_libs)
         if USD_VERSION < "24.11" then
             defines { "BOOST_LIB_TOOLSET=\"vc142\"" }
         end
-    filter {}
-end
-
-function m.use_omni_transcoding()
-    omni_transcoding_path = target_deps.."/omni_transcoding/%{cfg.buildcfg}"
-    omni_transcoding_lib_path = "\""..omni_transcoding_path.."/lib".."\""
-    externalincludedirs { omni_transcoding_path.."/include" }
-    syslibdirs { omni_transcoding_lib_path }
-    links { "omni_transcoding" }
-    filter { "system:linux" }
-        linkoptions { "-Wl,-rpath-link,"..repo_build.get_abs_path(omni_transcoding_lib_path) }
     filter {}
 end
 

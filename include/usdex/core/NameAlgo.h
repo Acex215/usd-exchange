@@ -43,12 +43,6 @@ namespace usdex::core
 //! - For any legal identifier in a given runtime, this transcoding will produce no changes.
 //! - For illegal identifiers, the transcoding will produce a human readable name that meets the requirements of the runtime.
 //!
-//! @note The transcoding process has been proposed for inclusion in a future version of OpenUSD. Once a suitable implementation is available,
-//! we will adopt it internally to our name validation functions.
-//!
-//! While we do not currently provide decoding functions, the `omni_transcoding` shared library and associated python module do provide decoding.
-//! For the time being, it is recommended to use this library directly to decode any `UsdPrim` or `UsdProperty` names that have been serialized.
-//!
 //! If you prefer to avoid transcoding entirely, this behaviour can be disabled via our @ref settings.
 //!
 //! # Prim Naming Functions #

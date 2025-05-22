@@ -107,7 +107,7 @@ Similarly, for a minimal monothlicic build of USD 24.05 with no python support, 
 
 > Important : When building multiple flavors using the same working directories, you need to rebuild using `-x/--clean` to force premake to re-create all artifacts.
 
-If you attempt a build and it is not successful, it may be because the upstream dependencies do not exist in this particular combination on your current platform. Validate that the packages for OpenUSD, Omniverse Transcoding, and Python all exist and are able to be downloaded successfully.
+If you attempt a build and it is not successful, it may be because the upstream dependencies do not exist in this particular combination on your current platform. Validate that the packages for OpenUSD and Python all exist and are able to be downloaded successfully.
 
 If your dependencies do exist and you are hitting a compiler or linker issue, you may have found an edge case in the build system that we have not accounted for yet. Feel free to file a GitHub Issue or ask in the appropriate forum.
 

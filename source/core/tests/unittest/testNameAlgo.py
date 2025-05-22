@@ -9,6 +9,110 @@ import usdex.test
 from pxr import Sdf, Tf, Usd, UsdGeom
 
 
+class TranscodingTestCase(usdex.test.TestCase):
+    def testEncodeEmpty(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName(""),
+            "tn__",
+        )
+
+    def testEncodeUtf8Identifier(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName("カーテンウォール"),
+            "tn__sxB76l2Y5o0X16",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("straße 3"),
+            "tn__strae3_h6im0",
+        )
+
+    def testEncodeAsciiIdentifier(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName("hello"),
+            "hello",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("tn__my_encoded_identifier_x134bc"),
+            "tn__my_encoded_identifier_x134bc",
+        )
+
+    def testEncodeAsciiInvalid(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName("123-456/555"),
+            "tn__123456555_oDT",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("#123 4"),
+            "tn__1234_d4I",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("1234567890"),
+            "tn__1234567890_",
+        )
+
+    def testEncodeUtf8Character(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName("٪"),
+            "tn__zp0",
+        )
+
+    def testEncodeInvalidUtf8CodePoints(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName(b"\x83"),
+            "_",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName(b"\xc3\x28"),
+            "__",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName(b"\xe2\x82\x28"),
+            "___",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName(b"\xf0\x28\x8c\x28"),
+            "____",
+        )
+
+    def testEncodeLimits(self):
+        # U+0000
+        self.assertEqual(
+            usdex.core.getValidPrimName("\x00"),
+            "tn__0",
+        )
+        # U+10FFFF
+        self.assertEqual(
+            usdex.core.getValidPrimName("\xf4\x8f\xbf\xbf"),
+            "tn__o3Z22v5",
+        )
+
+    def testEncodeEmoji(self):
+        self.assertEqual(
+            usdex.core.getValidPrimName("😁"),
+            "tn__nqd3",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("😍"),
+            "tn__zqd3",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("😸"),
+            "tn__gsd3",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("🙈"),
+            "tn__wsd3",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("🙏"),
+            "tn__Ytd3",
+        )
+        self.assertEqual(
+            usdex.core.getValidPrimName("🙌"),
+            "tn__Vtd3",
+        )
+
+
 class ValidPrimNamesTestCase(usdex.test.TestCase):
     def assertPropertyNameIsValid(self, name, msg=None):
         """Assert that the given name is valid for a UsdProperty"""
@@ -16,16 +120,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
         if msg is None:
             msg = f"Appending '{name}' as a property of an SdfPath produces an invalid path."
         self.assertTrue(path, msg=msg)
-
-    def assertDecoding(self, inputNames: List[str], expectNames: List[str]):
-        try:
-            import omni.transcoding
-        except ImportError:
-            # the tests might be run from an environement without the transcoding bindings
-            # we already assert that transcoding works, this is purely to demonstrate decoding
-            return
-        for inputName, expectName in zip(inputNames, expectNames):
-            self.assertEqual(omni.transcoding.decodeBootstringIdentifier(inputName), expectName)
 
     def testGetValidPrimName(self):
         # An empty string will return the minimal valid name
@@ -50,7 +144,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 characters are correctly encoded and decoded.
         self.assertEqual(usdex.core.getValidPrimName("カーテンウォール"), "tn__sxB76l2Y5o0X16")
-        self.assertDecoding([usdex.core.getValidPrimName("カーテンウォール")], ["カーテンウォール"])
 
         # ISO-8859-1 encoding will cause encoding to fail resulting in the fallback character substitution being used.
         # The fallback character substitution slightly differs from pxr::TfMakeValidIdentifier in how it handles leading numerics
@@ -69,10 +162,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
             ["123cube", "cube1", r"sphere%$%#ad@$1", "cube_3", "cube$3"],
             [],
             ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
-        )
-        self.assertDecoding(
-            ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
-            ["123cube", "cube1", r"sphere%$%#ad@$1", "cube_3", "cube$3"],
         )
 
         # Duplicated names in list
@@ -106,10 +195,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 words
         assertEqualPrimNames(["カーテンウォール", "カーテンウォール"], [], ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"])
-        self.assertDecoding(
-            ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"],
-            ["カーテンウォール", "カーテンウォール_1"],
-        )
 
         # ISO-8859-1 encoding will cause encoding to fail resulting in the fallback character substitution being used.
         # This can increase the number of name collisions.
