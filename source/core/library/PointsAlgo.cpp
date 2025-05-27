@@ -89,6 +89,13 @@ UsdGeomPoints definePointCloudImpl(
 {
     std::string reason;
 
+    // Early out if the points are empty
+    if (points.empty())
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomPoints at \"%s\" due to invalid points: Empty array", path.GetAsString().c_str());
+        return UsdGeomPoints();
+    }
+
     // Early out if the ids are not valid
     if (ids.has_value() && (points.size() != ids.value().size()))
     {
