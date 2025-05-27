@@ -123,6 +123,13 @@ UsdGeomMesh usdex::core::definePolyMesh(
         return UsdGeomMesh();
     }
 
+    // Early out if the points are empty
+    if (points.empty())
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomMesh at \"%s\" due to invalid points: Empty array", path.GetAsString().c_str());
+        return UsdGeomMesh();
+    }
+
     // Early out if the topology is not valid
     if (!UsdGeomMesh::ValidateTopology(faceVertexIndices, faceVertexCounts, points.size(), &reason))
     {
