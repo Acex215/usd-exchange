@@ -317,6 +317,13 @@ class LinearBasisCurvesTestCase(DefineBasisCurvesTestCaseMixin, usdex.test.Defin
         stage = self.createTestStage()
         path = Sdf.Path("/World/InvalidTopology")
 
+        # The point array must not be empty
+        points = Vt.Vec3fArray()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid points")]):
+            curves = usdex.core.defineLinearBasisCurves(stage, path, CURVE_VERTEX_COUNTS, points)
+        self.assertDefineFunctionFailure(curves)
+        self.assertFalse(stage.GetPrimAtPath(path))
+
         # The wrap must be periodic or nonperiodic for linear curves
         with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):
             curves = usdex.core.defineLinearBasisCurves(stage, path, CURVE_VERTEX_COUNTS, POINTS, wrap=UsdGeom.Tokens.pinned)

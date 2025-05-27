@@ -77,6 +77,13 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         stage = self.createTestStage()
         path = Sdf.Path("/World/InvalidTopology")
 
+        # The point array must not be empty
+        points = Vt.Vec3fArray()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid points")]):
+            mesh = usdex.core.definePolyMesh(stage, path, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, points)
+        self.assertDefineFunctionFailure(mesh)
+        self.assertFalse(stage.GetPrimAtPath(path))
+
         # The sum of the faceVertexCounts must equal the count of the faceVertexIndices otherwise the topology is invalid.
         faceVertexCounts = Vt.IntArray([2])
         with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid topology")]):

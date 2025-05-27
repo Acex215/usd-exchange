@@ -368,6 +368,13 @@ UsdGeomBasisCurves defineBasisCurves(
 {
     std::string reason;
 
+    // Early out if the points are empty
+    if (points.empty())
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves at \"%s\" due to invalid points: Empty array", path.GetAsString().c_str());
+        return UsdGeomBasisCurves();
+    }
+
     // Early out if the topology is not valid
     if (!::validateTopology(curveVertexCounts, points.size(), type, basis, wrap, &reason))
     {
