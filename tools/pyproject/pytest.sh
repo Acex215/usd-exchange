@@ -20,6 +20,7 @@ echo "Copy test deps to: ${SITE_PACKAGES}"
 cp -r ${TEST_ROOT}/python/usdex/test ${SITE_PACKAGES}/usdex/test
 mkdir ${SITE_PACKAGES}/omni
 cp -r ${TEST_ROOT}/python/omni/asset_validator ${SITE_PACKAGES}/omni/asset_validator
+cp -r ${TEST_ROOT}/python/omni/capabilities ${SITE_PACKAGES}/omni/capabilities
 
 # Run the tests
 python -m unittest discover -v -s source/core/tests/unittest

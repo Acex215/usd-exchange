@@ -33,6 +33,10 @@ if not exist "%SITE_PACKAGES%\omni\asset_validator" (
     mkdir "%SITE_PACKAGES%\omni\asset_validator"
 )
 xcopy /s /e /y /q "%TEST_ROOT%\python\omni\asset_validator" "%SITE_PACKAGES%\omni\asset_validator"
+if not exist "%SITE_PACKAGES%\omni\capabilities" (
+    mkdir "%SITE_PACKAGES%\omni\capabilities"
+)
+xcopy /s /e /y /q "%TEST_ROOT%\python\omni\capabilities" "%SITE_PACKAGES%\omni\capabilities"
 
 REM Run the tests
 python.exe -m unittest discover -v -s source\core\tests\unittest

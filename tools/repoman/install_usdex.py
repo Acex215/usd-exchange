@@ -280,7 +280,7 @@ def __install(
 
     if installTestModules and python_ver != "0":
         # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
-        extraPlugins.append("usdSkel")
+        extraPlugins.extend(["usdSkel", "usdPhysics"])
 
     # allow for extra user supplied plugins
     for extra in extraPlugins:
@@ -361,6 +361,7 @@ def __install(
         if installTestModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/test", None)
             __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/asset_validator", None)
+            __installPythonModule(prebuild_dict["copy"], f"{validator_path}/python", "omni/capabilities", None)
 
         # allow for extra user supplied plugins
         for extra in extraPlugins:
