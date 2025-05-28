@@ -160,7 +160,6 @@ $project_root
 │   ...
 └───usdex
     ├───target-deps            <----- build dependencies
-    │   ├───omni_transcoding
     │   ├───python
     │   ├───usd
     │   └───usd-exchange
@@ -344,13 +343,11 @@ USD_LIBS += \
 #  -lboost_python310
 
 USDEX_LIBS = \
- -lusdex_core \
- -lomni_transcoding
+ -lusdex_core
 
 # Library dependency directories
 USDEX_LIB_DIRS = \
  -L$(DEPSDIR)/usd-exchange/$(CONFIG)/lib \
- -L$(DEPSDIR)/omni_transcoding/$(CONFIG)/lib \
  -L$(DEPSDIR)/usd/$(CONFIG)/lib
 
 # Python specifics
