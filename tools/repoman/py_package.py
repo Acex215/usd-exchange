@@ -33,7 +33,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         if os.environ.get("CI_COMMIT_TAG"):
             packageVersion = f"{realVersion}+{usdIdentifier}"
         else:
-            packageVersion = f"{realVersion}+{usdIdentifier}.{label}"
+            packageVersion = f"{realVersion}+{usdIdentifier}.{label.lower()}"
 
         # copy artifacts so they can be packaged by with a reasonable name
         source = omni.repo.man.resolve_tokens("_build/$platform/$config")
