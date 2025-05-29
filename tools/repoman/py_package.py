@@ -79,7 +79,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                 if "LibraryPath" in plug:
                     plug["LibraryPath"] = ""
             with open(plugInfo, "w") as f:
-                json.dump(plugData, f)
+                json.dump(plugData, f, indent=4)
 
         # copy the pyproject setup script
         shutil.copyfile(omni.repo.man.resolve_tokens("$root/tools/pyproject/pybuild.py"), f"{stagingDir}/pybuild.py")
