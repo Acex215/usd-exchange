@@ -12,7 +12,8 @@ class PxrTest(unittest.TestCase):
     def testPxrImport(self):
         # clear the PATH to avoid test suite bootstrapping the USD install
         env = os.environ.copy()
-        env["PATH"] = ""
+        if env.get("PXR_USD_WINDOWS_DLL_PATH"):
+            del env["PATH"]
         # Run in subprocess to avoid usdex.core already being imported
         code = "from pxr import Tf; assert hasattr(Tf, 'Status')"
         result = subprocess.run([sys.executable, "-c", code], capture_output=True, env=env)
