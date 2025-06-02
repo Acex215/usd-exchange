@@ -3,6 +3,7 @@
 #
 import argparse
 import glob
+import inspect
 import json
 import os
 import shutil
@@ -82,6 +83,23 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
                         plug["LibraryPath"] = ""
                 with open(plugInfo, "w") as f:
                     json.dump(plugData, f, indent=4)
+        elif omni.repo.man.is_windows():
+            # On Windows, the plugInfo LibraryPaths values are correct, but in order to auto-locate them the python modules
+            # need to be configured to look in the usd_exchange.libs folder using the PXR_USD_WINDOWS_DLL_PATH environment variable.
+            with open(f"{stagingDir}/pxr/__init__.py", "w") as f:
+                f.write(
+                    inspect.cleandoc(
+                        """
+                        import os
+
+                        # Set environment variable for USD Windows DLL path
+                        dll_path = os.path.join(os.path.dirname(__file__), "../usd_exchange.libs")
+                        os.environ["PXR_USD_WINDOWS_DLL_PATH"] = os.path.abspath(dll_path)
+                        """
+                    )
+                )
+        else:
+            raise omni.repo.man.ExpectedError("Unsupported platform")
 
         # copy the pyproject setup script
         shutil.copyfile(omni.repo.man.resolve_tokens("$root/tools/pyproject/pybuild.py"), f"{stagingDir}/pybuild.py")
