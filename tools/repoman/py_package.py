@@ -3,6 +3,7 @@
 #
 import argparse
 import glob
+import inspect
 import json
 import os
 import shutil
@@ -33,7 +34,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         if os.environ.get("CI_COMMIT_TAG"):
             packageVersion = f"{realVersion}+{usdIdentifier}"
         else:
-            packageVersion = f"{realVersion}+{usdIdentifier}.{label}"
+            packageVersion = f"{realVersion}+{usdIdentifier}.{label.lower()}"
 
         # copy artifacts so they can be packaged by with a reasonable name
         source = omni.repo.man.resolve_tokens("_build/$platform/$config")
@@ -67,19 +68,38 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         with open(readme_target, "w") as f:
             f.writelines(data[4:7])
 
-        # All plugInfo LibraryPath values are going to be incorrect, because auditwheel appends hashes to lib names
-        # Fortunately, auditwheel also bakes rpaths into each module & the per plugin LibraryPath is unnecessary
-        # Rather than produce plugInfo with false data, we can set empty string to indicate the path is not used (matching usd monolithic approach)
-        for plugInfo in glob.glob(f"{stagingDir}/usd_exchange.libs/usd/*/resources/plugInfo.json"):
-            with open(plugInfo, "r") as f:
-                # remove illegal python style comments from json
-                plugContents = "".join([x for x in f.readlines() if not x.startswith("#")])
-            plugData = json.loads(plugContents)
-            for plug in plugData.get("Plugins", []):
-                if "LibraryPath" in plug:
-                    plug["LibraryPath"] = ""
-            with open(plugInfo, "w") as f:
-                json.dump(plugData, f)
+        if omni.repo.man.is_linux():
+            # All plugInfo LibraryPath values are going to be incorrect, because auditwheel appends hashes to lib names
+            # Fortunately, auditwheel also bakes rpaths into each module & the per plugin LibraryPath is unnecessary
+            # Rather than produce plugInfo with false data, we can set empty string to indicate the path is not used.
+            # This matches OpenUSD's approach for usd monolithic builds.
+            for plugInfo in glob.glob(f"{stagingDir}/usd_exchange.libs/usd/*/resources/plugInfo.json"):
+                with open(plugInfo, "r") as f:
+                    # remove illegal python style comments from json
+                    plugContents = "".join([x for x in f.readlines() if not x.startswith("#")])
+                plugData = json.loads(plugContents)
+                for plug in plugData.get("Plugins", []):
+                    if "LibraryPath" in plug:
+                        plug["LibraryPath"] = ""
+                with open(plugInfo, "w") as f:
+                    json.dump(plugData, f, indent=4)
+        elif omni.repo.man.is_windows():
+            # On Windows, the plugInfo LibraryPaths values are correct, but in order to auto-locate them the python modules
+            # need to be configured to look in the usd_exchange.libs folder using the PXR_USD_WINDOWS_DLL_PATH environment variable.
+            with open(f"{stagingDir}/pxr/__init__.py", "w") as f:
+                f.write(
+                    inspect.cleandoc(
+                        """
+                        import os
+
+                        # Set environment variable for USD Windows DLL path
+                        dll_path = os.path.join(os.path.dirname(__file__), "../usd_exchange.libs")
+                        os.environ["PXR_USD_WINDOWS_DLL_PATH"] = os.path.abspath(dll_path)
+                        """
+                    )
+                )
+        else:
+            raise omni.repo.man.ExpectedError("Unsupported platform")
 
         # copy the pyproject setup script
         shutil.copyfile(omni.repo.man.resolve_tokens("$root/tools/pyproject/pybuild.py"), f"{stagingDir}/pybuild.py")
