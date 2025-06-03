@@ -444,7 +444,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
     parser.add_argument(
         "--python-version",
         dest="python_ver",
-        choices=["3.11", "3.10", "0"],
+        choices=["3.12", "3.11", "3.10", "0"],
         help=f"The Python flavor to install. Use `0` to disable Python features. Defaults to `{python_ver}`",
     )
     parser.add_argument(
