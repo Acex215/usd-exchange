@@ -1,7 +1,7 @@
 include:
   - project: 'omniverse/usd-exchange/usd-exchange-ci'
     file: '/modules/complete-pipeline.yml'
-    ref: usd2505
+    ref: 2x-1.3.0
 
 variables:
-  USDEX_CI_REF: usd2505
+  USDEX_CI_REF: 2x-1.3.0
