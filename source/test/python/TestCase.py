@@ -16,7 +16,7 @@ import tempfile
 import unittest
 from typing import List, Optional
 
-import pkg_resources
+import packaging.version
 import usdex.core
 from pxr import Sdf, Usd, UsdGeom
 
@@ -202,8 +202,10 @@ class TestCase(unittest.TestCase):
 
     @staticmethod
     def isUsdOlderThan(version: str):
-        """Determine if the provided versions is older than the current USD runtime"""
-        return pkg_resources.parse_version(".".join([str(x) for x in Usd.GetVersion()])) < pkg_resources.parse_version(version)
+        """Determine if the provided version is older than the current USD runtime"""
+        current_version = packaging.version.Version(".".join([str(x) for x in Usd.GetVersion()]))
+        compare_version = packaging.version.Version(version)
+        return current_version < compare_version
 
     @staticmethod
     def tmpBaseDir() -> str:
