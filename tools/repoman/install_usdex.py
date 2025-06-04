@@ -9,8 +9,8 @@ import shutil
 from typing import Callable, Dict, List
 
 import omni.repo.man
+import packaging.version
 import packmanapi
-import pkg_resources
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
@@ -279,7 +279,7 @@ def __install(
             "usdLux",
             "usdShade",
         ]
-        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+        if packaging.version.Version(usd_ver) >= packaging.version.Version("24.11"):
             usdLibs.append("ts")
 
     if installTestModules and python_ver != "0":
@@ -327,7 +327,7 @@ def __install(
         if installRtxModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
-        if pkg_resources.parse_version(usd_ver) < pkg_resources.parse_version("24.11"):
+        if packaging.version.Version(usd_ver) < packaging.version.Version("24.11"):
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir])
         else:
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "python${lib_ext}", libInstallDir])
@@ -358,7 +358,7 @@ def __install(
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
         ]
-        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+        if packaging.version.Version(usd_ver) >= packaging.version.Version("24.11"):
             usdModules.append(("pxr/Ts", "_ts"))
 
         # usdex.test
