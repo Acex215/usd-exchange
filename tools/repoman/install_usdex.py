@@ -9,8 +9,37 @@ import shutil
 from typing import Callable, Dict, List
 
 import omni.repo.man
-import packaging.version
 import packmanapi
+
+
+class __SimpleVersion:
+    """A minimal semantic version comparator."""
+
+    def __init__(self, version: str):
+        # Only keep numeric parts, ignore pre-release/build metadata
+        self.parts = tuple(int(p) for p in version.split(".") if p.isdigit())
+
+    def __eq__(self, other):
+        return self.parts == other.parts
+
+    def __lt__(self, other):
+        # Compare each part, pad with zeros for uneven lengths
+        maxlen = max(len(self.parts), len(other.parts))
+        a = self.parts + (0,) * (maxlen - len(self.parts))
+        b = other.parts + (0,) * (maxlen - len(other.parts))
+        return a < b
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return not self <= other
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __repr__(self):
+        return f"__SimpleVersion({'.'.join(map(str, self.parts))})"
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
@@ -279,7 +308,7 @@ def __install(
             "usdLux",
             "usdShade",
         ]
-        if packaging.version.Version(usd_ver) >= packaging.version.Version("24.11"):
+        if __SimpleVersion(usd_ver) >= __SimpleVersion("24.11"):
             usdLibs.append("ts")
 
     if installTestModules and python_ver != "0":
@@ -327,7 +356,7 @@ def __install(
         if installRtxModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
-        if packaging.version.Version(usd_ver) < packaging.version.Version("24.11"):
+        if __SimpleVersion(usd_ver) < __SimpleVersion("24.11"):
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir])
         else:
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "python${lib_ext}", libInstallDir])
@@ -358,7 +387,7 @@ def __install(
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
         ]
-        if packaging.version.Version(usd_ver) >= packaging.version.Version("24.11"):
+        if __SimpleVersion(usd_ver) >= __SimpleVersion("24.11"):
             usdModules.append(("pxr/Ts", "_ts"))
 
         # usdex.test
