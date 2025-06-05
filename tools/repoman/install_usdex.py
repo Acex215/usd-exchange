@@ -317,7 +317,7 @@ def __install(
             "usdLux",
             "usdShade",
         ]
-        if __SimpleVersion(usd_ver) >= __SimpleVersion("24.11"):
+        if __SemVersion(usd_ver) >= __SemVersion("24.11"):
             usdLibs.append("ts")
 
     if installTestModules and python_ver != "0":
@@ -365,7 +365,7 @@ def __install(
         if installRtxModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
-        if __SimpleVersion(usd_ver) < __SimpleVersion("24.11"):
+        if __SemVersion(usd_ver) < __SemVersion("24.11"):
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir])
         else:
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "python${lib_ext}", libInstallDir])
@@ -396,7 +396,7 @@ def __install(
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
         ]
-        if __SimpleVersion(usd_ver) >= __SimpleVersion("24.11"):
+        if __SemVersion(usd_ver) >= __SemVersion("24.11"):
             usdModules.append(("pxr/Ts", "_ts"))
 
         # usdex.test
