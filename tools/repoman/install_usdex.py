@@ -12,12 +12,25 @@ import omni.repo.man
 import packmanapi
 
 
-class __SimpleVersion:
+class __SemVersion:
     """A minimal semantic version comparator."""
 
     def __init__(self, version: str):
-        # Only keep numeric parts, ignore pre-release/build metadata
-        self.parts = tuple(int(p) for p in version.split(".") if p.isdigit())
+        # Keep only the numeric parts at the start, stopping at the first non-numeric part in each segment
+        self.parts = []
+        for part in version.split("."):
+            part = part.lstrip()  # Strip whitespace from the front of the part
+            num = ""
+            for c in part:
+                if c.isdigit():
+                    num += c
+                else:
+                    break
+            if num:
+                self.parts.append(int(num))
+            else:
+                break
+        self.parts = tuple(self.parts)
 
     def __eq__(self, other):
         return self.parts == other.parts
@@ -39,7 +52,7 @@ class __SimpleVersion:
         return not self < other
 
     def __repr__(self):
-        return f"__SimpleVersion({'.'.join(map(str, self.parts))})"
+        return f"__SemVersion({'.'.join(map(str, self.parts))})"
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
