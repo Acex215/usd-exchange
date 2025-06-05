@@ -28,10 +28,6 @@ exclude = [
 script = "pybuild.py"
 generate-setup-file = false
 
-[tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-packaging = "^24.0" # Required by TestCase.py
-
 [build-system]
 requires = ["poetry-core", "setuptools"]
 build-backend = "poetry.core.masonry.api"
