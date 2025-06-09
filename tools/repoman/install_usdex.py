@@ -10,7 +10,49 @@ from typing import Callable, Dict, List
 
 import omni.repo.man
 import packmanapi
-import pkg_resources
+
+
+class __SemVersion:
+    """A minimal semantic version comparator."""
+
+    def __init__(self, version: str):
+        # Keep only the numeric parts at the start, stopping at the first non-numeric part in each segment
+        self.parts = []
+        for part in version.split("."):
+            part = part.lstrip()  # Strip whitespace from the front of the part
+            num = ""
+            for c in part:
+                if c.isdigit():
+                    num += c
+                else:
+                    break
+            if num:
+                self.parts.append(int(num))
+            else:
+                break
+        self.parts = tuple(self.parts)
+
+    def __eq__(self, other):
+        return self.parts == other.parts
+
+    def __lt__(self, other):
+        # Compare each part, pad with zeros for uneven lengths
+        maxlen = max(len(self.parts), len(other.parts))
+        a = self.parts + (0,) * (maxlen - len(self.parts))
+        b = other.parts + (0,) * (maxlen - len(other.parts))
+        return a < b
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return not self <= other
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __repr__(self):
+        return f"__SemVersion({'.'.join(map(str, self.parts))})"
 
 
 def __installPythonModule(prebuild_copy_dict: Dict, sourceRoot: str, moduleNamespace: str, libPrefix: str):
@@ -275,7 +317,7 @@ def __install(
             "usdLux",
             "usdShade",
         ]
-        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+        if __SemVersion(usd_ver) >= __SemVersion("24.11"):
             usdLibs.append("ts")
 
     if installTestModules and python_ver != "0":
@@ -323,7 +365,7 @@ def __install(
         if installRtxModules:
             __installPythonModule(prebuild_dict["copy"], f"{usd_exchange_path}/python", "usdex/rtx", "_usdex_rtx")
         # usd dependencies
-        if pkg_resources.parse_version(usd_ver) < pkg_resources.parse_version("24.11"):
+        if __SemVersion(usd_ver) < __SemVersion("24.11"):
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}*boost_python*${lib_ext}*", libInstallDir])
         else:
             prebuild_dict["copy"].append([usd_path + "/lib/${lib_prefix}" + usdLibMidfix + "python${lib_ext}", libInstallDir])
@@ -354,7 +396,7 @@ def __install(
             ("pxr/Vt", "_vt"),
             ("pxr/Work", "_work"),
         ]
-        if pkg_resources.parse_version(usd_ver) >= pkg_resources.parse_version("24.11"):
+        if __SemVersion(usd_ver) >= __SemVersion("24.11"):
             usdModules.append(("pxr/Ts", "_ts"))
 
         # usdex.test
@@ -438,13 +480,13 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         "--usd-version",
         dest="usd_ver",
         default=usd_ver,
-        choices=["25.02", "24.11", "24.08", "24.05"],  # public versions only
+        choices=["25.05", "25.02", "24.11", "24.08", "24.05"],  # public versions only
         help=f"The OpenUSD version to install. Defaults to `{usd_ver}`",
     )
     parser.add_argument(
         "--python-version",
         dest="python_ver",
-        choices=["3.11", "3.10", "0"],
+        choices=["3.12", "3.11", "3.10", "0"],
         help=f"The Python flavor to install. Use `0` to disable Python features. Defaults to `{python_ver}`",
     )
     parser.add_argument(
