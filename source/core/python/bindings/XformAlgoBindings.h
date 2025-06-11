@@ -35,7 +35,7 @@ void bindXformAlgo(module& m)
         overload_cast<UsdPrim, const GfTransform&, UsdTimeCode>(&setLocalTransform),
         arg("prim"),
         arg("transform"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Set the local transform of a prim.
 
@@ -56,7 +56,7 @@ void bindXformAlgo(module& m)
         overload_cast<UsdPrim, const GfMatrix4d&, UsdTimeCode>(&setLocalTransform),
         arg("prim"),
         arg("matrix"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Set the local transform of a prim from a 4x4 matrix.
 
@@ -81,7 +81,7 @@ void bindXformAlgo(module& m)
         arg("rotation"),
         arg("rotationOrder"),
         arg("scale"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Set the local transform of a prim from common transform components.
 
@@ -108,7 +108,7 @@ void bindXformAlgo(module& m)
         arg("translation"),
         arg("orientation"),
         arg("scale") = GfVec3f(1.0f),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Set the local transform of a prim from common transform components using a quaternion for orientation.
 
@@ -130,7 +130,7 @@ void bindXformAlgo(module& m)
         "getLocalTransform",
         &getLocalTransform,
         arg("prim"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Get the local transform of a prim at a given time.
 
@@ -148,7 +148,7 @@ void bindXformAlgo(module& m)
         "getLocalTransformMatrix",
         &getLocalTransformMatrix,
         arg("prim"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Get the local transform of a prim at a given time in the form of a 4x4 matrix.
 
@@ -175,7 +175,7 @@ void bindXformAlgo(module& m)
             return make_tuple(translation, pivot, rotation, rotationOrder, scale);
         },
         arg("prim"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Get the local transform of a prim at a given time in the form of common transform components.
 
@@ -201,7 +201,7 @@ void bindXformAlgo(module& m)
             return make_tuple(translation, pivot, orientation, scale);
         },
         arg("prim"),
-        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
             Get the local transform of a prim at a given time in the form of common transform components with quaternion orientation.
 
