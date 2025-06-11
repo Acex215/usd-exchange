@@ -11,6 +11,7 @@ IDENTITY_ROTATE = Gf.Vec3f(0.0, 0.0, 0.0)
 IDENTITY_SCALE = Gf.Vec3f(1.0, 1.0, 1.0)
 IDENTITY_MATRIX = Gf.Matrix4d().SetIdentity()
 IDENTITY_TRANSFORM = Gf.Transform().SetIdentity()
+IDENTITY_ORIENTATION = Gf.Quatf.GetIdentity()
 
 IDENTITY_COMPONENTS = tuple(
     [
@@ -22,10 +23,28 @@ IDENTITY_COMPONENTS = tuple(
     ],
 )
 
+IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT = tuple(
+    [
+        IDENTITY_TRANSLATE,
+        IDENTITY_TRANSLATE,
+        IDENTITY_ORIENTATION,
+        IDENTITY_SCALE,
+    ],
+)
+
+IDENTITY_COMPONENTS_WITH_ORIENTATION = tuple(
+    [
+        IDENTITY_TRANSLATE,
+        IDENTITY_ORIENTATION,
+        IDENTITY_SCALE,
+    ],
+)
+
 NON_IDENTITY_TRANSLATE = Gf.Vec3d(10.0, 20.0, 30.0)
 NON_IDENTITY_ROTATE = Gf.Vec3f(45.0, 0.0, 0.0)
 NON_IDENTITY_SCALE = Gf.Vec3f(2.0, 2.0, 2.0)
 NON_IDENTITY_ROTATION = Gf.Rotation(Gf.Vec3d.XAxis(), 45.0)
+NON_IDENTITY_ORIENTATION = Gf.Quatf(NON_IDENTITY_ROTATION.GetQuat())
 
 NON_IDENTITY_COMPONENTS = tuple(
     [
@@ -37,11 +56,29 @@ NON_IDENTITY_COMPONENTS = tuple(
     ],
 )
 
+NON_IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT = tuple(
+    [
+        NON_IDENTITY_TRANSLATE,
+        NON_IDENTITY_TRANSLATE,
+        NON_IDENTITY_ORIENTATION,
+        NON_IDENTITY_SCALE,
+    ],
+)
+
+NON_IDENTITY_COMPONENTS_WITH_ORIENTATION = tuple(
+    [
+        NON_IDENTITY_TRANSLATE,
+        NON_IDENTITY_ORIENTATION,
+        NON_IDENTITY_SCALE,
+    ],
+)
+
 NON_IDENTITY_TRANSFORM = Gf.Transform()
 NON_IDENTITY_TRANSFORM.SetTranslation(NON_IDENTITY_TRANSLATE)
-NON_IDENTITY_TRANSFORM.SetPivotPosition(NON_IDENTITY_TRANSLATE)
 NON_IDENTITY_TRANSFORM.SetRotation(NON_IDENTITY_ROTATION)
 NON_IDENTITY_TRANSFORM.SetScale(Gf.Vec3d(NON_IDENTITY_SCALE))
+NON_IDENTITY_NO_PIVOT_MATRIX = NON_IDENTITY_TRANSFORM.GetMatrix()
+NON_IDENTITY_TRANSFORM.SetPivotPosition(NON_IDENTITY_TRANSLATE)
 
 PIVOT_POSITION_TRANSFORM = Gf.Transform()
 PIVOT_POSITION_TRANSFORM.SetPivotPosition(NON_IDENTITY_TRANSLATE)
@@ -60,6 +97,22 @@ COMPONENT_XFORM_OP_ORDER = Vt.TokenArray(
         "xformOp:rotateXYZ",
         "xformOp:scale",
         "!invert!xformOp:translate:pivot",
+    ]
+)
+COMPONENT_WITH_ORIENTATION_AND_PIVOT_XFORM_OP_ORDER = Vt.TokenArray(
+    [
+        "xformOp:translate",
+        "xformOp:translate:pivot",
+        "xformOp:orient",
+        "xformOp:scale",
+        "!invert!xformOp:translate:pivot",
+    ]
+)
+COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER = Vt.TokenArray(
+    [
+        "xformOp:translate",
+        "xformOp:orient",
+        "xformOp:scale",
     ]
 )
 
@@ -161,6 +214,20 @@ class BaseXformTestCase(usdex.test.TestCase):
         self.assertIsValidUsd(stage)
 
         return stage
+
+    def assertTupleWithQuatAlmostEqual(self, tuple1, tuple2, places=6):
+        for vector in range(len(tuple1)):
+            if isinstance(tuple1[vector], Gf.Quatf):
+                self.assertAlmostEqual(abs(Gf.Dot(tuple1[vector], tuple2[vector])), 1.0, places=places)
+            else:
+                self.assertAlmostEqual(tuple1[vector], tuple2[vector])
+
+    def assertNoExtraneousXformOps(self, prim):
+        xformable = UsdGeom.Xformable(prim)
+        xformOpOrder = xformable.GetXformOpOrderAttr().Get()
+        for prop in prim.GetAuthoredPropertyNames():
+            if prop.startswith("xformOp:"):
+                self.assertIn(prop, xformOpOrder, f"Found xformOp {prop} not in xformOpOrder")
 
     @staticmethod
     def _removeXformableProperties(prim):
@@ -417,10 +484,10 @@ class SetLocalTransformWithTransformTestCase(BaseSetLocalTransformTestCase):
 
         # When component xform ops already exist but have an unexpected precision they should be reused
         # Coding errors should not be reported
-        usdex.core.setLocalTransform(prim, PIVOT_POSITION_TRANSFORM)
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS)
         self.assertEqual(self._getOrderedXformOpPrecisions(xformable), precisions)
         self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_XFORM_OP_ORDER)
-        self.assertEqual(xformable.GetLocalTransformation(), PIVOT_POSITION_TRANSFORM.GetMatrix())
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
 
         # Add a subset of the XformCommonAPI xformOps with an unexpected precisions
         self._removeXformableProperties(prim)
@@ -822,6 +889,286 @@ class SetLocalTransformWithComponentsTestCase(BaseSetLocalTransformTestCase):
         self.assertIsValidUsd(stage)
 
 
+class SetLocalTransformWithOrientationTestCase(BaseSetLocalTransformTestCase):
+    def testInvalidPrims(self):
+        # An invalid or non-xformable prim will produce a failure return
+        stage = self._createTestStage()
+
+        # An invalid prim will produce a failure return
+        prim = stage.GetPrimAtPath("/Root/Invalid")
+        success = usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertFalse(success)
+
+        # A non-xformable prim will produce a failure return
+        prim = stage.GetPrimAtPath("/Root/Scope")
+        success = usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertFalse(success)
+        self.assertIsValidUsd(stage)
+
+    def testValidPrim(self):
+        # A valid xformable prim will produce a success return
+        stage = self._createTestStage()
+
+        # An xformable prim with no xformOps will produce an identity matrix
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        success = usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+
+        # An xformable prim with an empty xformOpOrder will produce an identity matrix
+        prim = stage.GetPrimAtPath("/Root/Empty_Xform_Op_Order")
+        success = usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+
+        # An xformable prim with an xformOpOrder in a weaker layer will produce an identity matrix
+        prim = stage.GetPrimAtPath("/Root/Matrix_Xform_Op_Order")
+        success = usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertIsValidUsd(stage)
+
+    def testDefaultScale(self):
+        # The default scale should be used if no scale is authored
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+        self._removeXformableProperties(prim)
+        success = usdex.core.setLocalTransform(prim, translation=NON_IDENTITY_TRANSLATE, orientation=NON_IDENTITY_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertEqual(xformable.GetScaleOp().Get(), IDENTITY_SCALE)
+
+        # Author a non-identity scale, then check that default scale still works
+        xformable.GetScaleOp().Set(NON_IDENTITY_SCALE)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+
+        success = usdex.core.setLocalTransform(prim, translation=NON_IDENTITY_TRANSLATE, orientation=NON_IDENTITY_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertEqual(xformable.GetScaleOp().Get(), IDENTITY_SCALE)
+
+    def testTimeArgument(self):
+        # The "time" argument is supported but optional
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # In cases where there is no authored xformOpOrder
+        # The xformOpOrder attribute should be authored on the prim if the function call is successful
+        # All the xformOps in the stack should have values at the "time" that was specified
+
+        # Clean the prim and assert that it is not transformed
+        self._removeXformableProperties(prim)
+        self.assertFalse(xformable.GetXformOpOrderAttr().IsAuthored())
+
+        # Test without specifying a time
+        # The default time should be used
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertTrue(xformable.GetXformOpOrderAttr().IsAuthored())
+        self.assertValuesAuthoredForXformOpsAtTimes(xformable, [Usd.TimeCode.Default()])
+
+        # Clean the prim and assert that it is not transformed
+        self._removeXformableProperties(prim)
+        self.assertFalse(xformable.GetXformOpOrderAttr().IsAuthored())
+
+        # Test default time
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION, Usd.TimeCode.Default())
+        self.assertTrue(xformable.GetXformOpOrderAttr().IsAuthored())
+        self.assertValuesAuthoredForXformOpsAtTimes(xformable, [Usd.TimeCode.Default()])
+
+        # Clean the prim and assert that it is not transformed
+        self._removeXformableProperties(prim)
+        self.assertFalse(xformable.GetXformOpOrderAttr().IsAuthored())
+
+        # Test a time sample
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION, Usd.TimeCode(5.0))
+        self.assertTrue(xformable.GetXformOpOrderAttr().IsAuthored())
+        self.assertValuesAuthoredForXformOpsAtTimes(xformable, [Usd.TimeCode(5.0)])
+
+        # Test a second time sample
+        # The new and previous time sample should be authored
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION, Usd.TimeCode(10.0))
+        self.assertTrue(xformable.GetXformOpOrderAttr().IsAuthored())
+        self.assertValuesAuthoredForXformOpsAtTimes(xformable, [Usd.TimeCode(5.0), Usd.TimeCode(10.0)])
+
+        # Test setting the default time when time samples are present
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION, Usd.TimeCode.Default())
+        self.assertTrue(xformable.GetXformOpOrderAttr().IsAuthored())
+        self.assertValuesAuthoredForXformOpsAtTimes(xformable, [Usd.TimeCode(5.0), Usd.TimeCode(10.0), Usd.TimeCode.Default()])
+        self.assertIsValidUsd(stage)
+
+    def testDefaultXformOpOrder(self):
+        # Assert the xformOpOrder used when there is no existing opinion
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Clean the prim and assert that it is not transformed
+        self._removeXformableProperties(prim)
+        self.assertFalse(xformable.GetXformOpOrderAttr().IsAuthored())
+
+        # Identity components with orientation will be stored as components
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+
+        # Clean the prim and assert that it is not transformed
+        self._removeXformableProperties(prim)
+        self.assertFalse(xformable.GetXformOpOrderAttr().IsAuthored())
+
+        # Non-identity components with orientation will be stored as components
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertIsValidUsd(stage)
+
+    def testReuseTransformOps(self):
+        # If there is a single transform xformOp authored then that should not be reused
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Add a transform xformOp
+        self._removeXformableProperties(prim)
+        xformOp = xformable.AddTransformOp()
+
+        # When a transform xformOp is authored it should not be reused
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertEqual(xformable.GetLocalTransformation(), IDENTITY_MATRIX)
+
+        # Add a transform xformOp that has a custom suffix
+        self._removeXformableProperties(prim)
+        xformOp = xformable.AddTransformOp(opSuffix="custom")
+
+        # When a transform xformOp that has an op suffix is authored it should not be reused
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertEqual(xformable.GetLocalTransformation(), IDENTITY_MATRIX)
+
+        # Add an inverse transform xformOp
+        self._removeXformableProperties(prim)
+        xformOp = xformable.AddTransformOp(isInverseOp=True)
+
+        # When an inverse transform xformOp is authored it should not be reused
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertEqual(xformable.GetLocalTransformation(), IDENTITY_MATRIX)
+
+        # Clean the prim and add a transform xformOp
+        self._removeXformableProperties(prim)
+        xformable.AddTransformOp(opSuffix="custom")
+
+        # Setting components with orientation at this point will not reuse the transform xformOp because this would discard the orientation.
+        # Fidelity of components takes precedence over existing authored xformOpOrders.
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+        self.assertIsValidUsd(stage)
+
+    def testReuseComponentOps(self):
+        # If there are existing xformOps that are considered valid by the XformCommonAPI then these should be reused
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Add all the XformCommonAPI xformOps with an unexpected precisions
+        self._removeXformableProperties(prim)
+        xformable.AddTranslateOp(precision=UsdGeom.XformOp.PrecisionFloat)
+        xformable.AddOrientOp(precision=UsdGeom.XformOp.PrecisionDouble)
+        xformable.AddScaleOp(precision=UsdGeom.XformOp.PrecisionDouble)
+
+        # Precisions authored originally, these should be unchanged after setting the local transform
+        precisions = [
+            UsdGeom.XformOp.PrecisionFloat,  # translate
+            UsdGeom.XformOp.PrecisionDouble,  # orient
+            UsdGeom.XformOp.PrecisionDouble,  # scale
+        ]
+
+        # When component xform ops already exist but have an unexpected precision they should be reused
+        # Coding errors should not be reported
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(self._getOrderedXformOpPrecisions(xformable), precisions)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+
+        # Add a subset of the standard xformOps with an unexpected precisions
+        self._removeXformableProperties(prim)
+        xformable.AddTranslateOp(precision=UsdGeom.XformOp.PrecisionFloat)
+        xformable.AddOrientOp(precision=UsdGeom.XformOp.PrecisionDouble)
+
+        # Precisions authored originally and the default that will be created, these should be unchanged after setting the local transform
+        precisions = [
+            UsdGeom.XformOp.PrecisionFloat,  # translate
+            UsdGeom.XformOp.PrecisionDouble,  # orient
+            UsdGeom.XformOp.PrecisionFloat,  # scale default
+        ]
+
+        # When component xform ops already exist but have an unexpected precision they should be reused
+        # Un-authored xform ops will be created and use the default precision of the UsdGeomXformCommonAPI
+        # Coding errors should not be reported
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(self._getOrderedXformOpPrecisions(xformable), precisions)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+        self.assertIsValidUsd(stage)
+
+    def testRoundTrip(self):
+        # The computed local transform matrix of a prim should match the transform components matrix after being set on the prim
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # An identity matrix
+        usdex.core.setLocalTransform(prim, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetLocalTransformation(), IDENTITY_MATRIX)
+
+        # A non-identity matrix (adjusted for no pivot)
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+        self.assertIsValidUsd(stage)
+
+    def testRotationOrientationRoundTrip(self):
+        """Test that we can successfully switch between rotation and orientation based transforms"""
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # First set using rotation components
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX, places=6)
+
+        # Verify no extraneous xformOps
+        self.assertNoExtraneousXformOps(prim)
+
+        # Then set using orientation components
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_WITH_ORIENTATION_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+
+        # Verify no extraneous xformOps
+        self.assertNoExtraneousXformOps(prim)
+
+        # Then set back to rotation components
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS)
+        self.assertEqual(xformable.GetXformOpOrderAttr().Get(), COMPONENT_XFORM_OP_ORDER)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX, places=6)
+
+        # Verify no extraneous xformOps
+        self.assertNoExtraneousXformOps(prim)
+
+        # Verify we can still get the components correctly
+        components = usdex.core.getLocalTransformComponents(prim)
+        self.assertTupleEqual(components, NON_IDENTITY_COMPONENTS)
+
+        components_with_orientation = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertTupleWithQuatAlmostEqual(components_with_orientation, NON_IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+        self.assertIsValidUsd(stage)
+
+
 class GetLocalTransformTest(BaseXformTestCase):
     def testInvalidPrims(self):
         # An invalid or non-xformable prim will produce an identity return
@@ -1208,6 +1555,131 @@ class GetLocalTransformComponentsTest(BaseXformTestCase):
 
         returned = usdex.core.getLocalTransformComponents(prim, Usd.TimeCode(10.0))
         self.assertTupleEqual(returned, expectedTime10)
+        self.assertIsValidUsd(stage)
+
+
+class GetLocalTransformWithOrientationTest(BaseXformTestCase):
+    def testInvalidPrims(self):
+        # An invalid or non-xformable prim will produce an identity return
+        stage = self._createTestStage()
+
+        # An invalid prim will produce an identity result
+        prim = stage.GetPrimAtPath("/Root/Invalid")
+        returned = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+
+        # A non-xformable prim will produce an identity result
+        prim = stage.GetPrimAtPath("/Root/Scope")
+        returned = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+        self.assertIsValidUsd(stage)
+
+    def testValidPrim(self):
+        # A valid xformable prim with no xform ops will produce an identity return
+        stage = self._createTestStage()
+
+        # An xformable prim with no xformOps will produce an identity matrix
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        returned = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+
+        # An xformable prim with an empty xformOpOrder will produce an identity matrix
+        prim = stage.GetPrimAtPath("/Root/Empty_Xform_Op_Order")
+        returned = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+        self.assertIsValidUsd(stage)
+
+    def testTimeArgument(self):
+        # The "time" argument is supported but optional
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Animated_Matrix")
+
+        # Declare the expected values at different times
+        translation = Gf.Vec3d(10.0, 20.0, 30.0)
+        componentsDefault = tuple([translation, IDENTITY_TRANSLATE, IDENTITY_ORIENTATION, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(40.0, 50.0, 60.0)
+        componentsTime0 = tuple([translation, IDENTITY_TRANSLATE, IDENTITY_ORIENTATION, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(55.0, 65.0, 75.0)
+        componentsTime5 = tuple([translation, IDENTITY_TRANSLATE, IDENTITY_ORIENTATION, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(70.0, 80.0, 90.0)
+        componentsTime10 = tuple([translation, IDENTITY_TRANSLATE, IDENTITY_ORIENTATION, IDENTITY_SCALE])
+
+        # When "time" is not specified the "default" time is used
+        returned = usdex.core.getLocalTransformComponentsQuat(prim)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsDefault)
+
+        # The "default" time value is respected
+        time = Usd.TimeCode.Default()
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, time)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsDefault)
+
+        # The "earliest" time value is respected
+        time = Usd.TimeCode.EarliestTime()
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, time)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsTime0)
+
+        # When a time value that matches a time sample is specified it is respected
+        time = Usd.TimeCode(0.0)
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, time)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsTime0)
+
+        time = Usd.TimeCode(10.0)
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, time)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsTime10)
+
+        # When a time value that falls between a time sample is specified it is interpolated
+        time = Usd.TimeCode(5.0)
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, time)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, componentsTime5)
+        self.assertIsValidUsd(stage)
+
+    def testXformCommonAPIXformOps(self):
+        # When authored xformOps are from UsdGeomXformCommonAPI retain as much fidelity as possible
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Animated_Xform_Common_API")
+
+        # Declare the expected values at different times
+        translation = Gf.Vec3d(10.0, 20.0, 30.0)
+        orientation = Gf.Quatf.GetIdentity()
+        expectedDefault = tuple([translation, IDENTITY_TRANSLATE, orientation, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(40.0, 50.0, 60.0)
+        orientation = Gf.Quatf(0.0, 1.0, 0.0, 0.0)  # 180 degrees around X
+        expectedTime0 = tuple([translation, IDENTITY_TRANSLATE, orientation, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(55.0, 65.0, 75.0)
+        orientation = Gf.Quatf.GetIdentity()  # 360 degrees around X
+        expectedTime5 = tuple([translation, IDENTITY_TRANSLATE, orientation, IDENTITY_SCALE])
+
+        translation = Gf.Vec3d(70.0, 80.0, 90.0)
+        orientation = Gf.Quatf(0.0, 1.0, 0.0, 0.0)  # 180 degrees around X (540 degrees)
+        expectedTime10 = tuple([translation, IDENTITY_TRANSLATE, orientation, IDENTITY_SCALE])
+
+        # Assert the expected values at different times
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, Usd.TimeCode.Default())
+        self.assertTupleEqual(returned, expectedDefault)
+
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, Usd.TimeCode(0.0))
+        self.assertTupleWithQuatAlmostEqual(returned, expectedTime0)
+
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, Usd.TimeCode(5.0))
+        self.assertTupleWithQuatAlmostEqual(returned, expectedTime5)
+
+        returned = usdex.core.getLocalTransformComponentsQuat(prim, Usd.TimeCode(10.0))
+        self.assertTupleWithQuatAlmostEqual(returned, expectedTime10)
         self.assertIsValidUsd(stage)
 
 

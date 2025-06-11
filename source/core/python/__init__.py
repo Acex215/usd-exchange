@@ -54,6 +54,7 @@ __all__ = [
     "getLocalTransform",
     "getLocalTransformMatrix",
     "getLocalTransformComponents",
+    "getLocalTransformComponentsQuat",
     "setLocalTransform",
     # geometry
     "definePointCloud",
@@ -95,6 +96,10 @@ __all__ = [
 ]
 
 import os
+
+# we must force import any USD module which defines types used as default values in usdex.core bindings
+# in order for the expected pxr_python symbols to be registered before the usdex function loads
+__import__("pxr.Gf")
 
 if hasattr(os, "add_dll_directory"):
     __scriptdir = os.path.dirname(os.path.realpath(__file__))

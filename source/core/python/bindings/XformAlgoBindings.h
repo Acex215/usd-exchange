@@ -102,6 +102,31 @@ void bindXformAlgo(module& m)
     );
 
     m.def(
+        "setLocalTransform",
+        overload_cast<UsdPrim, const GfVec3d&, const GfQuatf&, const GfVec3f&, UsdTimeCode>(&setLocalTransform),
+        arg("prim"),
+        arg("translation"),
+        arg("orientation"),
+        arg("scale") = GfVec3f(1.0f),
+        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        R"(
+            Set the local transform of a prim from common transform components using a quaternion for orientation.
+
+            Parameters:
+                - **prim** - The prim to set local transform on.
+                - **translation** - The translation value to set.
+                - **orientation** - The orientation value to set as a quaternion.
+                - **scale** - The scale value to set - defaults to (1.0, 1.0, 1.0).
+                - **time** - Time at which to write the value.
+
+            Returns:
+                A bool indicating if the local transform was set.
+
+        )",
+        call_guard<gil_scoped_acquire>()
+    );
+
+    m.def(
         "getLocalTransform",
         &getLocalTransform,
         arg("prim"),
@@ -160,6 +185,32 @@ void bindXformAlgo(module& m)
 
             Returns:
                 Transform value as a tuple of translation, pivot, rotation, rotation order, scale.
+
+        )"
+    );
+
+    m.def(
+        "getLocalTransformComponentsQuat",
+        [](const UsdPrim& prim, UsdTimeCode time)
+        {
+            GfVec3d translation;
+            GfVec3d pivot;
+            GfQuatf orientation;
+            GfVec3f scale;
+            getLocalTransformComponentsQuat(prim, translation, pivot, orientation, scale, time);
+            return make_tuple(translation, pivot, orientation, scale);
+        },
+        arg("prim"),
+        arg("time") = std::numeric_limits<double>::quiet_NaN(),
+        R"(
+            Get the local transform of a prim at a given time in the form of common transform components with quaternion orientation.
+
+            Args:
+                prim: The prim to get local transform from.
+                time: Time at which to query the value.
+
+            Returns:
+                Transform value as a tuple of translation, pivot, orientation (quaternion), scale.
 
         )"
     );
