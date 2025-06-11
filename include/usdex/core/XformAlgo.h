@@ -102,6 +102,22 @@ USDEX_API bool setLocalTransform(
     pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
 );
 
+//! Set the local transform of a prim from common transform components using a quaternion for orientation.
+//!
+//! @param prim The prim to set local transform on.
+//! @param translation The translation value to set.
+//! @param orientation The orientation value to set as a quaternion.
+//! @param scale The scale value to set - defaults to (1.0, 1.0, 1.0).
+//! @param time Time at which to write the values.
+//! @returns True if the transform was set successfully.
+USDEX_API bool setLocalTransform(
+    pxr::UsdPrim prim,
+    const pxr::GfVec3d& translation,
+    const pxr::GfQuatf& orientation,
+    const pxr::GfVec3f& scale = pxr::GfVec3f(1.0f, 1.0f, 1.0f),
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
 //! Get the local transform of a prim at a given time.
 //!
 //! @param prim The prim to get local transform from.
@@ -131,6 +147,23 @@ USDEX_API void getLocalTransformComponents(
     pxr::GfVec3d& pivot,
     pxr::GfVec3f& rotation,
     RotationOrder& rotationOrder,
+    pxr::GfVec3f& scale,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
+//! Get the local transform of a prim at a given time in the form of common transform components with quaternion orientation.
+//!
+//! @param prim The prim to get local transform from.
+//! @param translation Translation result.
+//! @param pivot Pivot position result.
+//! @param orientation Orientation result as a quaternion.
+//! @param scale Scale result.
+//! @param time Time at which to query the value.
+USDEX_API void getLocalTransformComponentsQuat(
+    const pxr::UsdPrim& prim,
+    pxr::GfVec3d& translation,
+    pxr::GfVec3d& pivot,
+    pxr::GfQuatf& orientation,
     pxr::GfVec3f& scale,
     pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
 );

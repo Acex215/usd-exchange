@@ -11,9 +11,7 @@
 #include <pxr/usd/usdGeom/xformOp.h>
 #include <pxr/usd/usdGeom/xformable.h>
 
-
 using namespace pxr;
-
 
 namespace
 {
@@ -183,7 +181,6 @@ GfMatrix4d computeMatrixFromComponents(
     return transform.GetMatrix();
 }
 
-
 // Given a 4x4 matrix compute the values of common components
 void computeComponentsFromMatrix(
     const GfMatrix4d& matrix,
@@ -207,6 +204,17 @@ void computeComponentsFromMatrix(
     scale = GfVec3f(transform.GetScale());
 }
 
+// Given a 4x4 matrix compute the values of common components with orientation instead of rotation
+void computeComponentsFromMatrix(const GfMatrix4d& matrix, GfVec3d& translation, GfVec3d& pivot, GfQuatf& orientation, GfVec3f& scale)
+{
+    // Get the components from the transform
+    const GfTransform transform = GfTransform(matrix);
+    translation = transform.GetTranslation();
+    pivot = transform.GetPivotPosition();
+    orientation = GfQuatf(transform.GetRotation().GetQuat());
+    scale = GfVec3f(transform.GetScale());
+}
+
 // Overloaded version of UsdGeomXformCommonAPI::GetXformVectorsByAccumulation which treats pivot as a double
 void getXformVectorsByAccumulation(
     const UsdGeomXformCommonAPI& xformCommonAPI,
@@ -226,6 +234,30 @@ void getXformVectorsByAccumulation(
     // Convert types to those expected by usdex_core
     pivot->Set(pivotFloat[0], pivotFloat[1], pivotFloat[2]);
     *rotationOrder = convertRotationOrder(rotOrder);
+}
+
+// Overloaded version of UsdGeomXformCommonAPI::GetXformVectorsByAccumulation which treats pivot as a double with quaternion orientation
+void getXformVectorsByAccumulation(
+    const UsdGeomXformCommonAPI& xformCommonAPI,
+    GfVec3d* translation,
+    GfVec3d* pivot,
+    GfQuatf* orientation,
+    GfVec3f* scale,
+    const UsdTimeCode time
+)
+{
+    // Get the xform vectors in the types expected by the xformCommonAPI
+    GfVec3f pivotFloat;
+    GfVec3f rotation;
+    UsdGeomXformCommonAPI::RotationOrder rotOrder;
+    xformCommonAPI.GetXformVectors(translation, &rotation, scale, &pivotFloat, &rotOrder, time);
+
+    // Convert pivot to double
+    pivot->Set(pivotFloat[0], pivotFloat[1], pivotFloat[2]);
+
+    // Convert rotation to quaternion
+    GfRotation rot = computeRotation(rotation, convertRotationOrder(rotOrder));
+    *orientation = GfQuatf(rot.GetQuat());
 }
 
 // Returns whether the authored xformOps are compatible with a matrix value
@@ -269,6 +301,48 @@ void ensureXformOpOrderExplicitlyAuthored(UsdGeomXformable& xformable)
         }
     }
 }
+
+// Remove all unused xformOps from a prim
+void removeUnusedXformOps(UsdGeomXformable& xformable)
+{
+    UsdPrim prim = xformable.GetPrim();
+
+    bool resetsXformStack;
+    std::vector<UsdGeomXformOp> usedXformOps = xformable.GetOrderedXformOps(&resetsXformStack);
+
+    // Get all authored property names and remove xformOp properties
+    std::vector<TfToken> propertiesToRemove;
+    for (const TfToken& propName : prim.GetAuthoredPropertyNames())
+    {
+        // Remove all xformOp properties (those starting with "xformOp:")
+        if (UsdGeomXformOp::IsXformOp(propName))
+        {
+            // Check if this xformOp is in the usedXformOps list
+            bool isUsed = false;
+            for (const UsdGeomXformOp& usedOp : usedXformOps)
+            {
+                if (usedOp.GetName() == propName)
+                {
+                    isUsed = true;
+                    break;
+                }
+            }
+
+            // Only add to removal list if not used
+            if (!isUsed)
+            {
+                propertiesToRemove.push_back(propName);
+            }
+        }
+    }
+
+    // Remove the collected properties
+    for (const TfToken& propName : propertiesToRemove)
+    {
+        prim.RemoveProperty(propName);
+    }
+}
+
 
 } // namespace
 
@@ -453,8 +527,90 @@ bool usdex::core::setLocalTransform(
     setValueWithPrecision<GfVec3h, GfVec3f, GfVec3d, GfVec3d>(commonXformOps.pivotOp, pivot, time);
     setValueWithPrecision<GfVec3h, GfVec3f, GfVec3d, GfVec3f>(commonXformOps.rotateOp, rotation, time);
     setValueWithPrecision<GfVec3h, GfVec3f, GfVec3d, GfVec3f>(commonXformOps.scaleOp, scale, time);
+
+    removeUnusedXformOps(xformable);
     ensureXformOpOrderExplicitlyAuthored(xformable);
 
+    return true;
+}
+
+bool usdex::core::setLocalTransform(UsdPrim prim, const GfVec3d& translation, const GfQuatf& orientation, const GfVec3f& scale, UsdTimeCode time)
+{
+    UsdGeomXformable xformable(prim);
+    if (!xformable)
+    {
+        return false;
+    }
+
+    // Get existing xformOps
+    bool resetsXformStack;
+    std::vector<UsdGeomXformOp> xformOps = xformable.GetOrderedXformOps(&resetsXformStack);
+
+    // Map to store existing ops by type and name
+    std::map<std::pair<UsdGeomXformOp::Type, TfToken>, UsdGeomXformOp> existingOps;
+    for (const UsdGeomXformOp& op : xformOps)
+    {
+        if (!op.IsInverseOp())
+        {
+            existingOps[std::make_pair(op.GetOpType(), op.GetName())] = op;
+        }
+    }
+
+    // Clear xformOpOrder and xformOps to rebuild it
+    xformable.ClearXformOpOrder();
+
+    static const std::string xformNamespace("xformOp:");
+    std::vector<UsdGeomXformOp> newXformOps;
+
+    // 1. Translation
+    static const std::string translateOpNameString(xformNamespace + UsdGeomXformOp::GetOpTypeToken(UsdGeomXformOp::TypeTranslate).GetString());
+    static const TfToken translateOpName(translateOpNameString);
+    auto translateIt = existingOps.find(std::make_pair(UsdGeomXformOp::TypeTranslate, translateOpName));
+    if (translateIt != existingOps.end())
+    {
+        newXformOps.push_back(translateIt->second);
+        setValueWithPrecision<GfVec3h, GfVec3f, GfVec3d, GfVec3d>(translateIt->second, translation, time);
+    }
+    else
+    {
+        newXformOps.push_back(xformable.AddTranslateOp());
+        newXformOps.back().Set(translation, time);
+    }
+
+    // 2. Orientation
+    static const std::string orientOpNameString(xformNamespace + UsdGeomXformOp::GetOpTypeToken(UsdGeomXformOp::TypeOrient).GetString());
+    static const TfToken orientOpName(orientOpNameString);
+    auto orientIt = existingOps.find(std::make_pair(UsdGeomXformOp::TypeOrient, orientOpName));
+    if (orientIt != existingOps.end())
+    {
+        newXformOps.push_back(orientIt->second);
+        setValueWithPrecision<GfQuath, GfQuatf, GfQuatd, GfQuatf>(orientIt->second, orientation, time);
+    }
+    else
+    {
+        newXformOps.push_back(xformable.AddOrientOp());
+        newXformOps.back().Set(orientation, time);
+    }
+
+    // 3. Scale
+    static const std::string scaleOpNameString(xformNamespace + UsdGeomXformOp::GetOpTypeToken(UsdGeomXformOp::TypeScale).GetString());
+    static const TfToken scaleOpName(scaleOpNameString);
+    auto scaleIt = existingOps.find(std::make_pair(UsdGeomXformOp::TypeScale, scaleOpName));
+    if (scaleIt != existingOps.end())
+    {
+        newXformOps.push_back(scaleIt->second);
+        setValueWithPrecision<GfVec3h, GfVec3f, GfVec3d, GfVec3f>(scaleIt->second, scale, time);
+    }
+    else
+    {
+        newXformOps.push_back(xformable.AddScaleOp());
+        newXformOps.back().Set(scale, time);
+    }
+
+    // Set the xform op order
+    xformable.SetXformOpOrder(newXformOps);
+    removeUnusedXformOps(xformable);
+    ensureXformOpOrderExplicitlyAuthored(xformable);
     return true;
 }
 
@@ -559,6 +715,117 @@ void usdex::core::getLocalTransformComponents(
     {
         computeComponentsFromMatrix(matrix, translation, pivot, rotation, rotationOrder, scale);
         return;
+    }
+}
+
+void usdex::core::getLocalTransformComponentsQuat(
+    const UsdPrim& prim,
+    GfVec3d& translation,
+    GfVec3d& pivot,
+    GfQuatf& orientation,
+    GfVec3f& scale,
+    UsdTimeCode time
+)
+{
+    // Initialize with identity values
+    translation.Set(0.0, 0.0, 0.0);
+    pivot.Set(0.0, 0.0, 0.0);
+    orientation = GfQuatf::GetIdentity();
+    scale.Set(1.0, 1.0, 1.0);
+
+    UsdGeomXformable xformable(prim);
+    if (!xformable)
+    {
+        return;
+    }
+
+    // Attempt to extract existing xformOp values using XformCommonAPI
+    UsdGeomXformCommonAPI xformCommonAPI = UsdGeomXformCommonAPI(prim);
+    if (xformCommonAPI)
+    {
+        // Extract transform components
+        getXformVectorsByAccumulation(xformCommonAPI, &translation, &pivot, &orientation, &scale, time);
+        return;
+    }
+
+    // If XformCommonAPI doesn't work, try to extract from individual xformOps
+    bool resetsXformStack;
+    std::vector<UsdGeomXformOp> xformOps = xformable.GetOrderedXformOps(&resetsXformStack);
+    bool foundOrientationOp = false;
+
+    // Check for matrix xformOp first
+    UsdGeomXformOp matrixXformOp;
+    if (getMatrixXformOp(xformOps, &matrixXformOp) && matrixXformOp.IsDefined())
+    {
+        GfMatrix4d matrix;
+        if (matrixXformOp.Get(&matrix, time))
+        {
+            computeComponentsFromMatrix(matrix, translation, pivot, orientation, scale);
+            return;
+        }
+    }
+
+    // Process each xform op
+    for (const UsdGeomXformOp& op : xformOps)
+    {
+        if (op.IsInverseOp())
+        {
+            continue;
+        }
+
+        switch (op.GetOpType())
+        {
+            case UsdGeomXformOp::TypeTranslate:
+            {
+                GfVec3d value;
+                if (op.Get(&value, time))
+                {
+                    // Check if this is a pivot op by looking for the pivot suffix
+                    if (op.HasSuffix(UsdGeomTokens->pivot))
+                    {
+                        pivot = value;
+                    }
+                    else
+                    {
+                        translation = value;
+                    }
+                }
+                break;
+            }
+            case UsdGeomXformOp::TypeOrient:
+            {
+                GfQuatf value;
+                if (op.Get(&value, time))
+                {
+                    orientation = value;
+                    foundOrientationOp = true;
+                }
+                break;
+            }
+            case UsdGeomXformOp::TypeScale:
+            {
+                GfVec3f value;
+                if (op.Get(&value, time))
+                {
+                    scale = value;
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    // If we didn't find an orientation xformOp, try to compute it from the matrix
+    if (!foundOrientationOp)
+    {
+        GfMatrix4d matrix;
+        if (xformable.GetLocalTransformation(&matrix, &resetsXformStack, time))
+        {
+            GfTransform transform;
+            transform.SetMatrix(matrix);
+            orientation = GfQuatf(transform.GetRotation().GetQuat());
+        }
     }
 }
 
