@@ -27,11 +27,11 @@ namespace usdex::core
 //!
 //! @{
 
-//! Set the `USDEX_ENABLE_OMNI_TRANSCODING` environment variable to enable/disable the use of `omni_transcoding` within `getValidPrimName(s)`,
+//! Set the `USDEX_ENABLE_TRANSCODING` environment variable to enable/disable the use of transcoding within `getValidPrimName(s)`,
 //! `getValidChildName(s)`, and `getValidPropertyName(s)`. Defaults `true` (transcoding is enabled).
 //!
 //! See [Valid and Unique Names](../docs/authoring-usd.html#valid-and-unique-names) for details.
-USDEX_API extern pxr::TfEnvSetting<bool> USDEX_ENABLE_OMNI_TRANSCODING;
+USDEX_API extern pxr::TfEnvSetting<bool> USDEX_ENABLE_TRANSCODING;
 
 //! }@
 

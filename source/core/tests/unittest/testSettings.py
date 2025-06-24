@@ -41,26 +41,26 @@ class SettingsTest(usdex.test.TestCase):
         else:
             self.assertRegex(result.stderr, expectedOutputPattern)
 
-    def testOmniTranscodingSetting(self):
-        self.assertEqual(usdex.core.enableOmniTranscodingSetting, "USDEX_ENABLE_OMNI_TRANSCODING")
-        self.assertIsNotNone(Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting))
-        self.assertIsInstance(Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting), bool)
-        environValue = os.environ.get("USDEX_ENABLE_OMNI_TRANSCODING", True)
+    def testTranscodingSetting(self):
+        self.assertEqual(usdex.core.enableTranscodingSetting, "USDEX_ENABLE_TRANSCODING")
+        self.assertIsNotNone(Tf.GetEnvSetting(usdex.core.enableTranscodingSetting))
+        self.assertIsInstance(Tf.GetEnvSetting(usdex.core.enableTranscodingSetting), bool)
+        environValue = os.environ.get("USDEX_ENABLE_TRANSCODING", True)
         if environValue in ("False", "false", "0"):
-            self.assertFalse(Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting))
+            self.assertFalse(Tf.GetEnvSetting(usdex.core.enableTranscodingSetting))
         else:
-            self.assertTrue(Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting))
+            self.assertTrue(Tf.GetEnvSetting(usdex.core.enableTranscodingSetting))
 
-    def testEnableOmniTranscodingSetting(self):
+    def testEnableTranscodingSetting(self):
         # when enabled the transcoding algorithm is used to make valid identifiers
         self.assertEnvSetting(
-            setting=usdex.core.enableOmniTranscodingSetting,
+            setting=usdex.core.enableTranscodingSetting,
             value=True,
             command=inspect.cleandoc(
                 """
                 import usdex.core
                 from pxr import Tf
-                assert Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting) == True
+                assert Tf.GetEnvSetting(usdex.core.enableTranscodingSetting) == True
                 assert usdex.core.getValidPrimName(r"sphere%$%#ad@$1") == "tn__spheread1_kAHAJ8jC"
                 assert usdex.core.getValidPrimName("1 mesh") == "tn__1mesh_c5"
                 assert usdex.core.getValidPrimName("") == "tn__"
@@ -69,38 +69,38 @@ class SettingsTest(usdex.test.TestCase):
             expectedOutputPattern="",
         )
 
-    def testDisableOmniTranscodingSetting(self):
+    def testDisableTranscodingSetting(self):
         # when disabled a fallback algorithm is used to make valid identifiers
         self.assertEnvSetting(
-            setting=usdex.core.enableOmniTranscodingSetting,
+            setting=usdex.core.enableTranscodingSetting,
             value=False,
             command=inspect.cleandoc(
                 """
                 import usdex.core
                 from pxr import Tf
-                assert Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting) == False
+                assert Tf.GetEnvSetting(usdex.core.enableTranscodingSetting) == False
                 assert usdex.core.getValidPrimName(r"sphere%$%#ad@$1") == "sphere____ad__1"
                 assert usdex.core.getValidPrimName("1 mesh") == "_1_mesh"
                 assert usdex.core.getValidPrimName("") == "_"
                 """
             ),
-            expectedOutputPattern=".*USDEX_ENABLE_OMNI_TRANSCODING is overridden to 'false'.*",
+            expectedOutputPattern=".*USDEX_ENABLE_TRANSCODING is overridden to 'false'.*",
         )
 
-    def testInvalidOmniTranscodingSetting(self):
+    def testInvalidTranscodingSetting(self):
         # non-bool values are handled gracefully
         self.assertEnvSetting(
-            setting=usdex.core.enableOmniTranscodingSetting,
+            setting=usdex.core.enableTranscodingSetting,
             value="invalid value type",
             command=inspect.cleandoc(
                 """
                 import usdex.core
                 from pxr import Tf
-                assert Tf.GetEnvSetting(usdex.core.enableOmniTranscodingSetting) == False
+                assert Tf.GetEnvSetting(usdex.core.enableTranscodingSetting) == False
                 assert usdex.core.getValidPrimName(r"sphere%$%#ad@$1") == "sphere____ad__1"
                 assert usdex.core.getValidPrimName("1 mesh") == "_1_mesh"
                 assert usdex.core.getValidPrimName("") == "_"
                 """
             ),
-            expectedOutputPattern=".*USDEX_ENABLE_OMNI_TRANSCODING is overridden to 'false'.*",
+            expectedOutputPattern=".*USDEX_ENABLE_TRANSCODING is overridden to 'false'.*",
         )

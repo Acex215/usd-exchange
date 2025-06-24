@@ -219,7 +219,7 @@ def __install(
     )
 
     # determine the required runtime dependencies
-    runtimeDeps = ["omni_transcoding", f"usd-{buildConfig}"]
+    runtimeDeps = [f"usd-{buildConfig}"]
     if python_ver != "0":
         runtimeDeps.append("python")
         if installTestModules:

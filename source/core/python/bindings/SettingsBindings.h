@@ -18,7 +18,7 @@ namespace usdex::core::bindings
 
 void bindSettings(module& m)
 {
-    m.attr("enableOmniTranscodingSetting") = USDEX_ENABLE_OMNI_TRANSCODING._name;
+    m.attr("enableTranscodingSetting") = USDEX_ENABLE_TRANSCODING._name;
 }
 
 } // namespace usdex::core::bindings
