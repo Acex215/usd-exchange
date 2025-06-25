@@ -16,7 +16,6 @@ import unittest
 from typing import List, Optional
 
 import omni.asset_validator
-
 import usdex.core
 from pxr import Sdf, Usd, UsdGeom
 

@@ -1011,7 +1011,7 @@ class DisplayNameTestCase(usdex.test.TestCase):
 
         # Setting the bytes string as the display name
         rocket_emoji = "🚀"
-        rocket_bytes_string = b"\xF0\x9F\x9A\x80"
+        rocket_bytes_string = b"\xf0\x9f\x9a\x80"
         self.assertTrue(usdex.core.setDisplayName(prim, rocket_bytes_string))
         result = usdex.core.getDisplayName(prim)
         self.assertEqual(result, rocket_emoji)

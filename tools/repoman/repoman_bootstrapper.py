@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: Copyright (c) 2019-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
-# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Copyright (c) 2019-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
 #
 
 import json
@@ -57,9 +57,7 @@ def _path_checks():
             # OneDrive is not installed or synced
             return
 
-        if (onedrive_path and cwd.startswith(onedrive_path)) or (
-            onedrive_business_path and cwd.startswith(onedrive_business_path)
-        ):
+        if (onedrive_path and cwd.startswith(onedrive_path)) or (onedrive_business_path and cwd.startswith(onedrive_business_path)):
             logger.warning(
                 "Current working directory: %s appears to be within a OneDrive folder. This may cause filesystem issues with Packman linking dependencies. It is recommended to move your project outside of OneDrive.",
                 cwd,
