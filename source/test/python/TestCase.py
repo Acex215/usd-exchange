@@ -16,7 +16,6 @@ import unittest
 from typing import List, Optional
 
 import omni.asset_validator
-import pkg_resources
 import usdex.core
 from pxr import Sdf, Usd, UsdGeom
 
@@ -183,8 +182,10 @@ class TestCase(unittest.TestCase):
 
     @staticmethod
     def isUsdOlderThan(version: str):
-        """Determine if the provided versions is older than the current USD runtime"""
-        return pkg_resources.parse_version(".".join([str(x) for x in Usd.GetVersion()])) < pkg_resources.parse_version(version)
+        """Determine if the provided version is older than the current USD runtime"""
+        current_version = TestCase.__SemVersion(".".join([str(x) for x in Usd.GetVersion()]))
+        compare_version = TestCase.__SemVersion(version)
+        return current_version < compare_version
 
     @staticmethod
     def tmpBaseDir() -> str:
@@ -254,3 +255,45 @@ class TestCase(unittest.TestCase):
                 issues = omni.asset_validator.IssuesList(list(set(issues) - set(allowedIssues)))
 
         return issues
+
+    class __SemVersion:
+        """A minimal semantic version comparator."""
+
+        def __init__(self, version: str):
+            # Keep only the numeric parts at the start, stopping at the first non-numeric part in each segment
+            self.parts = []
+            for part in version.split("."):
+                part = part.lstrip()  # Strip whitespace from the front of the part
+                num = ""
+                for c in part:
+                    if c.isdigit():
+                        num += c
+                    else:
+                        break
+                if num:
+                    self.parts.append(int(num))
+                else:
+                    break
+            self.parts = tuple(self.parts)
+
+        def __eq__(self, other):
+            return self.parts == other.parts
+
+        def __lt__(self, other):
+            # Compare each part, pad with zeros for uneven lengths
+            maxlen = max(len(self.parts), len(other.parts))
+            a = self.parts + (0,) * (maxlen - len(self.parts))
+            b = other.parts + (0,) * (maxlen - len(other.parts))
+            return a < b
+
+        def __le__(self, other):
+            return self == other or self < other
+
+        def __gt__(self, other):
+            return not self <= other
+
+        def __ge__(self, other):
+            return not self < other
+
+        def __repr__(self):
+            return f"__SemVersion({'.'.join(map(str, self.parts))})"

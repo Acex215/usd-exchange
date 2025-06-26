@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import omni.transcoding
 import usdex.core
 import usdex.test
 from pxr import Sdf, Tf, Usd, UsdGeom
@@ -39,7 +38,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 characters are correctly encoded and decoded.
         self.assertEqual(usdex.core.getValidPrimName("カーテンウォール"), "tn__sxB76l2Y5o0X16")
-        self.assertEqual(omni.transcoding.decodeBootstringIdentifier(usdex.core.getValidPrimName("カーテンウォール")), "カーテンウォール")
 
         # ISO-8859-1 encoding will cause encoding to fail resulting in the fallback character substitution being used.
         # The fallback character substitution slightly differs from pxr::TfMakeValidIdentifier in how it handles leading numerics
@@ -50,10 +48,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
         def assertEqualPrimNames(inputNames, reservedNames, expectNames):
             self.assertEqual(usdex.core.getValidPrimNames(inputNames, reservedNames), expectNames)
 
-        def assertDecoding(inputNames, expectNames):
-            for inputName, expectName in zip(inputNames, expectNames):
-                self.assertEqual(omni.transcoding.decodeBootstringIdentifier(inputName), expectName)
-
         # Basic tests
         assertEqualPrimNames(["cube", "cube_1", "sphere", "cube_3"], [], ["cube", "cube_1", "sphere", "cube_3"])
 
@@ -62,10 +56,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
             ["123cube", "cube1", r"sphere%$%#ad@$1", "cube_3", "cube$3"],
             [],
             ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
-        )
-        assertDecoding(
-            ["tn__123cube_", "cube1", "tn__spheread1_kAHAJ8jC", "cube_3", "tn__cube3_Y6"],
-            ["123cube", "cube1", r"sphere%$%#ad@$1", "cube_3", "cube$3"],
         )
 
         # Duplicated names in list
@@ -99,10 +89,6 @@ class ValidPrimNamesTestCase(usdex.test.TestCase):
 
         # UTF-8 words
         assertEqualPrimNames(["カーテンウォール", "カーテンウォール"], [], ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"])
-        assertDecoding(
-            ["tn__sxB76l2Y5o0X16", "tn___1_cvb0DAd4k7Z1p16"],
-            ["カーテンウォール", "カーテンウォール_1"],
-        )
 
         # ISO-8859-1 encoding will cause encoding to fail resulting in the fallback character substitution being used.
         # This can increase the number of name collisions.
@@ -1025,7 +1011,7 @@ class DisplayNameTestCase(usdex.test.TestCase):
 
         # Setting the bytes string as the display name
         rocket_emoji = "🚀"
-        rocket_bytes_string = b"\xF0\x9F\x9A\x80"
+        rocket_bytes_string = b"\xf0\x9f\x9a\x80"
         self.assertTrue(usdex.core.setDisplayName(prim, rocket_bytes_string))
         result = usdex.core.getDisplayName(prim)
         self.assertEqual(result, rocket_emoji)

@@ -618,13 +618,13 @@ class LocationEditableTestCase(usdex.test.TestCase):
         path = "../relative"
         result, reason = usdex.core.isEditablePrimLocation(stage, path)
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is not a valid absolute prim path")
+        self.assertRegex(reason, ".*is not a valid absolute prim path")
 
         # paths must be prim paths
         path = "/absolute.property"
         result, reason = usdex.core.isEditablePrimLocation(stage, path)
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is not a valid absolute prim path")
+        self.assertRegex(reason, ".*is not a valid absolute prim path")
 
         # if the prim exists it cannot be an Instance Proxy
         stage.CreateClassPrim("/Prototypes")
@@ -635,7 +635,7 @@ class LocationEditableTestCase(usdex.test.TestCase):
         xformPrim.SetInstanceable(True)
         result, reason = usdex.core.isEditablePrimLocation(stage, f"{xformPrim.GetPath()}/InstanceProxyChild")
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")
+        self.assertRegex(reason, ".*is an instance proxy, authoring is not allowed")
 
     def testIsEditableLocationFromPrimName(self):
         stage = Usd.Stage.CreateInMemory()
@@ -648,12 +648,12 @@ class LocationEditableTestCase(usdex.test.TestCase):
         invalidPrim = Usd.Prim()
         result, reason = usdex.core.isEditablePrimLocation(invalidPrim, "child")
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*Invalid UsdPrim")
+        self.assertRegex(reason, ".*Invalid UsdPrim")
 
         # the name must be a valid identifier
         result, reason = usdex.core.isEditablePrimLocation(validPrim, "1 2 3 !!!")
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is not a valid prim name")
+        self.assertRegex(reason, ".*is not a valid prim name")
 
         # if the child exists it cannot be an Instance Proxy
         stage.CreateClassPrim("/Prototypes")
@@ -664,10 +664,10 @@ class LocationEditableTestCase(usdex.test.TestCase):
         xformPrim.SetInstanceable(True)
         result, reason = usdex.core.isEditablePrimLocation(xformPrim, "InstanceProxyChild")
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")
+        self.assertRegex(reason, ".*is an instance proxy, authoring is not allowed")
 
         # the parent cannot be an Instance Proxy either
         instanceProxyChild = stage.GetPrimAtPath(f"{xformPrim.GetPath()}/InstanceProxyChild")
         result, reason = usdex.core.isEditablePrimLocation(instanceProxyChild, "grandchild")
         self.assertFalse(result)
-        self.assertRegexpMatches(reason, ".*is an instance proxy, authoring is not allowed")
+        self.assertRegex(reason, ".*is an instance proxy, authoring is not allowed")

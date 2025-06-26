@@ -18,6 +18,7 @@ POINTS = Vt.Vec3fArray(
         Gf.Vec3f(2.0, 0.0, 1.0),
     ]
 )
+IDS = Vt.Int64Array([0, 1, 2, 3, 4, 5])
 
 
 class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctionTestCase):
@@ -54,6 +55,13 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
     def testInvalidTopology(self):
         stage = self.createTestStage()
         path = Sdf.Path("/World/InvalidTopology")
+
+        # The point array must not be empty
+        points = Vt.Vec3fArray()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid points")]):
+            pointCloud = usdex.core.definePointCloud(stage, path, points, IDS)
+        self.assertDefineFunctionFailure(pointCloud)
+        self.assertFalse(stage.GetPrimAtPath(path))
 
         # The number of ids must match the number of points
         ids = Vt.Int64Array([2])
