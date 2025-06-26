@@ -25,6 +25,8 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         toolConfig = config["repo_py_package"]
         stagingDir = toolConfig["staging_dir"]
         installDir = toolConfig["install_dir"]
+        exclusions = toolConfig.get("exclude", [])
+        ignore_callable = shutil.ignore_patterns(*exclusions)
         repoVersionFile = config["repo"]["folders"]["version_file"]
         usdFlavor = omni.repo.man.resolve_tokens("${usd_flavor}")
         usdVer = omni.repo.man.resolve_tokens("${usd_ver}")
@@ -40,14 +42,14 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         source = omni.repo.man.resolve_tokens("_build/$platform/$config")
         if os.path.exists(stagingDir):
             shutil.rmtree(stagingDir)
-        shutil.copytree(f"{source}/python/usdex/core", f"{stagingDir}/usdex/core")
-        shutil.copytree(f"{source}/python/pxr", f"{stagingDir}/pxr")
+        shutil.copytree(f"{source}/python/usdex/core", f"{stagingDir}/usdex/core", ignore=ignore_callable)
+        shutil.copytree(f"{source}/python/pxr", f"{stagingDir}/pxr", ignore=ignore_callable)
         if omni.repo.man.is_windows():
             # DLLS and plugInfo
-            shutil.copytree(f"{source}/lib", f"{stagingDir}/usd_exchange.libs", ignore=lambda src, names: [x for x in names if x.endswith(".pdb")])
+            shutil.copytree(f"{source}/lib", f"{stagingDir}/usd_exchange.libs", ignore=ignore_callable)
         else:
             # Only plugInfo (auditwheel will handle libs)
-            shutil.copytree(f"{source}/lib/usd", f"{stagingDir}/usd_exchange.libs/usd")
+            shutil.copytree(f"{source}/lib/usd", f"{stagingDir}/usd_exchange.libs/usd", ignore=ignore_callable)
 
         # generate pyproject file
         pyproject_source = omni.repo.man.resolve_tokens("$root/tools/pyproject/pyproject.toml")
