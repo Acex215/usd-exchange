@@ -66,8 +66,8 @@ std::string makeValidIdentifierExtended(const std::string& in)
 
 std::string usdex::core::detail::makeValidIdentifier(const std::string& in)
 {
-    static bool s_enableOmniTranscoding = TfGetEnvSetting(USDEX_ENABLE_OMNI_TRANSCODING);
-    if (s_enableOmniTranscoding)
+    static bool s_enableTranscoding = TfGetEnvSetting(USDEX_ENABLE_TRANSCODING);
+    if (s_enableTranscoding)
     {
         std::string out = usdex::core::detail::encodeIdentifier(in, usdex::core::detail::TranscodingFormat::ASCII);
         if (out.empty())

@@ -9,11 +9,8 @@ using namespace pxr;
 namespace usdex::core
 {
 
-TF_DEFINE_ENV_SETTING(
-    USDEX_ENABLE_OMNI_TRANSCODING,
-    true,
-    "Use the omni::transcoding bootstring implementation when validating Prim and Property names"
-);
+
+TF_DEFINE_ENV_SETTING(USDEX_ENABLE_TRANSCODING, true, "Use the transcoding bootstring implementation when validating Prim and Property names.");
 
 } // namespace usdex::core
 
@@ -29,7 +26,7 @@ struct LoadSettings
 {
     LoadSettings()
     {
-        TfGetEnvSetting(usdex::core::USDEX_ENABLE_OMNI_TRANSCODING);
+        TfGetEnvSetting(usdex::core::USDEX_ENABLE_TRANSCODING);
     }
 };
 

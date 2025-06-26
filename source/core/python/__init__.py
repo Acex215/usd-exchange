@@ -13,7 +13,7 @@ __all__ = [
     "buildVersion",
     "deprecated",
     # settings
-    "enableOmniTranscodingSetting",
+    "enableTranscodingSetting",
     # diagnostics
     "DiagnosticsLevel",
     "DiagnosticsOutputStream",

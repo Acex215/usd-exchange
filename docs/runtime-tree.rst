@@ -10,7 +10,6 @@
             ├── lib
             │   ├── libusdex_core.so
             │   ├── libusdex_rtx.so
-            │   ├── libomni_transcoding.so
             │   ├── libboost_python310.so -> libboost_python310.so.1.78.0   <-- USD 24.08 & older
             │   ├── libboost_python310.so.1.78.0                            <-- USD 24.08 & older
             │   ├── libpython3.10.so -> libpython3.10.so.1.0
@@ -70,7 +69,6 @@
             └── lib
                 ├── libusdex_core.so
                 ├── libusdex_rtx.so
-                ├── libomni_transcoding.so
                 ├── libtbb.so.2
                 ├── libusd_ms.so
                 └── usd
@@ -89,7 +87,6 @@
             ├── lib
             │   ├── usdex_core.dll
             │   ├── usdex_rtx.dll
-            │   ├── omni_transcoding.dll
             |   ├── boost_python310-vc142-mt-x64-1_78.dll   <-- USD 24.08 & older
             │   ├── python3.dll
             │   ├── python310.dll
@@ -147,7 +144,6 @@
             └── lib
                 ├── usdex_core.dll
                 ├── usdex_rtx.dll
-                ├── omni_transcoding.dll
                 ├── tbb.dll
                 ├── usd_ms.dll
                 └── usd
