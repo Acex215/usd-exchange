@@ -1,4 +1,4 @@
-# 1.2.0-rc1
+# 1.2.0-rc2
 
 ## Core
 
@@ -22,14 +22,14 @@
 
 ### Dev Tools
 
-- packman 7.30
+- packman 7.31
 - repo_tools (all matching latest public)
 - doctest 2.4.5
 - cxxopts 2.2.0
 - Premake 5.0.0-beta4
 - GCC 11.4.0
 - MSVC 2019-16.11
-- Python 3.10.16 (default), 3.11.11, 3.12.10
+- Python 3.10.18 (default), 3.11.12, 3.12.11
 
 # 1.1.0
 
