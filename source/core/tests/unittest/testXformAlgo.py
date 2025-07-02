@@ -4,7 +4,7 @@
 
 import usdex.core
 import usdex.test
-from pxr import Gf, Sdf, Usd, UsdGeom, Vt
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, Vt
 
 IDENTITY_TRANSLATE = Gf.Vec3d(0.0, 0.0, 0.0)
 IDENTITY_ROTATE = Gf.Vec3f(0.0, 0.0, 0.0)
@@ -1730,4 +1730,239 @@ class DefineXformTestCase(usdex.test.DefineFunctionTestCase, BaseXformTestCase):
 
         xformable = UsdGeom.Xformable(mesh.GetPrim())
         self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+        self.assertIsValidUsd(stage)
+
+
+# Smoke tests for UsdGeomXformable overloads
+class SetLocalTransformWithTransformXformableTestCase(BaseSetLocalTransformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce a failure return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            success = usdex.core.setLocalTransform(xformable, IDENTITY_TRANSFORM)
+        self.assertFalse(success)
+
+    def testValidXformable(self):
+        # A valid xformable will produce a success return and same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        success = usdex.core.setLocalTransform(xformable, NON_IDENTITY_TRANSFORM)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+
+    def testRoundTrip(self):
+        # The xformable overload should produce the same results as the prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        usdex.core.setLocalTransform(xformable, NON_IDENTITY_TRANSFORM)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_TRANSFORM.GetMatrix())
+        self.assertIsValidUsd(stage)
+
+
+class SetLocalTransformWithMatrixXformableTestCase(BaseSetLocalTransformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce a failure return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            success = usdex.core.setLocalTransform(xformable, IDENTITY_MATRIX)
+        self.assertFalse(success)
+
+    def testValidXformable(self):
+        # A valid xformable will produce a success return and same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        success = usdex.core.setLocalTransform(xformable, NON_IDENTITY_MATRIX)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+
+    def testRoundTrip(self):
+        # The xformable overload should produce the same results as the prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        usdex.core.setLocalTransform(xformable, NON_IDENTITY_MATRIX)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+        self.assertIsValidUsd(stage)
+
+
+class SetLocalTransformWithComponentsXformableTestCase(BaseSetLocalTransformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce a failure return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            success = usdex.core.setLocalTransform(xformable, *IDENTITY_COMPONENTS)
+        self.assertFalse(success)
+
+    def testValidXformable(self):
+        # A valid xformable will produce a success return and same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        success = usdex.core.setLocalTransform(xformable, *NON_IDENTITY_COMPONENTS)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+
+    def testRoundTrip(self):
+        # The xformable overload should produce the same results as the prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        usdex.core.setLocalTransform(xformable, *NON_IDENTITY_COMPONENTS)
+        self.assertEqual(xformable.GetLocalTransformation(), NON_IDENTITY_MATRIX)
+        self.assertIsValidUsd(stage)
+
+
+class SetLocalTransformWithOrientationXformableTestCase(BaseSetLocalTransformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce a failure return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            success = usdex.core.setLocalTransform(xformable, *IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertFalse(success)
+
+    def testValidXformable(self):
+        # A valid xformable will produce a success return and same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        success = usdex.core.setLocalTransform(xformable, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertTrue(success)
+        self.assertSuccessfulSetLocalTransform(prim)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+
+    def testRoundTrip(self):
+        # The xformable overload should produce the same results as the prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        usdex.core.setLocalTransform(xformable, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+        self.assertMatricesAlmostEqual(xformable.GetLocalTransformation(), NON_IDENTITY_NO_PIVOT_MATRIX, places=6)
+        self.assertIsValidUsd(stage)
+
+
+class GetLocalTransformXformableTest(BaseXformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce an identity return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            transform = usdex.core.getLocalTransform(xformable)
+        self.assertIsInstance(transform, Gf.Transform)
+        self.assertEqual(transform, IDENTITY_TRANSFORM)
+
+    def testValidXformable(self):
+        # A valid xformable will produce the same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Set a transform first
+        usdex.core.setLocalTransform(prim, NON_IDENTITY_TRANSFORM)
+
+        # Test that xformable overload returns same result as prim version
+        transformFromPrim = usdex.core.getLocalTransform(prim)
+        transformFromXformable = usdex.core.getLocalTransform(xformable)
+        self.assertEqual(transformFromPrim, transformFromXformable)
+        self.assertEqual(transformFromXformable, NON_IDENTITY_TRANSFORM)
+        self.assertIsValidUsd(stage)
+
+
+class GetLocalTransformMatrixXformableTest(BaseXformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce an identity return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            matrix = usdex.core.getLocalTransformMatrix(xformable)
+        self.assertIsInstance(matrix, Gf.Matrix4d)
+        self.assertEqual(matrix, IDENTITY_MATRIX)
+
+    def testValidXformable(self):
+        # A valid xformable will produce the same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Set a transform first
+        usdex.core.setLocalTransform(prim, NON_IDENTITY_MATRIX)
+
+        # Test that xformable overload returns same result as prim version
+        matrixFromPrim = usdex.core.getLocalTransformMatrix(prim)
+        matrixFromXformable = usdex.core.getLocalTransformMatrix(xformable)
+        self.assertEqual(matrixFromPrim, matrixFromXformable)
+        self.assertEqual(matrixFromXformable, NON_IDENTITY_MATRIX)
+        self.assertIsValidUsd(stage)
+
+
+class GetLocalTransformComponentsXformableTest(BaseXformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce an identity return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            returned = usdex.core.getLocalTransformComponents(xformable)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS)
+
+    def testValidXformable(self):
+        # A valid xformable will produce the same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Set components first
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS)
+
+        # Test that xformable overload returns same result as prim version
+        componentsFromPrim = usdex.core.getLocalTransformComponents(prim)
+        componentsFromXformable = usdex.core.getLocalTransformComponents(xformable)
+        self.assertTupleEqual(componentsFromPrim, componentsFromXformable)
+        self.assertTupleEqual(componentsFromXformable, NON_IDENTITY_COMPONENTS)
+        self.assertIsValidUsd(stage)
+
+
+class GetLocalTransformComponentsQuatXformableTest(BaseXformTestCase):
+    def testInvalidXformable(self):
+        # An invalid xformable will produce an identity return and emit a runtime error
+        xformable = UsdGeom.Xformable()
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*UsdGeomXformable.*is not valid")]):
+            returned = usdex.core.getLocalTransformComponentsQuat(xformable)
+        self.assertIsInstance(returned, tuple)
+        self.assertTupleEqual(returned, IDENTITY_COMPONENTS_WITH_ORIENTATION_AND_PIVOT)
+
+    def testValidXformable(self):
+        # A valid xformable will produce the same results as prim version
+        stage = self._createTestStage()
+        prim = stage.GetPrimAtPath("/Root/Xform")
+        xformable = UsdGeom.Xformable(prim)
+
+        # Set components with orientation first
+        usdex.core.setLocalTransform(prim, *NON_IDENTITY_COMPONENTS_WITH_ORIENTATION)
+
+        # Test that xformable overload returns same result as prim version
+        componentsFromPrim = usdex.core.getLocalTransformComponentsQuat(prim)
+        componentsFromXformable = usdex.core.getLocalTransformComponentsQuat(xformable)
+        self.assertTupleWithQuatAlmostEqual(componentsFromPrim, componentsFromXformable)
+
+        # The expected result should have identity pivot since NON_IDENTITY_COMPONENTS_WITH_ORIENTATION has no pivot
+        expectedComponents = tuple(
+            [
+                NON_IDENTITY_TRANSLATE,
+                IDENTITY_TRANSLATE,  # pivot position should be identity
+                NON_IDENTITY_ORIENTATION,
+                NON_IDENTITY_SCALE,
+            ]
+        )
+        self.assertTupleWithQuatAlmostEqual(componentsFromXformable, expectedComponents)
         self.assertIsValidUsd(stage)
