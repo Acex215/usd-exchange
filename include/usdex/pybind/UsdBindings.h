@@ -33,6 +33,7 @@
 #include <pxr/usd/usdGeom/points.h>
 #include <pxr/usd/usdGeom/primvar.h>
 #include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/xformable.h>
 #include <pxr/usd/usdLux/distantLight.h>
 #include <pxr/usd/usdLux/domeLight.h>
 #include <pxr/usd/usdLux/rectLight.h>
@@ -106,6 +107,8 @@ PYBOOST11_TYPE_CASTER(pxr::UsdGeomPoints, _("pxr.UsdGeom.Points"));
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomPrimvar, _("pxr.UsdGeom.Primvar"));
 //! pybind11 interoperability for `UsdGeomXform`
 PYBOOST11_TYPE_CASTER(pxr::UsdGeomXform, _("pxr.UsdGeom.Xform"));
+//! pybind11 interoperability for `UsdGeomXformable`
+PYBOOST11_TYPE_CASTER(pxr::UsdGeomXformable, _("pxr.UsdGeom.Xformable"));
 //! pybind11 interoperability for `UsdLuxDistantLight`
 PYBOOST11_TYPE_CASTER(pxr::UsdLuxDistantLight, _("pxr.UsdLux.DistantLight"));
 //! pybind11 interoperability for `UsdLuxDomeLight`

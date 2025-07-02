@@ -74,6 +74,18 @@ enum class RotationOrder
 //! @returns A bool indicating if the local transform was set.
 USDEX_API bool setLocalTransform(pxr::UsdPrim prim, const pxr::GfTransform& transform, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
 
+//! Set the local transform of an xformable.
+//!
+//! @param xformable The xformable to set local transform on.
+//! @param transform The transform value to set.
+//! @param time Time at which to write the value.
+//! @returns A bool indicating if the local transform was set.
+USDEX_API bool setLocalTransform(
+    const pxr::UsdGeomXformable& xformable,
+    const pxr::GfTransform& transform,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
 //! Set the local transform of a prim from a 4x4 matrix.
 //!
 //! @param prim The prim to set local transform on.
@@ -81,6 +93,18 @@ USDEX_API bool setLocalTransform(pxr::UsdPrim prim, const pxr::GfTransform& tran
 //! @param time Time at which to write the value.
 //! @returns A bool indicating if the local transform was set.
 USDEX_API bool setLocalTransform(pxr::UsdPrim prim, const pxr::GfMatrix4d& matrix, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
+
+//! Set the local transform of an xformable from a 4x4 matrix.
+//!
+//! @param xformable The xformable to set local transform on.
+//! @param matrix The matrix value to set.
+//! @param time Time at which to write the value.
+//! @returns A bool indicating if the local transform was set.
+USDEX_API bool setLocalTransform(
+    const pxr::UsdGeomXformable& xformable,
+    const pxr::GfMatrix4d& matrix,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
 
 //! Set the local transform of a prim from common transform components.
 //!
@@ -94,6 +118,26 @@ USDEX_API bool setLocalTransform(pxr::UsdPrim prim, const pxr::GfMatrix4d& matri
 //! @returns True if the transform was set successfully.
 USDEX_API bool setLocalTransform(
     pxr::UsdPrim prim,
+    const pxr::GfVec3d& translation,
+    const pxr::GfVec3d& pivot,
+    const pxr::GfVec3f& rotation,
+    const RotationOrder rotationOrder,
+    const pxr::GfVec3f& scale,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
+//! Set the local transform of an xformable from common transform components.
+//!
+//! @param xformable The xformable to set local transform on.
+//! @param translation The translation value to set.
+//! @param pivot The pivot position value to set.
+//! @param rotation The rotation value to set in degrees.
+//! @param rotationOrder The rotation order of the rotation value.
+//! @param scale The scale value to set.
+//! @param time Time at which to write the values.
+//! @returns True if the transform was set successfully.
+USDEX_API bool setLocalTransform(
+    const pxr::UsdGeomXformable& xformable,
     const pxr::GfVec3d& translation,
     const pxr::GfVec3d& pivot,
     const pxr::GfVec3f& rotation,
@@ -118,6 +162,22 @@ USDEX_API bool setLocalTransform(
     pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
 );
 
+//! Set the local transform of an xformable from common transform components using a quaternion for orientation.
+//!
+//! @param xformable The xformable to set local transform on.
+//! @param translation The translation value to set.
+//! @param orientation The orientation value to set as a quaternion.
+//! @param scale The scale value to set - defaults to (1.0, 1.0, 1.0).
+//! @param time Time at which to write the values.
+//! @returns True if the transform was set successfully.
+USDEX_API bool setLocalTransform(
+    const pxr::UsdGeomXformable& xformable,
+    const pxr::GfVec3d& translation,
+    const pxr::GfQuatf& orientation,
+    const pxr::GfVec3f& scale = pxr::GfVec3f(1.0f, 1.0f, 1.0f),
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
 //! Get the local transform of a prim at a given time.
 //!
 //! @param prim The prim to get local transform from.
@@ -125,12 +185,26 @@ USDEX_API bool setLocalTransform(
 //! @returns Transform value as a transform.
 USDEX_API pxr::GfTransform getLocalTransform(const pxr::UsdPrim& prim, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
 
+//! Get the local transform of an xformable at a given time.
+//!
+//! @param xformable The xformable to get local transform from.
+//! @param time Time at which to query the value.
+//! @returns Transform value as a transform.
+USDEX_API pxr::GfTransform getLocalTransform(const pxr::UsdGeomXformable& xformable, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
+
 //! Get the local transform of a prim at a given time in the form of a 4x4 matrix.
 //!
 //! @param prim The prim to get local transform from.
 //! @param time Time at which to query the value.
 //! @returns Transform value as a 4x4 matrix.
 USDEX_API pxr::GfMatrix4d getLocalTransformMatrix(const pxr::UsdPrim& prim, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
+
+//! Get the local transform of an xformable at a given time in the form of a 4x4 matrix.
+//!
+//! @param xformable The xformable to get local transform from.
+//! @param time Time at which to query the value.
+//! @returns Transform value as a 4x4 matrix.
+USDEX_API pxr::GfMatrix4d getLocalTransformMatrix(const pxr::UsdGeomXformable& xformable, pxr::UsdTimeCode time = pxr::UsdTimeCode::Default());
 
 //! Get the local transform of a prim at a given time in the form of common transform components.
 //!
@@ -151,6 +225,25 @@ USDEX_API void getLocalTransformComponents(
     pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
 );
 
+//! Get the local transform of an xformable at a given time in the form of common transform components.
+//!
+//! @param xformable The xformable to get local transform from.
+//! @param translation Translation result.
+//! @param pivot Pivot position result.
+//! @param rotation Rotation result in degrees.
+//! @param rotationOrder Rotation order the rotation result.
+//! @param scale Scale result.
+//! @param time Time at which to query the value.
+USDEX_API void getLocalTransformComponents(
+    const pxr::UsdGeomXformable& xformable,
+    pxr::GfVec3d& translation,
+    pxr::GfVec3d& pivot,
+    pxr::GfVec3f& rotation,
+    RotationOrder& rotationOrder,
+    pxr::GfVec3f& scale,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
 //! Get the local transform of a prim at a given time in the form of common transform components with quaternion orientation.
 //!
 //! @param prim The prim to get local transform from.
@@ -161,6 +254,23 @@ USDEX_API void getLocalTransformComponents(
 //! @param time Time at which to query the value.
 USDEX_API void getLocalTransformComponentsQuat(
     const pxr::UsdPrim& prim,
+    pxr::GfVec3d& translation,
+    pxr::GfVec3d& pivot,
+    pxr::GfQuatf& orientation,
+    pxr::GfVec3f& scale,
+    pxr::UsdTimeCode time = pxr::UsdTimeCode::Default()
+);
+
+//! Get the local transform of an xformable at a given time in the form of common transform components with quaternion orientation.
+//!
+//! @param xformable The xformable to get local transform from.
+//! @param translation Translation result.
+//! @param pivot Pivot position result.
+//! @param orientation Orientation result as a quaternion.
+//! @param scale Scale result.
+//! @param time Time at which to query the value.
+USDEX_API void getLocalTransformComponentsQuat(
+    const pxr::UsdGeomXformable& xformable,
     pxr::GfVec3d& translation,
     pxr::GfVec3d& pivot,
     pxr::GfQuatf& orientation,

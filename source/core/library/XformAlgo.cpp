@@ -876,3 +876,131 @@ UsdGeomXform usdex::core::defineXform(UsdPrim parent, const std::string& name, s
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
     return usdex::core::defineXform(stage, path, transform);
 }
+
+bool usdex::core::setLocalTransform(const UsdGeomXformable& xformable, const GfTransform& transform, UsdTimeCode time)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    return setLocalTransform(xformable.GetPrim(), transform, time);
+}
+
+bool usdex::core::setLocalTransform(const UsdGeomXformable& xformable, const GfMatrix4d& matrix, UsdTimeCode time)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    return setLocalTransform(xformable.GetPrim(), matrix, time);
+}
+
+bool usdex::core::setLocalTransform(
+    const UsdGeomXformable& xformable,
+    const GfVec3d& translation,
+    const GfVec3d& pivot,
+    const GfVec3f& rotation,
+    const usdex::core::RotationOrder rotationOrder,
+    const GfVec3f& scale,
+    UsdTimeCode time
+)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    return setLocalTransform(xformable.GetPrim(), translation, pivot, rotation, rotationOrder, scale, time);
+}
+
+bool usdex::core::setLocalTransform(
+    const UsdGeomXformable& xformable,
+    const GfVec3d& translation,
+    const GfQuatf& orientation,
+    const GfVec3f& scale,
+    UsdTimeCode time
+)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return false;
+    }
+
+    return setLocalTransform(xformable.GetPrim(), translation, orientation, scale, time);
+}
+
+GfTransform usdex::core::getLocalTransform(const UsdGeomXformable& xformable, UsdTimeCode time)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return GfTransform();
+    }
+
+    return getLocalTransform(xformable.GetPrim(), time);
+}
+
+GfMatrix4d usdex::core::getLocalTransformMatrix(const UsdGeomXformable& xformable, UsdTimeCode time)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        return GfMatrix4d(1.0);
+    }
+
+    return getLocalTransformMatrix(xformable.GetPrim(), time);
+}
+
+void usdex::core::getLocalTransformComponents(
+    const UsdGeomXformable& xformable,
+    GfVec3d& translation,
+    GfVec3d& pivot,
+    GfVec3f& rotation,
+    usdex::core::RotationOrder& rotationOrder,
+    GfVec3f& scale,
+    UsdTimeCode time
+)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        // Set identity values and return
+        translation.Set(0.0, 0.0, 0.0);
+        pivot.Set(0.0, 0.0, 0.0);
+        rotation.Set(0.0, 0.0, 0.0);
+        rotationOrder = usdex::core::RotationOrder::eXyz;
+        scale.Set(1.0, 1.0, 1.0);
+        return;
+    }
+
+    getLocalTransformComponents(xformable.GetPrim(), translation, pivot, rotation, rotationOrder, scale, time);
+}
+
+void usdex::core::getLocalTransformComponentsQuat(
+    const UsdGeomXformable& xformable,
+    GfVec3d& translation,
+    GfVec3d& pivot,
+    GfQuatf& orientation,
+    GfVec3f& scale,
+    UsdTimeCode time
+)
+{
+    if (!xformable)
+    {
+        TF_RUNTIME_ERROR("UsdGeomXformable <%s> is not valid.", xformable.GetPrim().GetPath().GetAsString().c_str());
+        // Set identity values and return
+        translation.Set(0.0, 0.0, 0.0);
+        pivot.Set(0.0, 0.0, 0.0);
+        orientation = GfQuatf::GetIdentity();
+        scale.Set(1.0, 1.0, 1.0);
+        return;
+    }
+
+    getLocalTransformComponentsQuat(xformable.GetPrim(), translation, pivot, orientation, scale, time);
+}

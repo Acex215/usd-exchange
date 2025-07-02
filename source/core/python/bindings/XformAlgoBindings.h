@@ -128,7 +128,7 @@ void bindXformAlgo(module& m)
 
     m.def(
         "getLocalTransform",
-        &getLocalTransform,
+        overload_cast<const UsdPrim&, UsdTimeCode>(&getLocalTransform),
         arg("prim"),
         arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
@@ -146,7 +146,7 @@ void bindXformAlgo(module& m)
 
     m.def(
         "getLocalTransformMatrix",
-        &getLocalTransformMatrix,
+        overload_cast<const UsdPrim&, UsdTimeCode>(&getLocalTransformMatrix),
         arg("prim"),
         arg("time") = UsdTimeCode::Default().GetValue(),
         R"(
@@ -250,6 +250,194 @@ void bindXformAlgo(module& m)
 
             Returns:
                 UsdGeom.Xform schema wrapping the defined Usd.Prim. Returns an invalid schema on error.
+        )"
+    );
+
+    // UsdGeomXformable overloads
+    m.def(
+        "setLocalTransform",
+        overload_cast<const UsdGeomXformable&, const GfTransform&, UsdTimeCode>(&setLocalTransform),
+        arg("xformable"),
+        arg("transform"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Set the local transform of an xformable.
+
+            Args:
+                xformable: The xformable to set local transform on.
+                transform: The transform value to set.
+                time: Time at which to write the value.
+
+            Returns:
+                A bool indicating if the local transform was set.
+
+        )",
+        call_guard<gil_scoped_release>()
+    );
+
+    m.def(
+        "setLocalTransform",
+        overload_cast<const UsdGeomXformable&, const GfMatrix4d&, UsdTimeCode>(&setLocalTransform),
+        arg("xformable"),
+        arg("matrix"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Set the local transform of an xformable from a 4x4 matrix.
+
+            Args:
+                xformable: The xformable to set local transform on.
+                matrix: The matrix value to set.
+                time: Time at which to write the value.
+
+            Returns:
+                A bool indicating if the local transform was set.
+
+        )",
+        call_guard<gil_scoped_release>()
+    );
+
+    m.def(
+        "setLocalTransform",
+        overload_cast<const UsdGeomXformable&, const GfVec3d&, const GfVec3d&, const GfVec3f&, const RotationOrder, const GfVec3f&, UsdTimeCode>(
+            &setLocalTransform
+        ),
+        arg("xformable"),
+        arg("translation"),
+        arg("pivot"),
+        arg("rotation"),
+        arg("rotationOrder"),
+        arg("scale"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Set the local transform of an xformable from common transform components.
+
+            Args:
+                xformable: The xformable to set local transform on.
+                translation: The translation value to set.
+                pivot: The pivot position value to set.
+                rotation: The rotation value to set in degrees.
+                rotationOrder: The rotation order of the rotation value.
+                scale: The scale value to set.
+                time: Time at which to write the value.
+
+            Returns:
+                A bool indicating if the local transform was set.
+
+        )",
+        call_guard<gil_scoped_release>()
+    );
+
+    m.def(
+        "setLocalTransform",
+        overload_cast<const UsdGeomXformable&, const GfVec3d&, const GfQuatf&, const GfVec3f&, UsdTimeCode>(&setLocalTransform),
+        arg("xformable"),
+        arg("translation"),
+        arg("orientation"),
+        arg("scale") = GfVec3f(1.0f),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Set the local transform of an xformable from common transform components using a quaternion for orientation.
+
+            Args:
+                xformable: The xformable to set local transform on.
+                translation: The translation value to set.
+                orientation: The orientation value to set as a quaternion.
+                scale: The scale value to set - defaults to (1.0, 1.0, 1.0).
+                time: Time at which to write the value.
+
+            Returns:
+                A bool indicating if the local transform was set.
+
+        )",
+        call_guard<gil_scoped_acquire>()
+    );
+
+    m.def(
+        "getLocalTransform",
+        overload_cast<const UsdGeomXformable&, UsdTimeCode>(&getLocalTransform),
+        arg("xformable"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Get the local transform of an xformable at a given time.
+
+            Args:
+                xformable: The xformable to get local transform from.
+                time: Time at which to query the value.
+
+            Returns:
+                Transform value as a transform.
+
+        )"
+    );
+
+    m.def(
+        "getLocalTransformMatrix",
+        overload_cast<const UsdGeomXformable&, UsdTimeCode>(&getLocalTransformMatrix),
+        arg("xformable"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Get the local transform of an xformable at a given time in the form of a 4x4 matrix.
+
+            Args:
+                xformable: The xformable to get local transform from.
+                time: Time at which to query the value.
+
+            Returns:
+                Transform value as a 4x4 matrix.
+
+        )"
+    );
+
+    m.def(
+        "getLocalTransformComponents",
+        [](const UsdGeomXformable& xformable, UsdTimeCode time)
+        {
+            GfVec3d translation;
+            GfVec3d pivot;
+            GfVec3f rotation;
+            RotationOrder rotationOrder;
+            GfVec3f scale;
+            getLocalTransformComponents(xformable, translation, pivot, rotation, rotationOrder, scale, time);
+            return make_tuple(translation, pivot, rotation, rotationOrder, scale);
+        },
+        arg("xformable"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Get the local transform of an xformable at a given time in the form of common transform components.
+
+            Args:
+                xformable: The xformable to get local transform from.
+                time: Time at which to query the value.
+
+            Returns:
+                Transform value as a tuple of translation, pivot, rotation, rotation order, scale.
+
+        )"
+    );
+
+    m.def(
+        "getLocalTransformComponentsQuat",
+        [](const UsdGeomXformable& xformable, UsdTimeCode time)
+        {
+            GfVec3d translation;
+            GfVec3d pivot;
+            GfQuatf orientation;
+            GfVec3f scale;
+            getLocalTransformComponentsQuat(xformable, translation, pivot, orientation, scale, time);
+            return make_tuple(translation, pivot, orientation, scale);
+        },
+        arg("xformable"),
+        arg("time") = UsdTimeCode::Default().GetValue(),
+        R"(
+            Get the local transform of an xformable at a given time in the form of common transform components with quaternion orientation.
+
+            Args:
+                xformable: The xformable to get local transform from.
+                time: Time at which to query the value.
+
+            Returns:
+                Transform value as a tuple of translation, pivot, orientation (quaternion), scale.
+
         )"
     );
 }
