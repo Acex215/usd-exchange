@@ -37,8 +37,30 @@ namespace usdex::core
 //!
 //! # Transcoding #
 //!
-//! By default, valid names are produced via a [transcoding process](https://docs.omniverse.nvidia.com/kit/docs/omni-transcoding)
-//! that generates names which can be losslessly decoded.
+//! Users of OpenUSD in non-English speaking regions and users in a variety of domains (mechanical, manufacturing, electrical, automotive, etc.)
+//! often require the ability to name OpenUSD primitives with identifiers that are not allowable by the OpenUSD specification.
+//!
+//! The OpenUSD specification places the following limitations for object names:
+//!
+//! - No empty strings.
+//! - Must start with characters in the set of `[A-Za-z_]`.
+//! - May continue with characters in the set of `[A-Za-z0-9_]`.
+//!
+//! In OpenUSD 24.03 and beyond, Unicode characters are allowed, however the following limitations remain:
+//!
+//! - No characters that are part of the lexical structure, i.e. whitespace or newline.
+//! - No characters that are part of the syntactic structure, such as arithmetic operators.
+//! - No SdfPath separators, i.e. forward slash (`/`), curly brackets (`{}`), square brackets (`[]`), etc.
+//! - Cannot start with numeric characters.
+//!
+//! Typically, [TfMakeValidIdentifier](https://openusd.org/dev/api/group__group__tf___string.html) is used to convert any identifier into a valid
+//! identifier. However, it creates a non-bidirectional relationship, for example, something like `カーテンウォール` would be transformed into
+//! `_______________`.
+//!
+//! As an alternative, the default transcoding provided with the functions bellow follows the approach outlined in the [Bi-Directional Transcoding of
+//! Invalid Identifiers](https://github.com/PixarAnimationStudios/OpenUSD-proposals/tree/main/proposals/transcoding_invalid_identifiers) proposal.
+//! This algorithm can transform any identifier (potentially with invalid characters) into a valid identifier, in a reversible, unique, and easily
+//! identifiable manner.
 //!
 //! - For any legal identifier in a given runtime, this transcoding will produce no changes.
 //! - For illegal identifiers, the transcoding will produce a human readable name that meets the requirements of the runtime.
