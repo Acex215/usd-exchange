@@ -274,6 +274,11 @@ python_paths = [
 # controls the runtime python executable
 # note: remove this when repo_docs supports the generic `repo.python_executable` settings
 python_path = "$root/_build/target-deps/python/python${exe_ext}"
+social_media = [
+    [ "www", "https://developer.nvidia.com/usd" ],
+    [ "github", "https://github.com/NVIDIA-Omniverse/usd-exchange" ]
+]
+social_media_set = ""
 
 [repo_docs.editions.s3web]
 protocol = "s3"
