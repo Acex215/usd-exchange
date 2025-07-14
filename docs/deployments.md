@@ -2,18 +2,104 @@
 
 While there are certainly a large range of deployment options & styles, the most common cases for OpenUSD Exchange SDK customers fall into a few main categories:
 
+- A Python application, module, or command line interface using [pip-installed wheels](#python-wheels)
 - A standalone C++ [Executable](#standalone-executable) application.
-- A standalone python or shell script invoked as a [command line interface](#scripted-cli).
 - Deployed [in a Container](#docker-containers) (e.g. via [Docker](https://www.docker.com))
 - A [plugin or extension](#plugin-to-a-dcc) to an existing Digital Content Creation (DCC) Application.
 
 The sections below briefly discuss each of these options and list some common intricacies.
 
+## Python Wheels
+
+**Recommended for Python-only development**
+
+The simplest way to deploy the OpenUSD Exchange SDK is using Python wheels, which handle all dependencies automatically.
+
+This approach is ideal for several common use cases:
+- Python-only applications and scripts
+- Data processing pipelines
+- Prototyping and experimentation
+- Web services and APIs
+- Jupyter notebooks and data science workflows
+- CI/CD automation
+
+### Virtual Environment Deployment
+
+For development and testing:
+
+``````{card}
+`````{tab-set}
+````{tab-item} Linux
+:sync: linux
+
+```bash
+# Create and activate virtual environment
+python -m venv usdex-env
+source usdex-env/bin/activate
+
+# Install the SDK
+pip install usd-exchange
+
+# Your application can now import and use the SDK
+python
+>> import usdex.core
+>> from pxr import Usd
+>> print(usdex.core.version())
+>> print(Usd.GetVersion())
+
+```
+````
+````{tab-item} Windows
+:sync: windows
+
+```powershell
+# Create and activate virtual environment
+python -m venv usdex-env
+usdex-env\Scripts\activate
+
+# Install the SDK
+pip install usd-exchange
+
+# Your application can now import and use the SDK
+python
+>> import usdex.core
+>> from pxr import Usd
+>> print(usdex.core.version())
+>> print(Usd.GetVersion())
+
+```
+````
+`````
+``````
+
+### Production Deployment
+
+For production environments, pin specific versions:
+
+```bash
+# requirements.txt
+usd-exchange==2.0.0+usd2505
+```
+
+```bash
+# Install exact versions
+pip install -r requirements.txt
+```
+
+```{eval-rst}
+.. note::
+  Each OpenUSD Exchange SDK release supports many OpenUSD versions and python versions. The python version is automatically determined based on the interpreter. You can choose the version of OpenUSD by changing the ``+usdYYMM`` part of the version to download the appropriate wheel with matching modules & native libraries.
+```
+
+### Container Deployment with Wheels
+
+See the [docker section](#docker-containers) for container deployment with Python wheels.
+
 ## Standalone Executable
 
 The most common use case for OpenUSD Exchange integrated standalone applications is for a headless data converter executable. Another common use case is for unit testing (and integration testing). Often, we write tests as standalone executables. Each of these apps must be able to bootstrap OpenUSD and OpenUSD Exchange libraries.
 
-You should be able to use the prebuilt binaries from [`install_usdex`](./devtools.md#install_usdex) directly.
+If your application can dynamically load C++ libraries, you should be able to use the prebuilt binaries from [`install_usdex`](./devtools.md#install_usdex) directly.
 
 See our [example runtime file layouts](./runtime-requirements.md#example-runtime-file-layouts) for a listing of dynamic libraries, python modules, and OpenUSD Plugins (`plugInfo.json`) that you will need to distribute along with your executable program. You will need to ensure that the dynamic libraries are on the appropriate system path.
 
@@ -21,66 +107,43 @@ If you need command line arguments for your program, we recommend using [cxxopts
 
 You can see many examples of standalone executables in the [OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples).
 
-## Scripted CLI
-
-Scripted CLIs are similar to [standalone executables](#standalone-executable), but easier to integrate into a pipeline. Or you may just prefer to write your program in Python.
-
-You should be able to use the prebuilt binaries & python modules from [`install_usdex`](./devtools.md#install_usdex) directly.
-
-See our [example runtime file layouts](./runtime-requirements.md#example-runtime-file-layouts) for a listing of dynamic libraries, python modules, and OpenUSD Plugins (`plugInfo.json`) that you will need to distribute along with your python script. Your script will need to ensure that the dynamic libraries are on the appropriate system path and that the python modules are on your `PYTHONPATH`.
-
-If you need command line arguments for your program, we recommend using Python's native [argparse](https://docs.python.org/3/library/argparse.html).
-
-You can see many examples of scripted CLIs in the [OpenUSD Exchange Samples](https://github.com/NVIDIA-Omniverse/usd-exchange-samples).
-
 ## Docker Containers
 
-When integrating OpenUSD Exchange libraries and modules into a microservice or other containerized process, you will likely want to install from within your `Dockerfile`.
-
-This process is fairly straightforward, but there are a couple intricacies that you should be aware of in order to end up with the minimal amount of files in your final image.
+When integrating OpenUSD Exchange libraries and modules into a microservice or other containerized process, you will likely want to install from within your `Dockerfile`. The easiest way to use the OpenUSD Exchange SDK in a dockerfile is with the Python wheels.
 
 Below is an example `Dockerfile` for a microservice that uses the [`usdex.core`](./python-usdex-core.rst) python module:
 
-```docker
-FROM ubuntu:22.04
+```dockerfile
+FROM python:3.10-slim
 
-# Install git (to clone the repo), curl (to download binaries), and python (to run)
-RUN apt update && apt install -y git curl python3.10 libpython3.10
+# Install Python dependencies
+RUN python3 -m venv usdex-env && \
+    . usdex-env/bin/activate && \
+    pip install usd-exchange
 
-# Install OpenUSD and OpenUSD Exchange, making sure to match the system python version
-RUN git clone https://github.com/NVIDIA-Omniverse/usd-exchange.git
-RUN cd usd-exchange && ./repo.sh install_usdex --python-version 3.10 --version 1.0.0 --install-dir /usdex-runtime
-
-# Clean up temporary files not needed for runtime
-RUN usd-exchange/tools/packman/packman prune 0 && rm -rf usd-exchange
-
-# Install the OpenUSD and OpenUSD Exchange libraries and python modules
-RUN python3.10 -m site --user-site
-RUN ln -s /usdex-runtime/python/* /usr/local/lib/python3.10/dist-packages/
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usdex-runtime/lib"
+CMD . usdex-env/bin/activate && python3 -c 'import pxr.Usd, usdex.core; print(f"OpenUSD: {pxr.Usd.GetVersion()}\nOpenUSD Exchange: {usdex.core.version()}")'
 ```
 
-Once you build the image you should be able to run it and use [`usdex.core`](./python-usdex-core.rst) from any python process in the container:
-
+Build and run with these commands:
 ```bash
-> docker run my-image python3.10 -c 'import pxr.Usd, usdex.core; print(f"OpenUSD: {pxr.Usd.GetVersion()}\nOpenUSD Exchange: {usdex.core.version()}")'
-OpenUSD: (0, 24, 5)
-OpenUSD Exchange: 1.0.0
+docker build -t usdex_image .
+docker run usdex_image
+```
+
+Output:
+```
+OpenUSD: (0, 25, 5)
+OpenUSD Exchange: 2.0.0
 ```
 
 ```{eval-rst}
 .. note::
-  The example above is Ubuntu based using Python 3.10, but neither of these are strict requirements. The precompiled OpenUSD Exchange SDK binaries are ``manylinux_2_35`` compatible and available for multiple python versions (or without python entirely).
+  The example above is a specific base image with Python 3.10, but neither of these are strict requirements. The precompiled OpenUSD Exchange SDK binaries are ``manylinux_2_35`` compatible and available for multiple python versions.
 ```
-
-You may wish to approach your container organization differently, but the main steps should be the same:
-- Download and stage the [runtime requirements](./runtime-requirements.md)
-- Clean up temporary files
-- Configure your environment so the dynamic libraries and python modules are available to other processes in your container
 
 ```{eval-rst}
 .. important::
-  You must ensure that the OpenUSD libraries and plugins from the ``install_usdex`` process are the **only** OpenUSD binaries configured in the container.
+  You must ensure that the OpenUSD libraries and plugins from the ``usd-exchange`` wheel are the **only** OpenUSD binaries configured in the container.
 
   If, for example, you had previously run ``pip install usd-core`` in your container, you will almost certainly have two copies of the OpenUSD binaries configured, and they are very likely to conflict with each other in unpredictable ways.
 ```

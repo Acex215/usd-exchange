@@ -112,7 +112,7 @@ However, the default diagnostic output is somewhat engineer-centric. Fortunately
 
 We provide one such [diagnostic delegate](../api/group__diagnostics.rebreather_rst) with some more controllable options (like level filtering), which you are welcome to use directly, or to use as inspiration for your own diagnostic delegate implementation.
 
-Debug logs are emitted via OpenUSD's `TfDebug` mechanism, which is separate from the other diagnostics. See our [Debugging guide](./getting-started.md#debugging) for more information.
+Debug logs are emitted via OpenUSD's `TfDebug` mechanism, which is separate from the other diagnostics. See our [Debugging guide](./testing-debugging.md#debugging) for more information.
 
 ## Runtime Settings
 

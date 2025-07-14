@@ -19,7 +19,10 @@ OpenUSD Exchange SDK
    :hidden:
 
    Getting Started <docs/getting-started.md>
+   Try the Samples <docs/try-samples.md>
    Authoring USD Data <docs/authoring-usd.md>
+   Create a Native Application <docs/native-application.md>
+   Testing and Debugging <docs/testing-debugging.md>
    Runtime Requirements <docs/runtime-requirements.md>
    Deployment Options <docs/deployments.md>
 
