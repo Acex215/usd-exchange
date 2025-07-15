@@ -2,6 +2,11 @@
 
 The next step to familiarize yourself with the OpenUSD Exchange SDK is to create a simple standalone application.
 
+```{eval-rst}
+.. note::
+  This section specifically does not use Python wheels. It instead installs the SDK dependencies within a project structure of a native application, which may or may not include python runtime.
+```
+
 This section will teach you how to create an application that opens a `UsdStage`, reports basic stage configuration details, and lists all of the `UsdPrim` paths.
 
 This walkthrough will use these tokens:
