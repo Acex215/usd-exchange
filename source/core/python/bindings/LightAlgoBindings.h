@@ -130,6 +130,29 @@ void bindLightAlgo(module& m)
     );
 
     m.def(
+        "defineDomeLight",
+        overload_cast<UsdPrim, float, std::optional<std::string_view>, const TfToken&>(&defineDomeLight),
+        arg("prim"),
+        arg("intensity") = 1.0f,
+        arg("texturePath") = nullptr,
+        arg("textureFormat") = UsdLuxTokens->automatic.GetString(),
+        R"(
+            Creates a dome light with an optional texture.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Args:
+                prim: Prim to define the dome light on. The prim's type will be set to ``UsdLux.DomeLight``.
+                intensity: The intensity value of the dome light
+                texturePath: The path to the texture file to use on the dome light.
+                textureFormat: How the texture should be mapped on the dome light.
+
+            Returns:
+                The light if created successfully.
+        )"
+    );
+
+    m.def(
         "defineRectLight",
         overload_cast<UsdStagePtr, const SdfPath&, float, float, float, std::optional<std::string_view>>(&defineRectLight),
         arg("stage"),
@@ -183,6 +206,31 @@ void bindLightAlgo(module& m)
                     The rect light if created successfully.
             )",
         call_guard<gil_scoped_release>()
+    );
+
+    m.def(
+        "defineRectLight",
+        overload_cast<UsdPrim, float, float, float, std::optional<std::string_view>>(&defineRectLight),
+        arg("prim"),
+        arg("width"),
+        arg("height"),
+        arg("intensity") = 1.0f,
+        arg("texturePath") = nullptr,
+        R"(
+            Creates a rectangular (rect) light with an optional texture.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Args:
+                prim: Prim to define the rectangular light on. The prim's type will be set to ``UsdLux.RectLight``.
+                width: The width of the rectangular light, in the local X axis.
+                height: The height of the rectangular light, in the local Y axis.
+                intensity: The intensity value of the rectangular light.
+                texturePath: The path to the texture file to use on the rectangular light.
+
+            Returns:
+                The light if created successfully.
+        )"
     );
 }
 

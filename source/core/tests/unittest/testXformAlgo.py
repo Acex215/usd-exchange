@@ -1966,3 +1966,83 @@ class GetLocalTransformComponentsQuatXformableTest(BaseXformTestCase):
         )
         self.assertTupleWithQuatAlmostEqual(componentsFromXformable, expectedComponents)
         self.assertIsValidUsd(stage)
+
+
+class DefineXformFromPrimTestCase(BaseXformTestCase):
+    def testDefineXformFromXform(self):
+        stage = self._createTestStage()
+        xform = UsdGeom.Xform.Define(stage, Sdf.Path("/Root/ExistingXform"))
+        result = usdex.core.defineXform(xform.GetPrim())
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+        self.assertEqual(result.GetPrim().GetPath(), xform.GetPrim().GetPath())
+        self.assertIsValidUsd(stage)
+
+    def testDefineXformFromScope(self):
+        stage = self._createTestStage()
+        scope = UsdGeom.Scope.Define(stage, Sdf.Path("/Root/ExistingScope"))
+        result = usdex.core.defineXform(scope.GetPrim())
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+        self.assertEqual(result.GetPrim().GetPath(), scope.GetPrim().GetPath())
+        self.assertIsValidUsd(stage)
+
+    def testDefineXformFromPrimWithTransform(self):
+        stage = self._createTestStage()
+        scope = UsdGeom.Scope.Define(stage, Sdf.Path("/Root/TransformedScope"))
+        transform = Gf.Transform()
+        transform.SetTranslation(Gf.Vec3d(1, 2, 3))
+        result = usdex.core.defineXform(scope.GetPrim(), transform)
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+        self.assertEqual(usdex.core.getLocalTransform(result.GetPrim()), transform)
+        self.assertIsValidUsd(stage)
+
+    def testDefineXformFromInvalidPrim(self):
+        stage = self._createTestStage()
+        invalidPrim = stage.GetPrimAtPath("/NonExistent")
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            result = usdex.core.defineXform(invalidPrim)
+        self.assertFalse(result)
+
+    def testDefineXformFromPrimPreservesExistingTransform(self):
+        stage = self._createTestStage()
+        xform = UsdGeom.Xform.Define(stage, Sdf.Path("/Root/ExistingXform"))
+        # Set an initial transform
+        initialTransform = Gf.Transform()
+        initialTransform.SetTranslation(Gf.Vec3d(5, 6, 7))
+        usdex.core.setLocalTransform(xform.GetPrim(), initialTransform)
+
+        # Convert without specifying new transform - should preserve existing
+        result = usdex.core.defineXform(xform.GetPrim())
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+        self.assertEqual(usdex.core.getLocalTransform(result.GetPrim()), initialTransform)
+        self.assertIsValidUsd(stage)
+
+    def testDefineXformFromPrimTypeGuards(self):
+        """Test type guards for defineXform prim overload."""
+        stage = self._createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        meshPrim = stage.DefinePrim("/Root/MeshPrim", "Mesh")
+        with usdex.test.ScopedDiagnosticChecker(
+            self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*Xform.*Expected original type to be.*Scope.*or.*Xform")]
+        ):
+            result = usdex.core.defineXform(meshPrim)
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/Root/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            result = usdex.core.defineXform(scopePrim)
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/Root/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            result = usdex.core.defineXform(xformPrim)
+        self.assertTrue(result)
+        self.assertEqual(result.GetPrim().GetTypeName(), "Xform")

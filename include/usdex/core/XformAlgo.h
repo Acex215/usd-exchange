@@ -310,6 +310,16 @@ USDEX_API pxr::UsdGeomXform defineXform(
 //! @returns UsdGeomXform schema wrapping the defined UsdPrim. Returns an invalid schema on error.
 USDEX_API pxr::UsdGeomXform defineXform(pxr::UsdPrim parent, const std::string& name, std::optional<const pxr::GfTransform> transform = std::nullopt);
 
+//! Defines a basic xform from an existing prim.
+//!
+//! This converts an existing prim to an Xform type, preserving any existing transform data.
+//!
+//! @param prim The existing prim to convert to an xform
+//! @param transform The transform to set on the xform
+//!
+//! @returns UsdGeomXform schema wrapping the converted UsdPrim.
+USDEX_API pxr::UsdGeomXform defineXform(pxr::UsdPrim prim, std::optional<const pxr::GfTransform> transform = std::nullopt);
+
 //! @}
 
 } // namespace usdex::core

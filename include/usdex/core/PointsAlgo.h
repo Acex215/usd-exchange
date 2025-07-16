@@ -102,6 +102,26 @@ USDEX_API pxr::UsdGeomPoints definePointCloud(
     std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
 );
 
+//! Defines a point cloud using the `UsdGeomPoints` schema.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the point cloud on. The prim's type will be set to `UsdGeomPoints`.
+//! @param points Positions of the points.
+//! @param widths Values for the width specification for the points.
+//! @param normals Values for the normals primvar for the points.
+//! @param displayColor Values to be authored for the display color primvar.
+//! @param displayOpacity Values to be authored for the display opacity primvar.
+//! @returns `UsdGeomPoints` schema wrapping the defined `UsdPrim`
+USDEX_API pxr::UsdGeomPoints definePointCloud(
+    pxr::UsdPrim prim,
+    const pxr::VtVec3fArray& points,
+    std::optional<const FloatPrimvarData> widths = std::nullopt,
+    std::optional<const Vec3fPrimvarData> normals = std::nullopt,
+    std::optional<const Vec3fPrimvarData> displayColor = std::nullopt,
+    std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
+);
+
 //! @}
 
 } // namespace usdex::core

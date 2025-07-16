@@ -55,6 +55,16 @@ USDEX_API pxr::UsdGeomCamera defineCamera(pxr::UsdStagePtr stage, const pxr::Sdf
 //! @returns UsdGeomCamera schema wrapping the defined UsdPrim.
 USDEX_API pxr::UsdGeomCamera defineCamera(pxr::UsdPrim parent, const std::string& name, const pxr::GfCamera& cameraData);
 
+//! Defines a basic 3d camera from an existing prim.
+//!
+//! This converts an existing prim to a Camera type, preserving any existing transform data.
+//!
+//! @param prim The existing prim to convert to a camera
+//! @param cameraData The camera data to set, including the world space transform matrix
+//!
+//! @returns UsdGeomCamera schema wrapping the converted UsdPrim.
+USDEX_API pxr::UsdGeomCamera defineCamera(pxr::UsdPrim prim, const pxr::GfCamera& cameraData);
+
 //! @}
 
 } // namespace usdex::core

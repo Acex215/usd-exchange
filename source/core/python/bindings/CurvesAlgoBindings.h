@@ -96,8 +96,49 @@ void bindCurvesAlgo(module& m)
             std::optional<const Vec3fPrimvarData>,
             std::optional<const Vec3fPrimvarData>,
             std::optional<const FloatPrimvarData>>(&defineLinearBasisCurves),
-        arg("prim"),
+        arg("parent"),
         arg("name"),
+        arg("curveVertexCounts"),
+        arg("points"),
+        arg("wrap") = UsdGeomTokens->nonperiodic.GetString(),
+        arg("widths") = nullptr,
+        arg("normals") = nullptr,
+        arg("displayColor") = nullptr,
+        arg("displayOpacity") = nullptr,
+        R"(
+            Defines a batched Linear ``UsdGeom.BasisCurves`` prim on the stage.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **parent** Prim below which to define the curves
+                - **name** Name of the curves
+                - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
+                - **points** Vertex/CV positions for the curves described in local space.
+                - **wrap** Determines how the start and end points of the curve behave. Accepted values for linear curves are
+                    ``UsdGeom.Tokens.nonperiodic`` and ``UsdGeom.Tokens.periodic``.
+                - **widths** Values for the width specification for the curves.
+                - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
+                - **displayColor** Values to be authored for the display color primvar.
+                - **displayOpacity** Values to be authored for the display opacity primvar.
+
+            Returns
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
+        )"
+    );
+
+    m.def(
+        "defineLinearBasisCurves",
+        overload_cast<
+            UsdPrim,
+            const VtIntArray&,
+            const VtVec3fArray&,
+            const TfToken&,
+            std::optional<const FloatPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const FloatPrimvarData>>(&defineLinearBasisCurves),
+        arg("prim"),
         arg("curveVertexCounts"),
         arg("points"),
         arg("wrap") = UsdGeomTokens->nonperiodic.GetString(),
@@ -210,8 +251,53 @@ void bindCurvesAlgo(module& m)
             std::optional<const Vec3fPrimvarData>,
             std::optional<const Vec3fPrimvarData>,
             std::optional<const FloatPrimvarData>>(&defineCubicBasisCurves),
-        arg("prim"),
+        arg("parent"),
         arg("name"),
+        arg("curveVertexCounts"),
+        arg("points"),
+        arg("basis") = UsdGeomTokens->bezier.GetString(),
+        arg("wrap") = UsdGeomTokens->nonperiodic.GetString(),
+        arg("widths") = nullptr,
+        arg("normals") = nullptr,
+        arg("displayColor") = nullptr,
+        arg("displayOpacity") = nullptr,
+        R"(
+            Defines a batched Cubic ``UsdGeom.BasisCurves`` prim on the stage.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **parent** Prim below which to define the curves
+                - **name** Name of the curves
+                - **curveVertexCounts** The number of vertices in each independent curve. The length of this array determines the number of curves.
+                - **points** Vertex/CV positions for the curves described in local space.
+                - **basis** The basis specifies the vstep and matrix used for cubic interpolation. Accepted values for cubic curves are
+                    ``UsdGeom.Tokens.bezier``, ``UsdGeom.Tokens.bspline``, ``UsdGeom.Tokens.catmullRom``.
+                - **wrap** Determines how the start and end points of the curve behave. Accepted values are ``UsdGeom.Tokens.nonperiodic``,
+                    ``UsdGeom.Tokens.periodic``, and ``UsdGeom.Tokens.pinned`` (bspline and catmullRom only).
+                - **widths** Values for the width specification for the curves.
+                - **normals** Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
+                - **displayColor** Values to be authored for the display color primvar.
+                - **displayOpacity** Values to be authored for the display opacity primvar.
+
+            Returns
+                ``UsdGeom.BasisCurves`` schema wrapping the defined ``Usd.Prim``
+        )"
+    );
+
+    m.def(
+        "defineCubicBasisCurves",
+        overload_cast<
+            UsdPrim,
+            const VtIntArray&,
+            const VtVec3fArray&,
+            const TfToken&,
+            const TfToken&,
+            std::optional<const FloatPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const FloatPrimvarData>>(&defineCubicBasisCurves),
+        arg("prim"),
         arg("curveVertexCounts"),
         arg("points"),
         arg("basis") = UsdGeomTokens->bezier.GetString(),

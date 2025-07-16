@@ -7,6 +7,7 @@
 #include "usdex/core/StageAlgo.h"
 
 #include <pxr/base/tf/token.h>
+#include <pxr/usd/usdGeom/tokens.h>
 #include <pxr/usd/usdGeom/xformCommonAPI.h>
 #include <pxr/usd/usdGeom/xformOp.h>
 #include <pxr/usd/usdGeom/xformable.h>
@@ -874,6 +875,32 @@ UsdGeomXform usdex::core::defineXform(UsdPrim parent, const std::string& name, s
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
+    return usdex::core::defineXform(stage, path, transform);
+}
+
+UsdGeomXform usdex::core::defineXform(UsdPrim prim, std::optional<const pxr::GfTransform> transform)
+{
+    // Early out if the prim is invalid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomXform due to an invalid prim");
+        return UsdGeomXform();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"Xform\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
     return usdex::core::defineXform(stage, path, transform);
 }
 

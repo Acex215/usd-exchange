@@ -335,3 +335,143 @@ class DefinePointCloudTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineF
         primvar = result.GetDisplayOpacityPrimvar()
         self.assertPrimvar(primvar, displayOpacity)
         self.assertIsValidUsd(stage)
+
+
+class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
+    """Test prim overloads for points define functions."""
+
+    def createTestStage(self):
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        UsdGeom.SetStageMetersPerUnit(stage, UsdGeom.LinearUnits.centimeters)
+        return stage
+
+    def testDefinePointCloudPrimOverload(self):
+        stage = self.createTestStage()
+        prim = stage.DefinePrim("/World/PointCloud", "Points")
+
+        # Define the point cloud using the prim overload
+        points = usdex.core.definePointCloud(prim, POINTS)
+
+        # Verify the prim was created correctly
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Verify the points attribute was set
+        self.assertEqual(points.GetPointsAttr().Get(), POINTS)
+
+    def testDefinePointCloudPrimOverloadWithWidths(self):
+        stage = self.createTestStage()
+        prim = stage.DefinePrim("/World/PointCloudWithWidths", "Points")
+
+        # Create test widths
+        widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([1.5]))
+
+        # Define the point cloud using the prim overload
+        points = usdex.core.definePointCloud(prim, POINTS, widths=widths)
+
+        # Verify the prim was created correctly
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Verify the widths attribute was set
+        primvar = UsdGeom.PrimvarsAPI(points).GetPrimvar(UsdGeom.Tokens.widths)
+        self.assertTrue(primvar.HasAuthoredValue())
+        self.assertEqual(primvar.Get(), widths.values())
+
+    def testDefinePointCloudPrimOverloadWithOptionalArgs(self):
+        stage = self.createTestStage()
+        prim = stage.DefinePrim("/World/PointCloudWithOptionalArgs", "Points")
+
+        # Create test data for optional arguments
+        widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([1.5]))
+        normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, Vt.Vec3fArray([Gf.Vec3f(0, 1, 0)] * len(POINTS)))
+        displayColor = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, Vt.Vec3fArray([Gf.Vec3f(0.5, 0.7, 0.9)]))
+        displayOpacity = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([0.8]))
+
+        # Define the point cloud using the prim overload
+        points = usdex.core.definePointCloud(prim, POINTS, widths=widths, normals=normals, displayColor=displayColor, displayOpacity=displayOpacity)
+
+        # Verify the prim was created correctly
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Verify the points attribute was set
+        self.assertEqual(points.GetPointsAttr().Get(), POINTS)
+
+        # Verify the optional arguments were set
+        primvarsAPI = UsdGeom.PrimvarsAPI(points)
+
+        widthsPrimvar = primvarsAPI.GetPrimvar(UsdGeom.Tokens.widths)
+        self.assertTrue(widthsPrimvar.HasAuthoredValue())
+        self.assertEqual(widthsPrimvar.Get(), widths.values())
+
+        normalsPrimvar = primvarsAPI.GetPrimvar(UsdGeom.Tokens.normals)
+        self.assertTrue(normalsPrimvar.HasAuthoredValue())
+        self.assertEqual(normalsPrimvar.Get(), normals.values())
+
+        displayColorPrimvar = points.GetDisplayColorPrimvar()
+        self.assertTrue(displayColorPrimvar.HasAuthoredValue())
+        self.assertEqual(displayColorPrimvar.Get(), displayColor.values())
+
+        displayOpacityPrimvar = points.GetDisplayOpacityPrimvar()
+        self.assertTrue(displayOpacityPrimvar.HasAuthoredValue())
+        self.assertEqual(displayOpacityPrimvar.Get(), displayOpacity.values())
+
+    def testDefinePointCloudPrimOverloadInvalidPrim(self):
+        """Test the prim overload for definePointCloud with invalid prim."""
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            points = usdex.core.definePointCloud(prim, POINTS)
+        self.assertFalse(points)
+
+    def testDefinePointCloudPrimOverloadSinglePoint(self):
+        stage = self.createTestStage()
+        prim = stage.DefinePrim("/World/SinglePoint", "Points")
+
+        # Create a single point
+        singlePoint = Vt.Vec3fArray([Gf.Vec3f(1.0, 2.0, 3.0)])
+
+        # Define the point cloud using the prim overload
+        points = usdex.core.definePointCloud(prim, singlePoint)
+
+        # Verify the prim was created correctly
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Verify the points attribute was set
+        self.assertEqual(points.GetPointsAttr().Get(), singlePoint)
+
+    def testDefinePointCloudFromPrimTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Material.*to.*Points.*Expected original type to be.*Scope.*or.*Xform")],
+        ):
+            points = usdex.core.definePointCloud(materialPrim, POINTS)
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            points = usdex.core.definePointCloud(scopePrim, POINTS)
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            points = usdex.core.definePointCloud(xformPrim, POINTS)
+        self.assertTrue(points)
+        self.assertEqual(points.GetPrim().GetTypeName(), "Points")

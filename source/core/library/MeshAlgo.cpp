@@ -8,6 +8,7 @@
 
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
+#include <pxr/usd/usdGeom/tokens.h>
 #include <pxr/usd/usdUtils/pipeline.h>
 
 
@@ -284,5 +285,40 @@ UsdGeomMesh usdex::core::definePolyMesh(
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
+    return usdex::core::definePolyMesh(stage, path, faceVertexCounts, faceVertexIndices, points, normals, uvs, displayColor, displayOpacity);
+}
+
+UsdGeomMesh usdex::core::definePolyMesh(
+    UsdPrim prim,
+    const VtIntArray& faceVertexCounts,
+    const VtIntArray& faceVertexIndices,
+    const VtVec3fArray& points,
+    std::optional<const Vec3fPrimvarData> normals,
+    std::optional<const Vec2fPrimvarData> uvs,
+    std::optional<const Vec3fPrimvarData> displayColor,
+    std::optional<const FloatPrimvarData> displayOpacity
+)
+{
+    // Early out if the prim is invalid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomMesh due to an invalid prim");
+        return UsdGeomMesh();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"Mesh\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
     return usdex::core::definePolyMesh(stage, path, faceVertexCounts, faceVertexIndices, points, normals, uvs, displayColor, displayOpacity);
 }

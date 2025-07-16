@@ -133,6 +133,32 @@ void bindMaterialAlgo(module& m)
     );
 
     m.def(
+        "definePreviewMaterial",
+        overload_cast<UsdPrim, const GfVec3f&, const float, const float, const float>(&definePreviewMaterial),
+        arg("prim"),
+        arg("color"),
+        arg("opacity") = 1.0f,
+        arg("roughness") = 0.5f,
+        arg("metallic") = 0.0f,
+        R"(
+            Defines a PBR ``UsdShade.Material`` driven by a ``UsdPreviewSurface`` shader network for the universal render context.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Args:
+                prim: Prim to define the material on. The prim's type will be set to ``UsdShade.Material``.
+                color: The diffuse color of the Material
+                opacity: The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+                roughness: The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+                metallic: The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+
+            Returns:
+                The newly defined ``UsdShade.Material``. Returns an Invalid object on error.
+        )",
+        call_guard<gil_scoped_release>()
+    );
+
+    m.def(
         "addDiffuseTextureToPreviewMaterial",
         &addDiffuseTextureToPreviewMaterial,
         arg("material"),

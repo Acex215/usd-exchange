@@ -116,6 +116,23 @@ USDEX_API pxr::UsdLuxDomeLight defineDomeLight(
     const pxr::TfToken& textureFormat = pxr::UsdLuxTokens->automatic
 );
 
+//! Creates a dome light with an optional texture.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the dome light on. The prim's type will be set to `UsdLuxDomeLight`.
+//! @param intensity: The intensity value of the dome light
+//! @param texturePath: The path to the texture file to use on the dome light.
+//! @param textureFormat: How the texture should be mapped on the dome light.
+//!
+//! @returns The light if created successfully.
+USDEX_API pxr::UsdLuxDomeLight defineDomeLight(
+    pxr::UsdPrim prim,
+    float intensity = 1.0f,
+    std::optional<std::string_view> texturePath = std::nullopt,
+    const pxr::TfToken& textureFormat = pxr::UsdLuxTokens->automatic
+);
+
 //! Creates a rectangular (rect) light with an optional texture.
 //!
 //! A rect light represents light emitted from one side of a rectangle.
@@ -152,6 +169,25 @@ USDEX_API pxr::UsdLuxRectLight defineRectLight(
 USDEX_API pxr::UsdLuxRectLight defineRectLight(
     pxr::UsdPrim parent,
     const std::string& name,
+    float width,
+    float height,
+    float intensity = 1.0f,
+    std::optional<std::string_view> texturePath = std::nullopt
+);
+
+//! Creates a rectangular (rect) light with an optional texture.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the rectangular light on. The prim's type will be set to `UsdLuxRectLight`.
+//! @param width: The width of the rectangular light, in the local X axis.
+//! @param height: The height of the rectangular light, in the local Y axis.
+//! @param intensity: The intensity value of the rectangular light.
+//! @param texturePath: The path to the texture file to use on the rectangular light.
+//!
+//! @returns The light if created successfully.
+USDEX_API pxr::UsdLuxRectLight defineRectLight(
+    pxr::UsdPrim prim,
     float width,
     float height,
     float intensity = 1.0f,

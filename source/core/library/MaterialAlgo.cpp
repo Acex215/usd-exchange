@@ -8,6 +8,7 @@
 #include "usdex/core/StageAlgo.h"
 
 #include <pxr/usd/ar/resolver.h>
+#include <pxr/usd/usdGeom/tokens.h>
 #include <pxr/usd/usdShade/materialBindingAPI.h>
 #include <pxr/usd/usdShade/nodeGraph.h>
 #include <pxr/usd/usdShade/tokens.h>
@@ -343,6 +344,48 @@ UsdShadeMaterial usdex::core::definePreviewMaterial(
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
+    return usdex::core::definePreviewMaterial(stage, path, color, opacity, roughness, metallic);
+}
+
+UsdShadeMaterial usdex::core::definePreviewMaterial(
+    UsdPrim prim,
+    const GfVec3f& color,
+    const float opacity,
+    const float roughness,
+    const float metallic
+)
+{
+    // Early out if the prim is not valid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdShadeMaterial on invalid prim");
+        return UsdShadeMaterial();
+    }
+
+    TfToken originalType = prim.GetTypeName();
+    // Material is NOT Xformable, so check if converting from Xform to non-Xformable
+    if (originalType == UsdGeomTokens->Xform)
+    {
+        TF_RUNTIME_ERROR(
+            "Cannot redefine at \"%s\" from \"Xform\" to \"Material\" because Material is not Xformable",
+            prim.GetPath().GetAsString().c_str()
+        );
+        return UsdShadeMaterial();
+    }
+
+    // Warn if converting from non-Scope prims
+    if (originalType != UsdGeomTokens->Scope)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"Scope\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
     return usdex::core::definePreviewMaterial(stage, path, color, opacity, roughness, metallic);
 }
 

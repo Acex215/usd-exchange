@@ -173,6 +173,30 @@ void bindMaterialAlgo(module& m)
         )"
     );
     m.def(
+        "definePbrMaterial",
+        overload_cast<UsdPrim, const GfVec3f&, const float, const float, const float>(&definePbrMaterial),
+        arg("prim"),
+        arg("color"),
+        arg("opacity") = 1.0f,
+        arg("roughness") = 0.5f,
+        arg("metallic") = 0.0f,
+        R"(
+            Defines a PBR ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **prim** - Prim to define the Material on
+                - **color** - The diffuse color of the Material
+                - **opacity** - The Opacity Amount to set. When less than 1.0, Enable Opacity is set to true and Fractional Opacity is enabled in the RT renderer
+                - **roughness** - The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+                - **metallic** - The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+
+            Returns:
+                The newly defined UsdShade.Material. Returns an Invalid prim on error
+        )"
+    );
+    m.def(
         "addDiffuseTextureToPbrMaterial",
         &addDiffuseTextureToPbrMaterial,
         arg("material"),
@@ -349,6 +373,26 @@ void bindMaterialAlgo(module& m)
             Parameters:
                 - **parent** - Prim below which to define the Material
                 - **name** - Name of the Material
+                - **color** - The color of the Material
+                - **indexOfRefraction** - The Index of Refraction to set, 1.0-4.0 range
+
+            Returns:
+                The newly defined UsdShade.Material. Returns an Invalid prim on error
+        )"
+    );
+    m.def(
+        "defineGlassMaterial",
+        overload_cast<UsdPrim, const GfVec3f&, const float>(&defineGlassMaterial),
+        arg("prim"),
+        arg("color"),
+        arg("indexOfRefraction") = 1.491f,
+        R"(
+            Defines a Glass ``UsdShade.Material`` interface that drives both an RTX render context and the universal render context.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **prim** - Prim to define the Material on
                 - **color** - The color of the Material
                 - **indexOfRefraction** - The Index of Refraction to set, 1.0-4.0 range
 

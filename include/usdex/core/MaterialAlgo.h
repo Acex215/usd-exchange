@@ -144,6 +144,24 @@ USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
     const float metallic = 0.0f
 );
 
+//! Defines a PBR `UsdShadeMaterial` driven by a `UsdPreviewSurface` shader network for the universal render context.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the material on. The prim's type will be set to `UsdShadeMaterial`.
+//! @param color The diffuse color of the Material
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible
+//! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+//! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid object on error.
+USDEX_API pxr::UsdShadeMaterial definePreviewMaterial(
+    pxr::UsdPrim prim,
+    const pxr::GfVec3f& color,
+    const float opacity = 1.0f,
+    const float roughness = 0.5f,
+    const float metallic = 0.0f
+);
+
 //! Adds a diffuse texture to a preview material
 //!
 //! It is expected that the material was created by `definePreviewMaterial()`

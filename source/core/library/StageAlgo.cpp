@@ -334,3 +334,11 @@ bool usdex::core::isEditablePrimLocation(const UsdPrim& prim, const std::string&
 
     return true;
 }
+
+bool usdex::core::isEditablePrimLocation(const UsdPrim& prim, std::string* reason)
+{
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
+    return isEditablePrimLocation(stage, path, reason);
+}

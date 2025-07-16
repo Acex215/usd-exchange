@@ -107,3 +107,54 @@ class DefineCameraTestCase(usdex.test.DefineFunctionTestCase):
         self.assertDefineFunctionSuccess(camera)
         self.assertCamerasEqual(camera, cameraData)
         self.assertIsValidUsd(stage)
+
+    def testDefineCameraFromXform(self):
+        stage = self.createTestStage()
+        xform = UsdGeom.Xform.Define(stage, Sdf.Path("/World/ExistingXform"))
+        cameraData = Gf.Camera()
+        camera = usdex.core.defineCamera(xform.GetPrim(), cameraData)
+        self.assertTrue(camera)
+        self.assertEqual(camera.GetPrim().GetTypeName(), "Camera")
+        self.assertIsValidUsd(stage)
+
+    def testDefineCameraFromPrimWithTransform(self):
+        stage = self.createTestStage()
+        xform = UsdGeom.Xform.Define(stage, Sdf.Path("/World/TransformedXform"))
+        # Set an initial transform on the xform
+        usdex.core.setLocalTransform(xform.GetPrim(), Gf.Transform(Gf.Matrix4d().SetTranslate(Gf.Vec3d(1, 2, 3))))
+
+        transform = Gf.Transform()
+        transform.SetTranslation(Gf.Vec3d(10.0, 20.0, 30.0))
+        cameraData = Gf.Camera(transform=transform.GetMatrix())
+        camera = usdex.core.defineCamera(xform.GetPrim(), cameraData)
+        self.assertTrue(camera)
+        self.assertEqual(camera.GetPrim().GetTypeName(), "Camera")
+        self.assertIsValidUsd(stage)
+        self.assertEqual(camera.GetLocalTransformation(), transform.GetMatrix())
+
+    def testDefineCameraFromPrimTypeGuards(self):
+        stage = self.createTestStage()
+        cameraData = Gf.Camera()
+
+        # Test with non-Scope/Xform prim - should warn
+        meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
+        with usdex.test.ScopedDiagnosticChecker(
+            self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*Camera.*Expected original type to be.*Scope.*or.*Xform")]
+        ):
+            camera = usdex.core.defineCamera(meshPrim, cameraData)
+        self.assertTrue(camera)
+        self.assertEqual(camera.GetPrim().GetTypeName(), "Camera")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            camera = usdex.core.defineCamera(scopePrim, cameraData)
+        self.assertTrue(camera)
+        self.assertEqual(camera.GetPrim().GetTypeName(), "Camera")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            camera = usdex.core.defineCamera(xformPrim, cameraData)
+        self.assertTrue(camera)
+        self.assertEqual(camera.GetPrim().GetTypeName(), "Camera")

@@ -114,6 +114,48 @@ void bindMeshAlgo(module& m)
 
         )"
     );
+
+    m.def(
+        "definePolyMesh",
+        overload_cast<
+            UsdPrim,
+            const VtIntArray&,
+            const VtIntArray&,
+            const VtVec3fArray&,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const Vec2fPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const FloatPrimvarData>>(&definePolyMesh),
+        arg("prim"),
+        arg("faceVertexCounts"),
+        arg("faceVertexIndices"),
+        arg("points"),
+        arg("normals") = nullptr,
+        arg("uvs") = nullptr,
+        arg("displayColor") = nullptr,
+        arg("displayOpacity") = nullptr,
+        R"(
+            Defines a basic polygon mesh on the stage.
+
+            All interrelated attribute values will be authored, even if weaker matching opinions already exist.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Parameters:
+                - **prim** - Existing prim to convert to a mesh
+                - **faceVertexCounts** - The number of vertices in each face of the mesh
+                - **faceVertexIndices** - Indices of the positions from the ``points`` to use for each face vertex
+                - **points** - Vertex positions for the mesh described points in local space
+                - **normals** - Values to be authored for the normals primvar
+                - **uvs** - Values to be authored for the uv primvar
+                - **displayColor** - Value to be authored for the display color primvar
+                - **displayOpacity** - Value to be authored for the display opacity primvar
+
+            Returns:
+                ``UsdGeom.Mesh`` schema wrapping the defined ``Usd.Prim``.
+
+        )"
+    );
 }
 
 } // namespace usdex::core::bindings

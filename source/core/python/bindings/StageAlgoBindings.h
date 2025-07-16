@@ -134,6 +134,31 @@ void bindStageAlgo(module& m)
 
         )"
     );
+
+    m.def(
+        "isEditablePrimLocation",
+        [](const UsdPrim prim)
+        {
+            std::string reason;
+            bool result = isEditablePrimLocation(prim, &reason);
+            return pybind11::make_tuple(result, reason);
+        },
+        arg("prim"),
+        R"(
+            Validate that prim opinions could be authored for the prim
+
+            This validates that the ``prim`` is valid and not be an instance proxy.
+
+            If the location is invalid and ``reason`` is non-null, an error message describing the validation error will be set.
+
+            Parameters:
+                - **prim** - The UsdPrim to consider.
+
+            Returns:
+                Tuple[bool, str] with a bool indicating if the location is valid, and the string is a non-empty reason if the location is invalid.
+
+        )"
+    );
 }
 
 } // namespace usdex::core::bindings
