@@ -147,6 +147,28 @@ USDEX_RTX_API pxr::UsdShadeMaterial definePbrMaterial(
     const float metallic = 0.0f
 );
 
+//! Defines a PBR `UsdShadeMaterial` interface that drives both an RTX render context and the universal render context.
+//!
+//! The resulting Material prim will have "Interface" `UsdShadeInputs` which drive both render contexts. See @ref rtx_materials for details.
+//!
+//! @note The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
+//! Once the RTX Renderer supports OpenPBR or MaterialX shaders we may change the implementation to author those shaders instead of MDL.
+//!
+//! @param prim Prim to define the Material on
+//! @param color The diffuse color of the Material
+//! @param opacity The Opacity Amount to set, 0.0-1.0 range where 1.0 = opaque and 0.0 = invisible.
+//! Enable Opacity will be set to true and Fractional Opacity will be enabled in the RT renderer.
+//! @param roughness The Roughness Amount to set, 0.0-1.0 range where 1.0 = flat and 0.0 = glossy
+//! @param metallic The Metallic Amount to set, 0.0-1.0 range where 1.0 = max metallic and 0.0 = no metallic
+//! @returns The newly defined `UsdShadeMaterial`. Returns an Invalid prim on error
+USDEX_RTX_API pxr::UsdShadeMaterial definePbrMaterial(
+    pxr::UsdPrim prim,
+    const pxr::GfVec3f& color,
+    const float opacity = 1.0f,
+    const float roughness = 0.5f,
+    const float metallic = 0.0f
+);
+
 //! Adds a diffuse texture to the PBR material
 //!
 //! It is expected that the material was created by `usdex::rtx::definePbrMaterial()`.
@@ -258,6 +280,19 @@ USDEX_RTX_API pxr::UsdShadeMaterial defineGlassMaterial(
     const pxr::GfVec3f& color,
     const float indexOfRefraction = 1.491f
 );
+
+//! Defines a Glass `UsdShadeMaterial` interface that drives both an RTX render context and the universal render context.
+//!
+//! The resulting Material prim will have "Interface" `UsdShadeInputs` which drive both render contexts. See @ref rtx_materials for details.
+//!
+//! Note: The use of MDL shaders inside this Material interface is considered an implementation detail of the RTX Renderer.
+//! Once the RTX Renderer supports OpenPBR or MaterialX shaders we may change the implementation to author those shaders instead of MDL.
+//!
+//! @param prim Prim to define the Material on
+//! @param color The color of the Material
+//! @param indexOfRefraction The Index of Refraction to set, 1.0-4.0 range
+//! @returns The newly defined UsdShadeMaterial. Returns an Invalid prim on error
+USDEX_RTX_API pxr::UsdShadeMaterial defineGlassMaterial(pxr::UsdPrim prim, const pxr::GfVec3f& color, const float indexOfRefraction);
 
 //! @}
 

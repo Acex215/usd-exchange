@@ -1044,3 +1044,136 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         self.assertEqual(len(textureReaders), 1)
         # assertValidPreviewMaterialTextureNetwork will have already ensured both textures are driven by TexCoordReader
         self.assertEqual(textureReaders[0].GetPrim(), material.GetPrim().GetChild("TexCoordReader"))
+
+    def testDefinePreviewMaterialPrimOverload(self):
+        stage = Usd.Stage.CreateInMemory()
+        prim = stage.DefinePrim("/World/PreviewMaterial", "Material")
+
+        # Define the material using the prim overload
+        color = Gf.Vec3f(0.5, 0.7, 0.9)
+        material = usdex.core.definePreviewMaterial(prim, color)
+
+        # Verify the prim was created correctly
+        self.assertTrue(material)
+        self.assertEqual(material.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(material.GetPrim().GetTypeName(), "Material")
+
+        # Verify the material has the expected shader network
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(shader)
+
+        # Verify the diffuse color was set
+        diffuseColorInput = shader.GetInput("diffuseColor")
+        self.assertTrue(diffuseColorInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(diffuseColorInput.GetAttr().Get(), color)
+
+    def testDefinePreviewMaterialPrimOverloadWithOptionalParams(self):
+        stage = Usd.Stage.CreateInMemory()
+        prim = stage.DefinePrim("/World/PreviewMaterialWithParams", "Material")
+
+        # Define the material with optional parameters
+        color = Gf.Vec3f(0.5, 0.7, 0.9)
+        opacity = 0.8
+        roughness = 0.3
+        metallic = 0.5
+
+        material = usdex.core.definePreviewMaterial(prim, color, opacity=opacity, roughness=roughness, metallic=metallic)
+
+        # Verify the prim was created correctly
+        self.assertTrue(material)
+        self.assertEqual(material.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(material.GetPrim().GetTypeName(), "Material")
+
+        # Verify the material has the expected shader network
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(shader)
+
+        # Verify the parameters were set
+        diffuseColorInput = shader.GetInput("diffuseColor")
+        self.assertTrue(diffuseColorInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(diffuseColorInput.GetAttr().Get(), color)
+
+        opacityInput = shader.GetInput("opacity")
+        self.assertTrue(opacityInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(opacityInput.GetAttr().Get(), opacity, places=6)
+
+        roughnessInput = shader.GetInput("roughness")
+        self.assertTrue(roughnessInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(roughnessInput.GetAttr().Get(), roughness, places=6)
+
+        metallicInput = shader.GetInput("metallic")
+        self.assertTrue(metallicInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(metallicInput.GetAttr().Get(), metallic, places=6)
+
+    def testDefinePreviewMaterialPrimOverloadMinimalParams(self):
+        stage = Usd.Stage.CreateInMemory()
+        prim = stage.DefinePrim("/World/PreviewMaterialMinimal", "Material")
+
+        # Define the material with just the required color parameter
+        color = Gf.Vec3f(1.0, 0.5, 0.2)
+        material = usdex.core.definePreviewMaterial(prim, color)
+
+        # Verify the prim was created correctly
+        self.assertTrue(material)
+        self.assertEqual(material.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(material.GetPrim().GetTypeName(), "Material")
+
+        # Verify the material has the expected shader network
+        shader = usdex.core.computeEffectivePreviewSurfaceShader(material)
+        self.assertTrue(shader)
+
+        # Verify the diffuse color was set
+        diffuseColorInput = shader.GetInput("diffuseColor")
+        self.assertTrue(diffuseColorInput.GetAttr().HasAuthoredValue())
+        self.assertEqual(diffuseColorInput.GetAttr().Get(), color)
+
+        # Verify default values for optional parameters
+        opacityInput = shader.GetInput("opacity")
+        self.assertTrue(opacityInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(opacityInput.GetAttr().Get(), 1.0, places=6)  # Default opacity
+
+        roughnessInput = shader.GetInput("roughness")
+        self.assertTrue(roughnessInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(roughnessInput.GetAttr().Get(), 0.5, places=6)  # Default roughness
+
+        metallicInput = shader.GetInput("metallic")
+        self.assertTrue(metallicInput.GetAttr().HasAuthoredValue())
+        self.assertAlmostEqual(metallicInput.GetAttr().Get(), 0.0, places=6)  # Default metallic
+
+    def testDefinePreviewMaterialPrimOverloadInvalidPrim(self):
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            material = usdex.core.definePreviewMaterial(prim, Gf.Vec3f(1.0, 1.0, 1.0))
+        self.assertFalse(material)
+
+    def testDefinePreviewMaterialPrimOverloadTypeGuards(self):
+        stage = Usd.Stage.CreateInMemory()
+        color = Gf.Vec3f(0.5, 0.7, 0.9)
+
+        # Test with non-Scope/Xform prim - should warn
+        meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*Material.*Expected original type to be.*Scope.*")],
+        ):
+            material = usdex.core.definePreviewMaterial(meshPrim, color)
+        self.assertTrue(material)
+        self.assertEqual(material.GetPrim().GetTypeName(), "Material")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            material = usdex.core.definePreviewMaterial(scopePrim, color)
+        self.assertTrue(material)
+        self.assertEqual(material.GetPrim().GetTypeName(), "Material")
+
+        # Test with Xform prim - should error because Material is not Xformable
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(
+            self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*Cannot redefine.*from.*Xform.*to.*Material.*because Material is not Xformable")]
+        ):
+            material = usdex.core.definePreviewMaterial(xformPrim, color)
+        self.assertFalse(material)

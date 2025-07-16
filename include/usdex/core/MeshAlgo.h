@@ -115,6 +115,31 @@ USDEX_API pxr::UsdGeomMesh definePolyMesh(
     std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
 );
 
+//! Defines a basic polygon mesh from an existing prim.
+//!
+//! This converts an existing prim to a Mesh type, preserving any existing transform data.
+//!
+//! @param prim The existing prim to convert to a mesh
+//! @param faceVertexCounts The number of vertices in each face of the mesh
+//! @param faceVertexIndices Indices of the positions from the `points` to use for each face vertex
+//! @param points Vertex positions for the mesh described in local space
+//! @param normals Values to be authored for the normals primvar
+//! @param uvs Values to be authored for the uv primvar
+//! @param displayColor Values to be authored for the display color primvar
+//! @param displayOpacity Values to be authored for the display opacity primvar
+//!
+//! @returns UsdGeomMesh schema wrapping the converted UsdPrim
+USDEX_API pxr::UsdGeomMesh definePolyMesh(
+    pxr::UsdPrim prim,
+    const pxr::VtIntArray& faceVertexCounts,
+    const pxr::VtIntArray& faceVertexIndices,
+    const pxr::VtVec3fArray& points,
+    std::optional<const Vec3fPrimvarData> normals = std::nullopt,
+    std::optional<const Vec2fPrimvarData> uvs = std::nullopt,
+    std::optional<const Vec3fPrimvarData> displayColor = std::nullopt,
+    std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
+);
+
 //! @}
 
 } // namespace usdex::core

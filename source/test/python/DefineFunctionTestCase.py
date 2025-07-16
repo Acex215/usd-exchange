@@ -6,6 +6,7 @@ __all__ = [
     "DefineFunctionTestCase",
 ]
 
+import unittest
 from abc import abstractmethod
 
 from pxr import Sdf, Tf, Usd, UsdGeom
@@ -172,6 +173,20 @@ class DefineFunctionTestCase(TestCase):
         self.assertDefineFunctionSuccess(result)
         self.assertIsValidUsd(stage)
 
+    def testRedefinePrim(self):
+        # A prim can be converted from one type to another
+        stage = self.createTestStage()
+
+        # Create a Scope prim first
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        self.assertEqual(scopePrim.GetTypeName(), "Scope")
+
+        # Convert it to the target type
+        result = self.defineFunc(scopePrim, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+        self.assertEqual(result.GetPrim(), scopePrim)
+        self.assertEqual(result.GetPrim().GetTypeName(), self.typeName)
+
     def testInvalidStage(self):
         # An invalid stage will result in a failure
         path = Sdf.Path("/World/InvalidStage")
@@ -288,3 +303,10 @@ class DefineFunctionTestCase(TestCase):
             result = self.defineFunc(parent, name, *self.requiredArgs)
         self.assertDefineFunctionFailure(result)
         self.assertIsValidUsd(stage)
+
+    def testDefineFromInvalidPrim(self):
+        stage = self.createTestStage()
+        invalidPrim = stage.GetPrimAtPath("/NonExistent")
+        with ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            result = self.defineFunc(invalidPrim, *self.requiredArgs)
+        self.assertDefineFunctionFailure(result)

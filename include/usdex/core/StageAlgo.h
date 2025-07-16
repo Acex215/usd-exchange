@@ -134,6 +134,17 @@ USDEX_API bool isEditablePrimLocation(const pxr::UsdStagePtr stage, const pxr::S
 //! @returns True if the location is valid, or false otherwise.
 USDEX_API bool isEditablePrimLocation(const pxr::UsdPrim& prim, const std::string& name, std::string* reason);
 
+//! Validate that prim opinions could be authored for a prim
+//!
+//! This validates that the `prim` is valid and not be an instance proxy.
+//!
+//! If the location is invalid and `reason` is non-null, an error message describing the validation error will be set.
+//!
+//! @param prim The UsdPrim tp consider.
+//! @param reason The output message for failed validation.
+//! @returns True if the location is valid, or false otherwise.
+USDEX_API bool isEditablePrimLocation(const pxr::UsdPrim& prim, std::string* reason);
+
 //! @}
 
 } // namespace usdex::core

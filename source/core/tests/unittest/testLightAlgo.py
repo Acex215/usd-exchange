@@ -176,3 +176,193 @@ class DefineRectLightTestCase(usdex.test.DefineFunctionTestCase):
             UsdGeom.Tokens.extent,
         ]
     )
+
+
+class LightAlgoPrimOverloadTest(usdex.test.TestCase):
+    """Test prim overloads for light define functions."""
+
+    def createTestStage(self):
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        UsdGeom.SetStageMetersPerUnit(stage, UsdGeom.LinearUnits.centimeters)
+        return stage
+
+    def testDefineDomeLightPrimOverload(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/DomeLight")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload
+        light = usdex.core.defineDomeLight(prim, 1.5)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim(), prim)
+        self.assertEqual(light.GetPrim().GetTypeName(), "DomeLight")
+
+        # Check intensity
+        intensityAttr = light.GetIntensityAttr()
+        self.assertTrue(intensityAttr.IsAuthored())
+        self.assertAlmostEqual(intensityAttr.Get(), 1.5, 5)
+
+    def testDefineDomeLightPrimOverloadWithTexture(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/DomeLightTextured")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload with texture
+        textureFile = "./test.png"
+        light = usdex.core.defineDomeLight(prim, 2.0, textureFile, UsdLux.Tokens.latlong)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim(), prim)
+        self.assertEqual(light.GetPrim().GetTypeName(), "DomeLight")
+
+        # Check intensity
+        intensityAttr = light.GetIntensityAttr()
+        self.assertTrue(intensityAttr.IsAuthored())
+        self.assertAlmostEqual(intensityAttr.Get(), 2.0, 5)
+
+        # Check texture
+        texFileAttr = usdex.core.getLightAttr(light.GetTextureFileAttr())
+        self.assertTrue(texFileAttr.IsAuthored())
+        self.assertEqual(texFileAttr.Get().path, textureFile)
+
+        texFormatAttr = usdex.core.getLightAttr(light.GetTextureFormatAttr())
+        self.assertTrue(texFormatAttr.IsAuthored())
+        self.assertEqual(texFormatAttr.Get(), UsdLux.Tokens.latlong)
+
+    def testDefineDomeLightPrimOverloadInvalidPrim(self):
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            light = usdex.core.defineDomeLight(prim, 1.0)
+        self.assertFalse(light)
+
+    def testDefineRectLightPrimOverload(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/RectLight")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload
+        light = usdex.core.defineRectLight(prim, 5.0, 10.0, 2.5)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim(), prim)
+        self.assertEqual(light.GetPrim().GetTypeName(), "RectLight")
+
+        # Check width, height, and intensity
+        widthAttr = light.GetWidthAttr()
+        self.assertTrue(widthAttr.IsAuthored())
+        self.assertAlmostEqual(widthAttr.Get(), 5.0, 5)
+
+        heightAttr = light.GetHeightAttr()
+        self.assertTrue(heightAttr.IsAuthored())
+        self.assertAlmostEqual(heightAttr.Get(), 10.0, 5)
+
+        intensityAttr = light.GetIntensityAttr()
+        self.assertTrue(intensityAttr.IsAuthored())
+        self.assertAlmostEqual(intensityAttr.Get(), 2.5, 5)
+
+    def testDefineRectLightPrimOverloadWithTexture(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/RectLightTextured")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload with texture
+        textureFile = "./rect_texture.png"
+        light = usdex.core.defineRectLight(prim, 8.0, 12.0, 3.0, textureFile)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim(), prim)
+        self.assertEqual(light.GetPrim().GetTypeName(), "RectLight")
+
+        # Check width, height, and intensity
+        widthAttr = light.GetWidthAttr()
+        self.assertTrue(widthAttr.IsAuthored())
+        self.assertAlmostEqual(widthAttr.Get(), 8.0, 5)
+
+        heightAttr = light.GetHeightAttr()
+        self.assertTrue(heightAttr.IsAuthored())
+        self.assertAlmostEqual(heightAttr.Get(), 12.0, 5)
+
+        intensityAttr = light.GetIntensityAttr()
+        self.assertTrue(intensityAttr.IsAuthored())
+        self.assertAlmostEqual(intensityAttr.Get(), 3.0, 5)
+
+        # Check texture
+        texPathAttr = usdex.core.getLightAttr(light.GetTextureFileAttr())
+        self.assertTrue(texPathAttr.IsAuthored())
+        self.assertEqual(texPathAttr.Get().path, textureFile)
+
+    def testDefineRectLightPrimOverloadInvalidPrim(self):
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            light = usdex.core.defineRectLight(prim, 1.0, 2.0, 3.0)
+        self.assertFalse(light)
+
+    def testDefineDomeLightPrimOverloadTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*DomeLight.*Expected original type to be.*Scope.*or.*Xform")],
+        ):
+            light = usdex.core.defineDomeLight(meshPrim, 1.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "DomeLight")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            light = usdex.core.defineDomeLight(scopePrim, 1.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "DomeLight")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            light = usdex.core.defineDomeLight(xformPrim, 1.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "DomeLight")
+
+    def testDefineRectLightPrimOverloadTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*RectLight.*Expected original type to be.*Scope.*or.*Xform")],
+        ):
+            light = usdex.core.defineRectLight(meshPrim, 1.0, 2.0, 3.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "RectLight")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            light = usdex.core.defineRectLight(scopePrim, 1.0, 2.0, 3.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "RectLight")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            light = usdex.core.defineRectLight(xformPrim, 1.0, 2.0, 3.0)
+        self.assertTrue(light)
+        self.assertEqual(light.GetPrim().GetTypeName(), "RectLight")

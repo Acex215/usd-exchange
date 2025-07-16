@@ -115,6 +115,31 @@ USDEX_API pxr::UsdGeomBasisCurves defineLinearBasisCurves(
     std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
 );
 
+//! Defines a batched Linear `UsdGeomBasisCurves` prim on the stage.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the curves on. The prim's type will be set to `UsdGeomBasisCurves`.
+//! @param curveVertexCounts The number of vertices in each independent curve. The length of this array determines the number of curves.
+//! @param points Vertex/CV positions for the curves described in local space.
+//! @param wrap Determines how the start and end points of the curve behave. Accepted values for linear curves are `UsdGeomTokens->nonperiodic` and
+//!     `UsdGeomTokens->periodic`.
+//! @param widths Values for the width specification for the curves.
+//! @param normals Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
+//! @param displayColor Values to be authored for the display color primvar.
+//! @param displayOpacity Values to be authored for the display opacity primvar.
+//! @returns `UsdGeomBasisCurves` schema wrapping the defined `UsdPrim`
+USDEX_API pxr::UsdGeomBasisCurves defineLinearBasisCurves(
+    pxr::UsdPrim prim,
+    const pxr::VtIntArray& curveVertexCounts,
+    const pxr::VtVec3fArray& points,
+    const pxr::TfToken& wrap = pxr::UsdGeomTokens->nonperiodic,
+    std::optional<const FloatPrimvarData> widths = std::nullopt,
+    std::optional<const Vec3fPrimvarData> normals = std::nullopt,
+    std::optional<const Vec3fPrimvarData> displayColor = std::nullopt,
+    std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
+);
+
 //! Defines a batched Cubic `UsdGeomBasisCurves` prim on the stage.
 //!
 //! Attribute values will be validated and in the case of invalid data the Curves will not be defined. An invalid `UsdGeomBasisCurves` object will
@@ -188,6 +213,34 @@ USDEX_API pxr::UsdGeomBasisCurves defineCubicBasisCurves(
 USDEX_API pxr::UsdGeomBasisCurves defineCubicBasisCurves(
     pxr::UsdPrim parent,
     const std::string& name,
+    const pxr::VtIntArray& curveVertexCounts,
+    const pxr::VtVec3fArray& points,
+    const pxr::TfToken& basis = pxr::UsdGeomTokens->bezier,
+    const pxr::TfToken& wrap = pxr::UsdGeomTokens->nonperiodic,
+    std::optional<const FloatPrimvarData> widths = std::nullopt,
+    std::optional<const Vec3fPrimvarData> normals = std::nullopt,
+    std::optional<const Vec3fPrimvarData> displayColor = std::nullopt,
+    std::optional<const FloatPrimvarData> displayOpacity = std::nullopt
+);
+
+//! Defines a batched Cubic `UsdGeomBasisCurves` prim on the stage.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param prim Prim to define the curves on. The prim's type will be set to `UsdGeomBasisCurves`.
+//! @param curveVertexCounts The number of vertices in each independent curve. The length of this array determines the number of curves.
+//! @param points Vertex/CV positions for the curves described in local space.
+//! @param basis The basis specifies the vstep and matrix used for cubic interpolation. Accepted values for cubic curves are `UsdGeomTokens->bezier`,
+//!     `UsdGeomTokens->bspline`, `UsdGeomTokens->catmullRom`.
+//! @param wrap Determines how the start and end points of the curve behave. Accepted values are `UsdGeomTokens->nonperiodic`,
+//!     `UsdGeomTokens->periodic`, and `UsdGeomTokens->pinned` (bspline and catmullRom only).
+//! @param widths Values for the width specification for the curves.
+//! @param normals Values for the normals primvar for the curves. If authored, the curves are considered oriented ribbons rather than tubes.
+//! @param displayColor Values to be authored for the display color primvar.
+//! @param displayOpacity Values to be authored for the display opacity primvar.
+//! @returns `UsdGeomBasisCurves` schema wrapping the defined `UsdPrim`
+USDEX_API pxr::UsdGeomBasisCurves defineCubicBasisCurves(
+    pxr::UsdPrim prim,
     const pxr::VtIntArray& curveVertexCounts,
     const pxr::VtVec3fArray& points,
     const pxr::TfToken& basis = pxr::UsdGeomTokens->bezier,

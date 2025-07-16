@@ -1476,3 +1476,212 @@ class BatchedPinnedCatmullRomCurvesTestCase(DefineBasisCurvesTestCaseMixin, usde
         self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.pinned)
         self.assertEqual(curves.GetCurveVertexCountsAttr().Get(), BATCHED_CURVE_VERTEX_COUNTS)
         self.assertEqual(curves.GetPointsAttr().Get(), BATCHED_POINTS)
+
+
+class CurvesAlgoPrimOverloadTest(usdex.test.TestCase):
+    """Test prim overloads for curves define functions."""
+
+    def createTestStage(self):
+        stage = Usd.Stage.CreateInMemory()
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        UsdGeom.SetStageMetersPerUnit(stage, UsdGeom.LinearUnits.centimeters)
+        return stage
+
+    def testDefineLinearBasisCurvesPrimOverload(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/LinearCurves")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload
+        curves = usdex.core.defineLinearBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim(), prim)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+        self.assertEqual(curves.GetTypeAttr().Get(), UsdGeom.Tokens.linear)
+        self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.nonperiodic)
+        self.assertEqual(curves.GetCurveVertexCountsAttr().Get(), CURVE_VERTEX_COUNTS)
+        self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
+
+    def testDefineLinearBasisCurvesPrimOverloadWithWrap(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/LinearCurvesPeriodic")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload with wrap parameter
+        curves = usdex.core.defineLinearBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS, wrap=UsdGeom.Tokens.periodic)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim(), prim)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+        self.assertEqual(curves.GetTypeAttr().Get(), UsdGeom.Tokens.linear)
+        self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.periodic)
+
+    def testDefineLinearBasisCurvesPrimOverloadInvalidPrim(self):
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            curves = usdex.core.defineLinearBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS)
+        self.assertFalse(curves)
+
+    def testDefineCubicBasisCurvesPrimOverload(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/CubicCurves")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload
+        curves = usdex.core.defineCubicBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim(), prim)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+        self.assertEqual(curves.GetTypeAttr().Get(), UsdGeom.Tokens.cubic)
+        self.assertEqual(curves.GetBasisAttr().Get(), UsdGeom.Tokens.bezier)
+        self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.nonperiodic)
+        self.assertEqual(curves.GetCurveVertexCountsAttr().Get(), CURVE_VERTEX_COUNTS)
+        self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
+
+    def testDefineCubicBasisCurvesPrimOverloadWithWrap(self):
+        stage = self.createTestStage()
+
+        # Create a prim first
+        path = Sdf.Path("/World/CubicCurvesPinned")
+        prim = stage.DefinePrim(path)
+        self.assertTrue(prim.IsValid())
+
+        # Test the prim overload with wrap parameter
+        curves = usdex.core.defineCubicBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bspline, UsdGeom.Tokens.pinned)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim(), prim)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+        self.assertEqual(curves.GetTypeAttr().Get(), UsdGeom.Tokens.cubic)
+        self.assertEqual(curves.GetBasisAttr().Get(), UsdGeom.Tokens.bspline)
+        self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.pinned)
+
+    def testDefineCubicBasisCurvesPrimOverloadInvalidPrim(self):
+        # Test with invalid prim
+        prim = Usd.Prim()
+        self.assertFalse(prim.IsValid())
+
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            curves = usdex.core.defineCubicBasisCurves(prim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier)
+        self.assertFalse(curves)
+
+    def testDefineCubicBasisCurvesPrimOverloadWithOptionalArgs(self):
+        stage = self.createTestStage()
+        prim = stage.DefinePrim("/World/CubicCurvesWithOptionalArgs", "BasisCurves")
+
+        # Create test data for optional arguments
+        normals = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.vertex, Vt.Vec3fArray([Gf.Vec3f(0, 1, 0)] * len(POINTS)))
+        displayColor = usdex.core.Vec3fPrimvarData(UsdGeom.Tokens.constant, Vt.Vec3fArray([Gf.Vec3f(0.5, 0.7, 0.9)]))
+        widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([1.5]))
+
+        # Define the cubic curves with optional arguments
+        curves = usdex.core.defineCubicBasisCurves(
+            prim,
+            CURVE_VERTEX_COUNTS,
+            POINTS,
+            UsdGeom.Tokens.catmullRom,
+            UsdGeom.Tokens.periodic,
+            widths=widths,
+            normals=normals,
+            displayColor=displayColor,
+        )
+
+        # Verify the prim was created correctly
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetPath(), prim.GetPath())
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+        # Verify the curve attributes were set
+        self.assertEqual(curves.GetCurveVertexCountsAttr().Get(), CURVE_VERTEX_COUNTS)
+        self.assertEqual(curves.GetPointsAttr().Get(), POINTS)
+        self.assertEqual(curves.GetBasisAttr().Get(), UsdGeom.Tokens.catmullRom)
+        self.assertEqual(curves.GetWrapAttr().Get(), UsdGeom.Tokens.periodic)
+
+        # Verify the optional arguments were set
+        primvarsAPI = UsdGeom.PrimvarsAPI(curves)
+
+        widthsPrimvar = primvarsAPI.GetPrimvar(UsdGeom.Tokens.widths)
+        self.assertTrue(widthsPrimvar.HasAuthoredValue())
+        self.assertEqual(widthsPrimvar.Get(), widths.values())
+
+        normalsPrimvar = primvarsAPI.GetPrimvar(UsdGeom.Tokens.normals)
+        self.assertTrue(normalsPrimvar.HasAuthoredValue())
+        self.assertEqual(normalsPrimvar.Get(), normals.values())
+
+        displayColorPrimvar = curves.GetDisplayColorPrimvar()
+        self.assertTrue(displayColorPrimvar.HasAuthoredValue())
+        self.assertEqual(displayColorPrimvar.Get(), displayColor.values())
+
+    def testDefineLinearBasisCurvesPrimOverloadTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    ".*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be.*Scope.*or.*Xform",
+                )
+            ],
+        ):
+            curves = usdex.core.defineLinearBasisCurves(materialPrim, CURVE_VERTEX_COUNTS, POINTS)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            curves = usdex.core.defineLinearBasisCurves(scopePrim, CURVE_VERTEX_COUNTS, POINTS)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            curves = usdex.core.defineLinearBasisCurves(xformPrim, CURVE_VERTEX_COUNTS, POINTS)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+    def testDefineCubicBasisCurvesPrimOverloadTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    ".*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be.*Scope.*or.*Xform",
+                )
+            ],
+        ):
+            curves = usdex.core.defineCubicBasisCurves(materialPrim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            curves = usdex.core.defineCubicBasisCurves(scopePrim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            curves = usdex.core.defineCubicBasisCurves(xformPrim, CURVE_VERTEX_COUNTS, POINTS, UsdGeom.Tokens.bezier)
+        self.assertTrue(curves)
+        self.assertEqual(curves.GetPrim().GetTypeName(), "BasisCurves")

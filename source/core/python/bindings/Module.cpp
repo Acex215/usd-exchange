@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
+// False positive from pybind trying wrap TfRefPtr
+#include <pxr/base/arch/pragmas.h>
+ARCH_PRAGMA_PUSH
+ARCH_PRAGMA_MAYBE_UNINITIALIZED
+
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
 #include "CurvesAlgoBindings.h"
@@ -16,6 +21,8 @@
 #include "SettingsBindings.h"
 #include "StageAlgoBindings.h"
 #include "XformAlgoBindings.h"
+
+ARCH_PRAGMA_POP
 
 using namespace usdex::core::bindings;
 using namespace pybind11;

@@ -253,6 +253,25 @@ void bindXformAlgo(module& m)
         )"
     );
 
+    m.def(
+        "defineXform",
+        overload_cast<UsdPrim, std::optional<const GfTransform>>(&defineXform),
+        arg("prim"),
+        arg("transform") = nullptr,
+        R"(
+            Defines an xform from an existing prim.
+
+            This converts an existing prim to an Xform type, preserving any existing transform data.
+
+            Parameters:
+                - **prim** - The existing prim to convert to an xform
+                - **transform** - Optional local transform to set
+
+            Returns:
+                UsdGeom.Xform schema wrapping the converted Usd.Prim.
+        )"
+    );
+
     // UsdGeomXformable overloads
     m.def(
         "setLocalTransform",

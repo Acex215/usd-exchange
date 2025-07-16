@@ -90,7 +90,7 @@ void bindPointsAlgo(module& m)
             std::optional<const Vec3fPrimvarData>,
             std::optional<const Vec3fPrimvarData>,
             std::optional<const FloatPrimvarData>>(&definePointCloud),
-        arg("prim"),
+        arg("parent"),
         arg("name"),
         arg("points"),
         arg("ids") = nullptr,
@@ -104,8 +104,8 @@ void bindPointsAlgo(module& m)
             This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
             Parameters:
-                - **prim** The stage on which to define the points.
-                - **name** The absolute prim path at which to define the points.
+                - **parent** Prim below which to define the points.
+                - **name** Name of the points prim.
                 - **points** Vertex/CV positions for the points described in local space.
                 - **ids** Values for the id specification for the points.
                 - **widths** Values for the width specification for the points.
@@ -114,6 +114,39 @@ void bindPointsAlgo(module& m)
                 - **displayOpacity** Values to be authored for the display opacity primvar.
 
             Returns
+                ``UsdGeom.Points`` schema wrapping the defined ``Usd.Prim``
+        )"
+    );
+
+    m.def(
+        "definePointCloud",
+        overload_cast<
+            UsdPrim,
+            const VtVec3fArray&,
+            std::optional<const FloatPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const Vec3fPrimvarData>,
+            std::optional<const FloatPrimvarData>>(&definePointCloud),
+        arg("prim"),
+        arg("points"),
+        arg("widths") = nullptr,
+        arg("normals") = nullptr,
+        arg("displayColor") = nullptr,
+        arg("displayOpacity") = nullptr,
+        R"(
+            Defines a point cloud using the ``UsdGeom.Points`` schema.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+
+            Args:
+                prim: Prim to define the point cloud on. The prim's type will be set to ``UsdGeom.Points``.
+                points: Positions of the points.
+                widths: Values for the width specification for the points.
+                normals: Values for the normals primvar for the points.
+                displayColor: Values to be authored for the display color primvar.
+                displayOpacity: Values to be authored for the display opacity primvar.
+
+            Returns:
                 ``UsdGeom.Points`` schema wrapping the defined ``Usd.Prim``
         )"
     );

@@ -90,7 +90,7 @@ group "rtx"
 
     project "rtx_library"
         dependson { "core_library" }
-        usdex_build.use_usd({ "arch", "gf", "sdf", "tf", "usd", "usdShade", "usdUtils", "vt" })
+        usdex_build.use_usd({ "arch", "gf", "sdf", "tf", "usd", "usdGeom", "usdShade", "usdUtils", "vt" })
         usdex_build.use_usdex_core()
         usdex_build.shared_library{
             library_name = namespace,

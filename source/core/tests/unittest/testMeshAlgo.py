@@ -271,3 +271,53 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         self.assertFalse(mesh)
         self.assertFalse(stage.GetPrimAtPath(path))
         self.assertIsValidUsd(stage)
+
+    def testDefineMeshFromXform(self):
+        stage = self.createTestStage()
+        xform = UsdGeom.Xform.Define(stage, Sdf.Path("/World/ExistingXform"))
+        mesh = usdex.core.definePolyMesh(xform.GetPrim(), FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertTrue(mesh)
+        self.assertEqual(mesh.GetPrim().GetTypeName(), "Mesh")
+        self.assertIsValidUsd(stage)
+
+    def testDefineMeshFromScope(self):
+        stage = self.createTestStage()
+        scope = UsdGeom.Scope.Define(stage, Sdf.Path("/World/ExistingScope"))
+        mesh = usdex.core.definePolyMesh(scope.GetPrim(), FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertTrue(mesh)
+        self.assertEqual(mesh.GetPrim().GetTypeName(), "Mesh")
+        self.assertIsValidUsd(stage)
+
+    def testDefineMeshFromInvalidPrim(self):
+        stage = self.createTestStage()
+        invalidPrim = stage.GetPrimAtPath("/NonExistent")
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE, ".*invalid prim")]):
+            mesh = usdex.core.definePolyMesh(invalidPrim, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertFalse(mesh)
+
+    def testDefinePolyMeshFromPrimTypeGuards(self):
+        stage = self.createTestStage()
+
+        # Test with non-Scope/Xform prim - should warn
+        materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Material.*to.*Mesh.*Expected original type to be.*Scope.*or.*Xform")],
+        ):
+            mesh = usdex.core.definePolyMesh(materialPrim, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertTrue(mesh)
+        self.assertEqual(mesh.GetPrim().GetTypeName(), "Mesh")
+
+        # Test with Scope prim - should not warn
+        scopePrim = stage.DefinePrim("/World/ScopePrim", "Scope")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            mesh = usdex.core.definePolyMesh(scopePrim, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertTrue(mesh)
+        self.assertEqual(mesh.GetPrim().GetTypeName(), "Mesh")
+
+        # Test with Xform prim - should not warn
+        xformPrim = stage.DefinePrim("/World/XformPrim", "Xform")
+        with usdex.test.ScopedDiagnosticChecker(self, []):
+            mesh = usdex.core.definePolyMesh(xformPrim, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
+        self.assertTrue(mesh)
+        self.assertEqual(mesh.GetPrim().GetTypeName(), "Mesh")

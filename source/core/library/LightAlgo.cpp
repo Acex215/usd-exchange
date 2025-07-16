@@ -8,6 +8,7 @@
 
 #include <pxr/base/vt/array.h>
 #include <pxr/usd/usdGeom/boundable.h>
+#include <pxr/usd/usdGeom/tokens.h>
 
 using namespace pxr;
 
@@ -181,6 +182,32 @@ UsdLuxDomeLight usdex::core::defineDomeLight(
     return usdex::core::defineDomeLight(stage, path, intensity, texturePath, textureFormat);
 }
 
+UsdLuxDomeLight usdex::core::defineDomeLight(UsdPrim prim, float intensity, std::optional<std::string_view> texturePath, const TfToken& textureFormat)
+{
+    // Early out if the prim is not valid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdLuxDomeLight on invalid prim");
+        return UsdLuxDomeLight();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"DomeLight\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
+    return usdex::core::defineDomeLight(stage, path, intensity, texturePath, textureFormat);
+}
+
 UsdLuxRectLight usdex::core::defineRectLight(
     UsdStagePtr stage,
     const SdfPath& path,
@@ -254,5 +281,31 @@ UsdLuxRectLight usdex::core::defineRectLight(
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
+    return usdex::core::defineRectLight(stage, path, width, height, intensity, texturePath);
+}
+
+UsdLuxRectLight usdex::core::defineRectLight(UsdPrim prim, float width, float height, float intensity, std::optional<std::string_view> texturePath)
+{
+    // Early out if the prim is not valid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdLuxRectLight on invalid prim");
+        return UsdLuxRectLight();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"RectLight\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
     return usdex::core::defineRectLight(stage, path, width, height, intensity, texturePath);
 }

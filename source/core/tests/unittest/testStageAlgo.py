@@ -671,3 +671,22 @@ class LocationEditableTestCase(usdex.test.TestCase):
         result, reason = usdex.core.isEditablePrimLocation(instanceProxyChild, "grandchild")
         self.assertFalse(result)
         self.assertRegex(reason, ".*is an instance proxy, authoring is not allowed")
+
+    def testIsEditableLocationFromPrim(self):
+        stage = Usd.Stage.CreateInMemory()
+        validPrim = UsdGeom.Xform.Define(stage, "/Valid").GetPrim()
+        result, reason = usdex.core.isEditablePrimLocation(validPrim)
+        self.assertTrue(result)
+        self.assertEqual(reason, "")
+
+        # if the prim exists it cannot be an Instance Proxy
+        stage.CreateClassPrim("/Prototypes")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype")
+        UsdGeom.Xform.Define(stage, "/Prototypes/Prototype/InstanceProxyChild").GetPrim()
+        xformPrim = UsdGeom.Xform.Define(stage, "/World/Instance").GetPrim()
+        xformPrim.GetReferences().AddInternalReference(Sdf.Path("/Prototypes/Prototype"))
+        xformPrim.SetInstanceable(True)
+        instanceProxyChild = stage.GetPrimAtPath(f"{xformPrim.GetPath()}/InstanceProxyChild")
+        result, reason = usdex.core.isEditablePrimLocation(instanceProxyChild)
+        self.assertFalse(result)
+        self.assertRegex(reason, ".*is an instance proxy, authoring is not allowed")

@@ -8,6 +8,7 @@
 
 #include <pxr/usd/usdGeom/basisCurves.h>
 #include <pxr/usd/usdGeom/primvarsAPI.h>
+#include <pxr/usd/usdGeom/tokens.h>
 
 #include <numeric>
 
@@ -577,6 +578,41 @@ UsdGeomBasisCurves usdex::core::defineLinearBasisCurves(
     return ::defineBasisCurves(stage, path, curveVertexCounts, points, UsdGeomTokens->linear, {}, wrap, widths, normals, displayColor, displayOpacity);
 }
 
+UsdGeomBasisCurves usdex::core::defineLinearBasisCurves(
+    UsdPrim prim,
+    const VtIntArray& curveVertexCounts,
+    const VtVec3fArray& points,
+    const TfToken& wrap,
+    std::optional<const FloatPrimvarData> widths,
+    std::optional<const Vec3fPrimvarData> normals,
+    std::optional<const Vec3fPrimvarData> displayColor,
+    std::optional<const FloatPrimvarData> displayOpacity
+)
+{
+    // Early out if the prim is not valid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves on invalid prim");
+        return UsdGeomBasisCurves();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"BasisCurves\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
+    return ::defineBasisCurves(stage, path, curveVertexCounts, points, UsdGeomTokens->linear, {}, wrap, widths, normals, displayColor, displayOpacity);
+}
+
 UsdGeomBasisCurves usdex::core::defineCubicBasisCurves(
     UsdStagePtr stage,
     const SdfPath& path,
@@ -637,6 +673,54 @@ UsdGeomBasisCurves usdex::core::defineCubicBasisCurves(
     // Call overloaded function
     UsdStageWeakPtr stage = parent.GetStage();
     const SdfPath path = parent.GetPath().AppendChild(TfToken(name));
+    return ::defineBasisCurves(
+        stage,
+        path,
+        curveVertexCounts,
+        points,
+        UsdGeomTokens->cubic,
+        basis,
+        wrap,
+        widths,
+        normals,
+        displayColor,
+        displayOpacity
+    );
+}
+
+UsdGeomBasisCurves usdex::core::defineCubicBasisCurves(
+    UsdPrim prim,
+    const VtIntArray& curveVertexCounts,
+    const VtVec3fArray& points,
+    const TfToken& basis,
+    const TfToken& wrap,
+    std::optional<const FloatPrimvarData> widths,
+    std::optional<const Vec3fPrimvarData> normals,
+    std::optional<const Vec3fPrimvarData> displayColor,
+    std::optional<const FloatPrimvarData> displayOpacity
+)
+{
+    // Early out if the prim is not valid
+    if (!prim)
+    {
+        TF_RUNTIME_ERROR("Unable to define UsdGeomBasisCurves on invalid prim");
+        return UsdGeomBasisCurves();
+    }
+
+    // Warn if original prim is not Scope or Xform
+    TfToken originalType = prim.GetTypeName();
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    {
+        TF_WARN(
+            "Redefining prim at \"%s\" from type \"%s\" to \"BasisCurves\". Expected original type to be \"Scope\" or \"Xform\".",
+            prim.GetPath().GetAsString().c_str(),
+            originalType.GetText()
+        );
+    }
+
+    // Call the stage/path version
+    UsdStageWeakPtr stage = prim.GetStage();
+    const SdfPath& path = prim.GetPath();
     return ::defineBasisCurves(
         stage,
         path,

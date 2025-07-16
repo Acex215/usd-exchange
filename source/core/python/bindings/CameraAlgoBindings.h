@@ -65,6 +65,26 @@ void bindCameraAlgo(module& m)
 
         )"
     );
+
+    m.def(
+        "defineCamera",
+        overload_cast<UsdPrim, const GfCamera&>(&defineCamera),
+        arg("prim"),
+        arg("cameraData"),
+        R"(
+            Defines a basic 3d camera from an existing prim.
+
+            This converts an existing prim to a Camera type, preserving any existing transform data.
+
+            Parameters:
+                - **prim** - The existing prim to convert to a camera
+                - **cameraData** - The camera data to set, including the world space transform matrix
+
+            Returns:
+                A ``UsdGeom.Camera`` schema wrapping the converted ``Usd.Prim``.
+
+        )"
+    );
 }
 
 } // namespace usdex::core::bindings
