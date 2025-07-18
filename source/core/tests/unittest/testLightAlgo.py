@@ -320,7 +320,12 @@ class LightAlgoPrimOverloadTest(usdex.test.TestCase):
         meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
         with usdex.test.ScopedDiagnosticChecker(
             self,
-            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*DomeLight.*Expected original type to be.*Scope.*or.*Xform")],
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Mesh.*to.*DomeLight.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
         ):
             light = usdex.core.defineDomeLight(meshPrim, 1.0)
         self.assertTrue(light)
@@ -347,7 +352,12 @@ class LightAlgoPrimOverloadTest(usdex.test.TestCase):
         meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
         with usdex.test.ScopedDiagnosticChecker(
             self,
-            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*RectLight.*Expected original type to be.*Scope.*or.*Xform")],
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Mesh.*to.*RectLight.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
         ):
             light = usdex.core.defineRectLight(meshPrim, 1.0, 2.0, 3.0)
         self.assertTrue(light)

@@ -1585,16 +1585,25 @@ class CurvesAlgoPrimOverloadTest(usdex.test.TestCase):
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([1.5]))
 
         # Define the cubic curves with optional arguments
-        curves = usdex.core.defineCubicBasisCurves(
-            prim,
-            CURVE_VERTEX_COUNTS,
-            POINTS,
-            UsdGeom.Tokens.catmullRom,
-            UsdGeom.Tokens.periodic,
-            widths=widths,
-            normals=normals,
-            displayColor=displayColor,
-        )
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*BasisCurves.*to.*BasisCurves.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
+        ):
+            curves = usdex.core.defineCubicBasisCurves(
+                prim,
+                CURVE_VERTEX_COUNTS,
+                POINTS,
+                UsdGeom.Tokens.catmullRom,
+                UsdGeom.Tokens.periodic,
+                widths=widths,
+                normals=normals,
+                displayColor=displayColor,
+            )
 
         # Verify the prim was created correctly
         self.assertTrue(curves)
@@ -1632,7 +1641,7 @@ class CurvesAlgoPrimOverloadTest(usdex.test.TestCase):
             [
                 (
                     Tf.TF_DIAGNOSTIC_WARNING_TYPE,
-                    ".*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be.*Scope.*or.*Xform",
+                    '.*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be "" or .*Scope.*or.*Xform',
                 )
             ],
         ):
@@ -1664,7 +1673,7 @@ class CurvesAlgoPrimOverloadTest(usdex.test.TestCase):
             [
                 (
                     Tf.TF_DIAGNOSTIC_WARNING_TYPE,
-                    ".*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be.*Scope.*or.*Xform",
+                    '.*Redefining prim.*from type.*Material.*to.*BasisCurves.*Expected original type to be "" or .*Scope.*or.*Xform',
                 )
             ],
         ):

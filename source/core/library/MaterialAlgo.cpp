@@ -374,10 +374,10 @@ UsdShadeMaterial usdex::core::definePreviewMaterial(
     }
 
     // Warn if converting from non-Scope prims
-    if (originalType != UsdGeomTokens->Scope)
+    if (originalType != UsdGeomTokens->Scope && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"Scope\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"\" or \"Scope\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );

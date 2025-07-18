@@ -530,10 +530,10 @@ UsdShadeMaterial usdex::rtx::definePbrMaterial(UsdPrim prim, const GfVec3f& colo
     }
 
     // Warn if converting from non-Scope prims
-    if (originalType != pxr::UsdGeomTokens->Scope)
+    if (originalType != pxr::UsdGeomTokens->Scope && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"Scope\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"\" or \"Scope\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );
@@ -901,10 +901,10 @@ UsdShadeMaterial usdex::rtx::defineGlassMaterial(UsdPrim prim, const GfVec3f& co
     }
 
     // Warn if converting from non-Scope prims
-    if (originalType != pxr::UsdGeomTokens->Scope)
+    if (originalType != pxr::UsdGeomTokens->Scope && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"Scope\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"Material\". Expected original type to be \"\" or \"Scope\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );

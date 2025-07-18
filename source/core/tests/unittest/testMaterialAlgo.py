@@ -1051,7 +1051,11 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
 
         # Define the material using the prim overload
         color = Gf.Vec3f(0.5, 0.7, 0.9)
-        material = usdex.core.definePreviewMaterial(prim, color)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, '.*Redefining prim.*from type.*Material.*to.*Material.*Expected original type to be "" or .*Scope.*')],
+        ):
+            material = usdex.core.definePreviewMaterial(prim, color)
 
         # Verify the prim was created correctly
         self.assertTrue(material)
@@ -1077,7 +1081,11 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         roughness = 0.3
         metallic = 0.5
 
-        material = usdex.core.definePreviewMaterial(prim, color, opacity=opacity, roughness=roughness, metallic=metallic)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, '.*Redefining prim.*from type.*Material.*to.*Material.*Expected original type to be "" or .*Scope.*')],
+        ):
+            material = usdex.core.definePreviewMaterial(prim, color, opacity=opacity, roughness=roughness, metallic=metallic)
 
         # Verify the prim was created correctly
         self.assertTrue(material)
@@ -1111,7 +1119,11 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
 
         # Define the material with just the required color parameter
         color = Gf.Vec3f(1.0, 0.5, 0.2)
-        material = usdex.core.definePreviewMaterial(prim, color)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, '.*Redefining prim.*from type.*Material.*to.*Material.*Expected original type to be "" or .*Scope.*')],
+        ):
+            material = usdex.core.definePreviewMaterial(prim, color)
 
         # Verify the prim was created correctly
         self.assertTrue(material)
@@ -1157,7 +1169,7 @@ class DefinePreviewMaterialTest(usdex.test.DefineFunctionTestCase):
         meshPrim = stage.DefinePrim("/World/MeshPrim", "Mesh")
         with usdex.test.ScopedDiagnosticChecker(
             self,
-            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*Material.*Expected original type to be.*Scope.*")],
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, '.*Redefining prim.*from type.*Mesh.*to.*Material.*Expected original type to be "" or .*Scope.*')],
         ):
             material = usdex.core.definePreviewMaterial(meshPrim, color)
         self.assertTrue(material)

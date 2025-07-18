@@ -889,10 +889,10 @@ UsdGeomXform usdex::core::defineXform(UsdPrim prim, std::optional<const pxr::GfT
 
     // Warn if original prim is not Scope or Xform
     TfToken originalType = prim.GetTypeName();
-    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"Xform\". Expected original type to be \"Scope\" or \"Xform\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"Xform\". Expected original type to be \"\" or \"Scope\" or \"Xform\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );
