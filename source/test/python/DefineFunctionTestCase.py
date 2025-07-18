@@ -187,6 +187,16 @@ class DefineFunctionTestCase(TestCase):
         self.assertEqual(result.GetPrim(), scopePrim)
         self.assertEqual(result.GetPrim().GetTypeName(), self.typeName)
 
+        # Create an untyped prim first
+        untyped_prim = stage.DefinePrim("/World/UntypedPrim", "")
+        self.assertEqual(untyped_prim.GetTypeName(), "")
+
+        # Convert it to the target type
+        result = self.defineFunc(untyped_prim, *self.requiredArgs)
+        self.assertDefineFunctionSuccess(result)
+        self.assertEqual(result.GetPrim(), untyped_prim)
+        self.assertEqual(result.GetPrim().GetTypeName(), self.typeName)
+
     def testInvalidStage(self):
         # An invalid stage will result in a failure
         path = Sdf.Path("/World/InvalidStage")

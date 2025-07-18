@@ -193,10 +193,10 @@ UsdLuxDomeLight usdex::core::defineDomeLight(UsdPrim prim, float intensity, std:
 
     // Warn if original prim is not Scope or Xform
     TfToken originalType = prim.GetTypeName();
-    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"DomeLight\". Expected original type to be \"Scope\" or \"Xform\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"DomeLight\". Expected original type to be \"\" or \"Scope\" or \"Xform\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );
@@ -295,10 +295,10 @@ UsdLuxRectLight usdex::core::defineRectLight(UsdPrim prim, float width, float he
 
     // Warn if original prim is not Scope or Xform
     TfToken originalType = prim.GetTypeName();
-    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"RectLight\". Expected original type to be \"Scope\" or \"Xform\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"RectLight\". Expected original type to be \"\" or \"Scope\" or \"Xform\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );

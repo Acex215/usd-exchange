@@ -2027,7 +2027,8 @@ class DefineXformFromPrimTestCase(BaseXformTestCase):
         # Test with non-Scope/Xform prim - should warn
         meshPrim = stage.DefinePrim("/Root/MeshPrim", "Mesh")
         with usdex.test.ScopedDiagnosticChecker(
-            self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Mesh.*to.*Xform.*Expected original type to be.*Scope.*or.*Xform")]
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, '.*Redefining prim.*from type.*Mesh.*to.*Xform.*Expected original type to be "" or .*Scope.*or.*Xform')],
         ):
             result = usdex.core.defineXform(meshPrim)
         self.assertTrue(result)

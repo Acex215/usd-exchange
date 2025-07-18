@@ -302,7 +302,12 @@ class DefineMeshTestCase(DefinePointBasedTestCaseMixin, usdex.test.DefineFunctio
         materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
         with usdex.test.ScopedDiagnosticChecker(
             self,
-            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Material.*to.*Mesh.*Expected original type to be.*Scope.*or.*Xform")],
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Material.*to.*Mesh.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
         ):
             mesh = usdex.core.definePolyMesh(materialPrim, FACE_VERTEX_COUNTS, FACE_VERTEX_INDICES, POINTS)
         self.assertTrue(mesh)

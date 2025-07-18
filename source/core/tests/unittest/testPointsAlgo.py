@@ -351,7 +351,16 @@ class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
         prim = stage.DefinePrim("/World/PointCloud", "Points")
 
         # Define the point cloud using the prim overload
-        points = usdex.core.definePointCloud(prim, POINTS)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Points.*to.*Points.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
+        ):
+            points = usdex.core.definePointCloud(prim, POINTS)
 
         # Verify the prim was created correctly
         self.assertTrue(points)
@@ -369,7 +378,16 @@ class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
         widths = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([1.5]))
 
         # Define the point cloud using the prim overload
-        points = usdex.core.definePointCloud(prim, POINTS, widths=widths)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Points.*to.*Points.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
+        ):
+            points = usdex.core.definePointCloud(prim, POINTS, widths=widths)
 
         # Verify the prim was created correctly
         self.assertTrue(points)
@@ -392,7 +410,18 @@ class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
         displayOpacity = usdex.core.FloatPrimvarData(UsdGeom.Tokens.constant, Vt.FloatArray([0.8]))
 
         # Define the point cloud using the prim overload
-        points = usdex.core.definePointCloud(prim, POINTS, widths=widths, normals=normals, displayColor=displayColor, displayOpacity=displayOpacity)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Points.*to.*Points.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
+        ):
+            points = usdex.core.definePointCloud(
+                prim, POINTS, widths=widths, normals=normals, displayColor=displayColor, displayOpacity=displayOpacity
+            )
 
         # Verify the prim was created correctly
         self.assertTrue(points)
@@ -439,7 +468,16 @@ class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
         singlePoint = Vt.Vec3fArray([Gf.Vec3f(1.0, 2.0, 3.0)])
 
         # Define the point cloud using the prim overload
-        points = usdex.core.definePointCloud(prim, singlePoint)
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Points.*to.*Points.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
+        ):
+            points = usdex.core.definePointCloud(prim, singlePoint)
 
         # Verify the prim was created correctly
         self.assertTrue(points)
@@ -456,7 +494,12 @@ class PointsAlgoPrimOverloadTest(usdex.test.TestCase):
         materialPrim = stage.DefinePrim("/World/MaterialPrim", "Material")
         with usdex.test.ScopedDiagnosticChecker(
             self,
-            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*Redefining prim.*from type.*Material.*to.*Points.*Expected original type to be.*Scope.*or.*Xform")],
+            [
+                (
+                    Tf.TF_DIAGNOSTIC_WARNING_TYPE,
+                    '.*Redefining prim.*from type.*Material.*to.*Points.*Expected original type to be "" or .*Scope.*or.*Xform',
+                )
+            ],
         ):
             points = usdex.core.definePointCloud(materialPrim, POINTS)
         self.assertTrue(points)

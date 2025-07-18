@@ -84,10 +84,10 @@ UsdGeomCamera usdex::core::defineCamera(UsdPrim prim, const GfCamera& cameraData
 
     // Warn if original prim is not Scope or Xform
     TfToken originalType = prim.GetTypeName();
-    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform)
+    if (originalType != UsdGeomTokens->Scope && originalType != UsdGeomTokens->Xform && !originalType.IsEmpty())
     {
         TF_WARN(
-            "Redefining prim at \"%s\" from type \"%s\" to \"Camera\". Expected original type to be \"Scope\" or \"Xform\".",
+            "Redefining prim at \"%s\" from type \"%s\" to \"Camera\". Expected original type to be \"\" or \"Scope\" or \"Xform\".",
             prim.GetPath().GetAsString().c_str(),
             originalType.GetText()
         );
