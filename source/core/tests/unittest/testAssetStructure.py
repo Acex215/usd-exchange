@@ -14,6 +14,23 @@ import usdex.test
 from pxr import Gf, Kind, Sdf, Tf, Usd, UsdGeom, Vt
 
 
+class TemporaryDirectoryChange:
+    """Context manager for temporarily changing the current working directory."""
+
+    def __init__(self, new_directory):
+        self.new_directory = new_directory
+        self.original_directory = None
+
+    def __enter__(self):
+        self.original_directory = os.getcwd()
+        os.chdir(self.new_directory)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.original_directory is not None:
+            os.chdir(self.original_directory)
+
+
 class AssetStructureTestBase:
     """Base class for asset structure tests, providing helper functions for creating temp files and getting relative identifiers."""
 
@@ -1098,6 +1115,39 @@ class DefineReferencePayloadBase(AssetStructureTestBase):
             sourceXform.GetPrim(),
             sourceXform.GetPrim().GetName(),
         )
+
+    def testSameLocalPath(self):
+        # Test when a stage identifier is a relative path in the current working directory
+        with TemporaryDirectoryChange(self.tmpBaseDir()):
+            sourceStageIdentifier = "source.usda"
+            sourceStage = usdex.core.createStage(
+                sourceStageIdentifier,
+                self.sourcePrimName,
+                self.defaultUpAxis,
+                self.defaultLinearUnits,
+                self.defaultAuthoringMetadata,
+            )
+            self.assertIsInstance(sourceStage, Usd.Stage)
+            sourceXform = usdex.core.defineXform(sourceStage.GetDefaultPrim())
+
+            refStageIdentifier = "ref.usda"
+            refStage = usdex.core.createStage(
+                refStageIdentifier,
+                self.sourcePrimName,
+                self.defaultUpAxis,
+                self.defaultLinearUnits,
+                self.defaultAuthoringMetadata,
+            )
+            self.assertIsInstance(refStage, Usd.Stage)
+
+            refPrim = self.defineReferencePayloadFunc(refStage.GetDefaultPrim(), sourceStage.GetDefaultPrim())
+            self.assertIsInstance(refPrim, Usd.Prim)
+            self.assertReferencePayload(
+                refPrim,
+                refStage.GetDefaultPrim().GetPath().AppendChild(self.sourcePrimName),
+                sourceXform.GetPrim(),
+                self.sourcePrimName,
+            )
 
 
 class DefineReferenceTestCase(DefineReferencePayloadBase, usdex.test.DefineFunctionTestCase):

@@ -158,21 +158,41 @@ UsdPrim createReferencePayloadPrim(
         return UsdPrim();
     }
 
+    // Get the source and stage layers so as not to accidentally use the stage's root layer
+    SdfLayerHandle sourceLayer = source.GetStage()->GetRootLayer();
+    SdfLayerHandle stageLayer = stage->GetEditTarget().GetLayer();
+
     // Early out if either stage is anonymous
-    if (stage->GetRootLayer()->IsAnonymous())
+    if (stageLayer->IsAnonymous())
     {
         TF_RUNTIME_ERROR("Unable to define reference/payload due to an anonymous referencing stage");
         return UsdPrim();
     }
 
-    if (source.GetStage()->GetRootLayer()->IsAnonymous())
+    if (sourceLayer->IsAnonymous())
     {
         TF_RUNTIME_ERROR("Unable to define reference/payload due to an anonymous source stage");
         return UsdPrim();
     }
 
+    // Ensure that the layer identifiers are resolved to absolute paths
+    ArResolver& resolver = ArGetResolver();
+    ArResolvedPath sourceResolvedPath = resolver.Resolve(sourceLayer->GetIdentifier());
+    if (!sourceResolvedPath)
+    {
+        TF_RUNTIME_ERROR("Unable to define reference/payload due to an invalid source layer identifier: %s", sourceLayer->GetIdentifier().c_str());
+        return UsdPrim();
+    }
+
+    ArResolvedPath stageResolvedPath = resolver.Resolve(stageLayer->GetIdentifier());
+    if (!stageResolvedPath)
+    {
+        TF_RUNTIME_ERROR("Unable to define reference/payload due to an invalid stage layer identifier: %s", stageLayer->GetIdentifier().c_str());
+        return UsdPrim();
+    }
+
     // If the source prim and reference are in the same stage, we can use an internal reference/payload
-    if (stage->GetRootLayer()->GetIdentifier() == source.GetStage()->GetRootLayer()->GetIdentifier())
+    if (stageResolvedPath.GetPathString() == sourceResolvedPath.GetPathString())
     {
         outIsInternal = true;
         outRelativeIdentifier = "";
@@ -186,10 +206,7 @@ UsdPrim createReferencePayloadPrim(
     {
         outIsInternal = false;
         // Compute the relative identifier between the stage's edit target and the source stage
-        outRelativeIdentifier = ::getRelativeIdentifier(
-            source.GetStage()->GetRootLayer()->GetIdentifier(),
-            stage->GetEditTarget().GetLayer()->GetIdentifier()
-        );
+        outRelativeIdentifier = ::getRelativeIdentifier(sourceResolvedPath.GetPathString(), stageResolvedPath.GetPathString());
     }
 
     if (source.GetPath() == source.GetStage()->GetDefaultPrim().GetPath())
