@@ -66,7 +66,7 @@ private:
 //! Compare identifiers (such as those returned by `SdfLayer::GetIdentifier()`).
 //!
 //! This function accounts for some platform specific behavior that occurs when resolving identifiers.
-bool compareIdentifiers(const std::string& first, const std::string& second)
+inline bool compareIdentifiers(const std::string& first, const std::string& second)
 {
     return pxr::ArchNormPath(first) == pxr::ArchNormPath(second);
 }

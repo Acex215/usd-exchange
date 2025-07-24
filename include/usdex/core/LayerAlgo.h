@@ -52,7 +52,7 @@ namespace usdex::core
 //! Checks the CustomLayerData for a "creator" key.
 //!
 //! @param layer The layer to check
-USDEX_API bool hasLayerAuthoringMetadata(pxr::SdfLayerHandle layer);
+USDEX_API bool hasLayerAuthoringMetadata(const pxr::SdfLayerHandle layer);
 
 //! Set metadata on the `SdfLayer` indicating the provenance of the data.
 //!
@@ -66,6 +66,17 @@ USDEX_API bool hasLayerAuthoringMetadata(pxr::SdfLayerHandle layer);
 //! @param layer The layer to modify
 //! @param value The provenance information for this layer
 USDEX_API void setLayerAuthoringMetadata(pxr::SdfLayerHandle layer, const std::string& value);
+
+//! Get metadata from the `SdfLayer` indicating the provenance of the data.
+//!
+//! @note This metadata is strictly informational, it is not advisable to drive runtime behavior from this metadata.
+//! In the future, the "creator" key may change, or a more formal specification for data provenance may emerge.
+//!
+//! This function retrieves the provenance information from the "creator" key of the CustomLayerData.
+//!
+//! @param layer The layer to read from
+//! @returns The provenance information for this layer, or an empty string if none exists
+USDEX_API std::string getLayerAuthoringMetadata(const pxr::SdfLayerHandle layer);
 
 //! Save the given `SdfLayer` with an optional comment.
 //!

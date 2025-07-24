@@ -34,6 +34,38 @@ class LayerAlgoTest(usdex.test.TestCase):
         expected["baz"] = "bongo"
         self.assertEqual(layer.customLayerData, expected)
 
+    def testGetLayerAuthoringMetadata(self):
+        layer: Sdf.Layer = Sdf.Layer.CreateAnonymous()
+
+        # Test getting metadata from layer with no metadata
+        self.assertEqual(layer.customLayerData, {})
+        self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))
+        authoringMetadata = usdex.core.getLayerAuthoringMetadata(layer)
+        self.assertEqual(authoringMetadata, "")
+
+        # Test getting metadata after setting it
+        usdex.core.setLayerAuthoringMetadata(layer, LayerAlgoTest.defaultAuthoringMetadata)
+        self.assertTrue(usdex.core.hasLayerAuthoringMetadata(layer))
+        authoringMetadata = usdex.core.getLayerAuthoringMetadata(layer)
+        self.assertEqual(authoringMetadata, LayerAlgoTest.defaultAuthoringMetadata)
+
+        # Test getting metadata with custom value
+        customMetadata = "Custom Authoring Tool v2.1.0"
+        usdex.core.setLayerAuthoringMetadata(layer, customMetadata)
+        authoringMetadata = usdex.core.getLayerAuthoringMetadata(layer)
+        self.assertEqual(authoringMetadata, customMetadata)
+
+        # Test getting metadata with existing custom layer data
+        layer.ClearCustomLayerData()
+        layer.customLayerData = {"foo": "bar", "creator": "test metadata", "baz": "qux"}
+        authoringMetadata = usdex.core.getLayerAuthoringMetadata(layer)
+        self.assertEqual(authoringMetadata, "test metadata")
+
+        # Test getting empty string metadata
+        usdex.core.setLayerAuthoringMetadata(layer, "")
+        authoringMetadata = usdex.core.getLayerAuthoringMetadata(layer)
+        self.assertEqual(authoringMetadata, "")
+
     def testSaveLayer(self):
         layer: Sdf.Layer = self.tmpLayer()
         self.assertFalse(usdex.core.hasLayerAuthoringMetadata(layer))

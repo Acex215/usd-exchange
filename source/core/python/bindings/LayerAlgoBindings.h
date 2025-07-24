@@ -81,6 +81,28 @@ void bindLayerAlgo(module& m)
     );
 
     m.def(
+        "getLayerAuthoringMetadata",
+        &getLayerAuthoringMetadata,
+        arg("layer"),
+        R"(
+            Get metadata from the ``Sdf.Layer`` indicating the provenance of the data.
+
+            Note:
+
+                This metadata is strictly informational, it is not advisable to drive runtime behavior from this metadata.
+                In the future, the "creator" key may change, or a more formal specification for data provenance may emerge.
+
+            This function retrieves the provenance information from the "creator" key of the CustomLayerData.
+
+            Args:
+                layer: The layer to read from
+
+            Returns:
+                The provenance information for this layer, or an empty string if none exists
+        )"
+    );
+
+    m.def(
         "saveLayer",
         &saveLayer,
         arg("layer"),

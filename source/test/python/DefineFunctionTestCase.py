@@ -63,8 +63,7 @@ class DefineFunctionTestCase(TestCase):
         # Build a layered stage
         self.weakerSubLayer = self.tmpLayer(name="Weaker")
         self.strongerSubLayer = self.tmpLayer(name="Stronger")
-
-        self.rootLayer = Sdf.Layer.CreateAnonymous(tag="Root")
+        self.rootLayer = self.tmpLayer(name="Root")
         self.rootLayer.subLayerPaths.append(self.strongerSubLayer.identifier)
         self.rootLayer.subLayerPaths.append(self.weakerSubLayer.identifier)
 
