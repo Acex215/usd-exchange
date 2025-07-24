@@ -27,6 +27,7 @@ __all__ = [
     # layers
     "hasLayerAuthoringMetadata",
     "setLayerAuthoringMetadata",
+    "getLayerAuthoringMetadata",
     "saveLayer",
     "exportLayer",
     # stage
@@ -34,6 +35,22 @@ __all__ = [
     "configureStage",
     "saveStage",
     "isEditablePrimLocation",
+    # asset structure
+    "getAssetToken",
+    "getContentsToken",
+    "getGeometryToken",
+    "getLibraryToken",
+    "getMaterialsToken",
+    "getPayloadToken",
+    "getPhysicsToken",
+    "getTexturesToken",
+    "definePayload",
+    "defineReference",
+    "defineScope",
+    "createAssetPayload",
+    "addAssetContent",
+    "addAssetLibrary",
+    "addAssetInterface",
     # names
     "getValidPrimName",
     "getValidPrimNames",
@@ -118,6 +135,7 @@ else:
     from ._usdex_core import *  # noqa
 
 # Import hand rolled python bindings
+from ._AssetStructureBindings import *  # noqa
 from ._StageAlgoBindings import *  # noqa
 
 

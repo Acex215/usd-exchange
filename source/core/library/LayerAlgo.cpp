@@ -15,7 +15,7 @@ static constexpr const char* g_authoringKey = "creator";
 
 } // namespace
 
-bool usdex::core::hasLayerAuthoringMetadata(pxr::SdfLayerHandle layer)
+bool usdex::core::hasLayerAuthoringMetadata(const pxr::SdfLayerHandle layer)
 {
     VtDictionary data = layer->GetCustomLayerData();
     return data.find(g_authoringKey) != data.end();
@@ -26,6 +26,17 @@ void usdex::core::setLayerAuthoringMetadata(pxr::SdfLayerHandle layer, const std
     VtDictionary data = layer->GetCustomLayerData();
     data[g_authoringKey] = value;
     layer->SetCustomLayerData(data);
+}
+
+std::string usdex::core::getLayerAuthoringMetadata(const pxr::SdfLayerHandle layer)
+{
+    VtDictionary data = layer->GetCustomLayerData();
+    auto it = data.find(g_authoringKey);
+    if (it != data.end())
+    {
+        return it->second.Get<std::string>();
+    }
+    return "";
 }
 
 bool usdex::core::saveLayer(pxr::SdfLayerHandle layer, std::optional<std::string_view> authoringMetadata, std::optional<std::string_view> comment)

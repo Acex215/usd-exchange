@@ -48,6 +48,7 @@
             |   └── usdex
             |       ├── core
             |       │   ├── __init__.py
+            |       │   ├── _AssetStructureBindings.py
             |       │   ├── _StageAlgoBindings.py
             |       │   ├── _usdex_core.cpython-310-x86_64-linux-gnu.so
             |       │   └── _usdex_core.pyi

@@ -7,6 +7,7 @@
 ARCH_PRAGMA_PUSH
 ARCH_PRAGMA_MAYBE_UNINITIALIZED
 
+#include "AssetStructureBindings.h"
 #include "CameraAlgoBindings.h"
 #include "CoreBindings.h"
 #include "CurvesAlgoBindings.h"
@@ -37,6 +38,7 @@ PYBIND11_MODULE(_usdex_core, m)
     bindDiagnostics(m);
     bindLayerAlgo(m);
     bindStageAlgo(m);
+    bindAssetStructure(m);
     bindNameAlgo(m);
     bindXformAlgo(m);
     bindPrimvarData(m);

@@ -48,7 +48,7 @@ group "core"
     namespace = "usdex_core"
 
     project "core_library"
-        usdex_build.use_usd({ "ar", "arch", "gf", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "usdUtils", "vt" })
+        usdex_build.use_usd({ "ar", "arch", "gf", "kind", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "usdUtils", "vt", "work" })
         usdex_build.shared_library{
             library_name = namespace,
             headers = { "include/usdex/core/*.h", "include/usdex/core/*.inl" },
