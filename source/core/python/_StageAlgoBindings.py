@@ -17,6 +17,7 @@ def createStage(
     linearUnits: float,
     authoringMetadata: str,
     fileFormatArgs: Optional[dict] = None,
+    massUnits: Optional[float] = None,
 ) -> Optional[Usd.Stage]:
     """
     Create and configure a `Usd.Stage` so that the defining metadata is explicitly authored.
@@ -34,6 +35,7 @@ def createStage(
         linearUnits: The meters per unit for all linear measurements in the stage.
         authoringMetadata: The provenance information from the host application. See `setLayerAuthoringMetadata` for details.
         fileFormatArgs: Additional file format-specific arguments to be supplied during Stage creation.
+        massUnits: The kilograms per unit for all mass measurements in the stage. If not provided, the default value will be used.
 
     Returns:
         The newly created stage or None
@@ -53,8 +55,12 @@ def createStage(
 
     # Configure the stage and early out on failure
     # Note that the warnings from this call will not exactly match the more contextual ones from the C++ logic
-    if not configureStage(stage, defaultPrimName, upAxis, linearUnits, authoringMetadata):
-        return None
+    if massUnits is None:
+        if not configureStage(stage, defaultPrimName, upAxis, linearUnits, authoringMetadata):
+            return None
+    else:
+        if not configureStage(stage, defaultPrimName, upAxis, linearUnits, massUnits, authoringMetadata):
+            return None
 
     # Export the stage to the desired identifier
     comment = ""

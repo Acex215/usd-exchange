@@ -18,6 +18,7 @@
 #include <pxr/usd/usd/usdcFileFormat.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
+#include <pxr/usd/usdPhysics/metrics.h>
 
 #include <doctest/doctest.h>
 
@@ -239,6 +240,45 @@ TEST_CASE("createStage linearUnits")
     stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, UsdGeomLinearUnits::meters, authoringMetadata);
     CHECK(UsdGeomGetStageMetersPerUnit(stage) == UsdGeomLinearUnits::meters);
     CHECK(UsdGeomStageHasAuthoredMetersPerUnit(stage));
+    stage = nullptr;
+}
+
+TEST_CASE("createStage massUnits")
+{
+    usdex::test::ScopedTmpDir tmpDir;
+    const std::string identifier = TfStringPrintf("%s/%s", tmpDir.getPath(), "test.usda");
+    const std::string defaultPrimName = "Root";
+    const TfToken& upAxis = UsdGeomTokens->y;
+    const double linearUnits = UsdGeomLinearUnits::meters;
+    const std::string authoringMetadata = ::getAuthoringMetadata();
+
+    UsdStageRefPtr stage = nullptr;
+
+    // invalid mass units (0.0)
+    {
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Mass units value.*" } });
+        stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, 0.0, authoringMetadata);
+    }
+    CHECK(stage == nullptr);
+    CHECK(SdfLayer::Find(identifier) == nullptr);
+
+    // negative mass units
+    {
+        ScopedDiagnosticChecker check({ { TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics: Mass units value.*" } });
+        stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, -1.0, authoringMetadata);
+    }
+    CHECK(stage == nullptr);
+    CHECK(SdfLayer::Find(identifier) == nullptr);
+
+    // valid mass units (kilograms)
+    stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, UsdPhysicsMassUnits::kilograms, authoringMetadata);
+    CHECK(UsdPhysicsGetStageKilogramsPerUnit(stage) == UsdPhysicsMassUnits::kilograms);
+    CHECK(UsdPhysicsStageHasAuthoredKilogramsPerUnit(stage));
+
+    // valid mass units (grams)
+    stage = usdex::core::createStage(identifier, defaultPrimName, upAxis, linearUnits, UsdPhysicsMassUnits::grams, authoringMetadata);
+    CHECK(UsdPhysicsGetStageKilogramsPerUnit(stage) == UsdPhysicsMassUnits::grams);
+    CHECK(UsdPhysicsStageHasAuthoredKilogramsPerUnit(stage));
     stage = nullptr;
 }
 

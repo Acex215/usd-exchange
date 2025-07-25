@@ -5,7 +5,7 @@
 import omni.asset_validator
 import usdex.core
 import usdex.test
-from pxr import Gf, Sdf, Tf, Usd, UsdGeom
+from pxr import Gf, Sdf, Tf, Usd, UsdGeom, UsdPhysics
 
 
 class CreateStageTestCase(usdex.test.TestCase):
@@ -193,6 +193,47 @@ class CreateStageTestCase(usdex.test.TestCase):
         stage = usdex.core.createStage(identifier, self.defaultPrimName, self.defaultUpAxis, value, self.defaultAuthoringMetadata)
         self.assertEqual(UsdGeom.GetStageMetersPerUnit(stage), value)
         self.assertTrue(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
+        self.assertIsValidUsd(stage)
+
+    def testMassUnits(self):
+        # The mass units are required and must be a value greater than 0 otherwise the stage will not be created
+        identifier = self.tmpFile("test", "usda")
+
+        # An invalid value will result in an unsuccessful stage creation
+        value = 0.0
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+            stage = usdex.core.createStage(
+                identifier, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata, massUnits=value
+            )
+        self.assertIsNone(stage)
+        self.assertLayerNotRegistered(identifier)
+
+        value = -5.0
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+            stage = usdex.core.createStage(
+                identifier, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata, massUnits=value
+            )
+        self.assertIsNone(stage)
+        self.assertLayerNotRegistered(identifier)
+
+        # A valid value will result in a successful stage creation
+        # The mass units will be reflected on the stage
+        value = UsdPhysics.MassUnits.kilograms
+        stage = usdex.core.createStage(
+            identifier, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata, massUnits=value
+        )
+        self.assertEqual(UsdPhysics.GetStageKilogramsPerUnit(stage), value)
+        self.assertTrue(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
+        self.assertIsValidUsd(stage)
+
+        # It is valid to reuse an identifier.
+        # The new mass units will be reflected on the stage
+        value = UsdPhysics.MassUnits.grams
+        stage = usdex.core.createStage(
+            identifier, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, self.defaultAuthoringMetadata, massUnits=value
+        )
+        self.assertEqual(UsdPhysics.GetStageKilogramsPerUnit(stage), value)
+        self.assertTrue(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
         self.assertIsValidUsd(stage)
 
     def testAuthoringMetadata(self):
@@ -417,6 +458,49 @@ class ConfigureStageTestCase(usdex.test.TestCase):
         self.assertTrue(result)
         self.assertEqual(UsdGeom.GetStageMetersPerUnit(stage), value)
         self.assertTrue(UsdGeom.StageHasAuthoredMetersPerUnit(stage))
+        self.assertIsValidUsd(stage)
+
+    def testMassUnits(self):
+        # The mass units are required and must be a value greater than 0 otherwise the stage will not be configured
+        stage = Usd.Stage.CreateInMemory()
+
+        # An invalid value will result in an unsuccessful stage configuration
+        value = 0.0
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+            result = usdex.core.configureStage(
+                stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, value, self.defaultAuthoringMetadata
+            )
+        self.assertFalse(result)
+        self.assertFalse(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
+
+        value = -5.0
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*invalid stage metrics")]):
+            result = usdex.core.configureStage(
+                stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, value, self.defaultAuthoringMetadata
+            )
+        self.assertFalse(result)
+        self.assertFalse(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
+
+        # A valid value will result in a successful stage configuration
+        # The mass units will be reflected on the stage
+        value = UsdPhysics.MassUnits.kilograms
+        result = usdex.core.configureStage(
+            stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, value, self.defaultAuthoringMetadata
+        )
+        self.assertTrue(result)
+        self.assertEqual(UsdPhysics.GetStageKilogramsPerUnit(stage), value)
+        self.assertTrue(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
+        self.assertIsValidUsd(stage)
+
+        # It is valid to reuse an identifier.
+        # The new mass units will be reflected on the stage
+        value = UsdPhysics.MassUnits.grams
+        result = usdex.core.configureStage(
+            stage, self.defaultPrimName, self.defaultUpAxis, self.defaultLinearUnits, value, self.defaultAuthoringMetadata
+        )
+        self.assertTrue(result)
+        self.assertEqual(UsdPhysics.GetStageKilogramsPerUnit(stage), value)
+        self.assertTrue(UsdPhysics.StageHasAuthoredKilogramsPerUnit(stage))
         self.assertIsValidUsd(stage)
 
     def testAuthoringMetadata(self):

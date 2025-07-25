@@ -40,6 +40,29 @@ namespace usdex::core
 //! @param defaultPrimName Name of the default root prim.
 //! @param upAxis The up axis for all the geometry contained in the stage.
 //! @param linearUnits The meters per unit for all linear measurements in the stage.
+//! @param massUnits The kilograms per unit for all mass measurements in the stage.
+//! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
+//!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
+//! @param fileFormatArgs Additional file format-specific arguments to be supplied during Stage creation.
+//! @returns The newly created stage or a null pointer.
+USDEX_API pxr::UsdStageRefPtr createStage(
+    const std::string& identifier,
+    const std::string& defaultPrimName,
+    const pxr::TfToken& upAxis,
+    const double linearUnits,
+    const double massUnits,
+    const std::string& authoringMetadata,
+    const pxr::SdfLayer::FileFormatArguments& fileFormatArgs = pxr::SdfLayer::FileFormatArguments()
+);
+
+//! Create and configure a `UsdStage` so that the defining metadata is explicitly authored.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
+//!
+//! @param identifier The identifier to be used for the root layer of this stage.
+//! @param defaultPrimName Name of the default root prim.
+//! @param upAxis The up axis for all the geometry contained in the stage.
+//! @param linearUnits The meters per unit for all linear measurements in the stage.
 //! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
 //!    If the "creator" key already exists, it will not be overwritten & this data will be ignored.
 //! @param fileFormatArgs Additional file format-specific arguments to be supplied during Stage creation.
@@ -59,12 +82,33 @@ USDEX_API pxr::UsdStageRefPtr createStage(
 //! A root prim with the given `defaultPrimName` will be defined on the stage if one is not already specified.
 //! If a new prim is defined then the prim type will be set to `Scope`.
 //!
-//! The stage metrics of [Up Axis](https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details) and
-//! [Linear Units](https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details) will be authored.
+//! The stage metrics of [Up Axis](https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details),
+//! [Linear Units](https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details) and
+//! [Mass Units](https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_units) will be authored.
 //!
 //! The root layer will be annotated with authoring metadata, unless previously annotated. This is to preserve
 //! authoring metadata on referenced layers that came from other applications. See @ref layers for more details
 //! on `setLayerAuthoringMetadata`.
+//!
+//! @param stage The stage to be configured.
+//! @param defaultPrimName Name of the default root prim.
+//! @param upAxis The up axis for all the geometry contained in the stage.
+//! @param linearUnits The meters per unit for all linear measurements in the stage.
+//! @param massUnits The kilograms per unit for all mass measurements in the stage.
+//! @param authoringMetadata The provenance information from the host application. See @ref layers for details.
+//! @returns A bool indicating if the metadata was successfully authored.
+USDEX_API bool configureStage(
+    pxr::UsdStagePtr stage,
+    const std::string& defaultPrimName,
+    const pxr::TfToken& upAxis,
+    const double linearUnits,
+    const double massUnits,
+    std::optional<std::string_view> authoringMetadata = std::nullopt
+);
+
+//! Configure a stage so that the defining metadata is explicitly authored.
+//!
+//! This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 //!
 //! @param stage The stage to be configured.
 //! @param defaultPrimName Name of the default root prim.
