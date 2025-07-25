@@ -303,6 +303,7 @@ def __install(
             "usd",
             "usdGeom",
             "usdLux",
+            "usdPhysics",
             "usdShade",
             "usdUtils",
             "vt",
@@ -315,6 +316,7 @@ def __install(
             "usd",
             "usdGeom",
             "usdLux",
+            "usdPhysics",
             "usdShade",
         ]
         if __SemVersion(usd_ver) >= __SemVersion("24.11"):

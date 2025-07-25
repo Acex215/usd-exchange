@@ -48,7 +48,7 @@ group "core"
     namespace = "usdex_core"
 
     project "core_library"
-        usdex_build.use_usd({ "ar", "arch", "gf", "kind", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdShade", "usdUtils", "vt", "work" })
+        usdex_build.use_usd({"ar", "arch", "gf", "kind", "pcp", "plug", "sdf", "tf", "usd", "usdGeom", "usdLux", "usdPhysics", "usdShade", "usdUtils", "vt", "work"})
         usdex_build.shared_library{
             library_name = namespace,
             headers = { "include/usdex/core/*.h", "include/usdex/core/*.inl" },
@@ -71,7 +71,7 @@ group "core"
         dependson { "core_library" }
         usdex_build.use_cxxopts()
         usdex_build.use_doctest()
-        usdex_build.use_usd({"arch", "gf", "sdf", "tf", "usd", "usdGeom", "usdUtils", "vt"})
+        usdex_build.use_usd({"arch", "gf", "sdf", "tf", "usd", "usdGeom", "usdPhysics", "usdUtils", "vt"})
         usdex_build.use_usdex_core()
         filter { "configurations:release" }
             links { "tbb" } -- required by use of TfErrorMarks

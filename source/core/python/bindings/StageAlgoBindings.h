@@ -23,11 +23,12 @@ void bindStageAlgo(module& m)
 
     m.def(
         "configureStage",
-        &configureStage,
+        overload_cast<UsdStagePtr, const std::string&, const TfToken&, double, double, std::optional<std::string_view>>(&configureStage),
         arg("stage"),
         arg("defaultPrimName"),
         arg("upAxis"),
         arg("linearUnits"),
+        arg("massUnits"),
         arg("authoringMetadata") = nullptr,
         R"(
             Configure a stage so that the defining metadata is explicitly authored.
@@ -36,11 +37,40 @@ void bindStageAlgo(module& m)
             A root prim with the given ``defaultPrimName`` will be defined on the stage.
             If a new prim is defined then the type name will be set to ``Scope``.
 
-            The stage metrics of `Up Axis <https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details>`_ and
-            `Linear Units <https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details>`_ will be authored.
+            The stage metrics of `Up Axis <https://openusd.org/release/api/group___usd_geom_up_axis__group.html#details>`_,
+            `Linear Units <https://openusd.org/release/api/group___usd_geom_linear_units__group.html#details>`_ and
+            `Mass Units <https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_units>`_ will be authored.
 
             The root layer will be annotated with authoring metadata, unless previously annotated. This is to preserve
             authoring metadata on referenced layers that came from other applications. See ``setLayerAuthoringMetadata`` for more details.
+
+            Args:
+                stage: The stage to be configured.
+                defaultPrimName: Name of the default root prim.
+                upAxis: The up axis for all the geometry contained in the stage.
+                linearUnits: The meters per unit for all linear measurements in the stage.
+                massUnits: The kilograms per unit for all mass measurements in the stage.
+                authoringMetadata: The provenance information from the host application. See ``setLayerAuthoringMetadata`` for details.
+
+            Returns:
+                A bool indicating if the metadata was successfully authored.
+
+        )",
+        call_guard<gil_scoped_release>()
+    );
+
+    m.def(
+        "configureStage",
+        overload_cast<UsdStagePtr, const std::string&, const TfToken&, double, std::optional<std::string_view>>(&configureStage),
+        arg("stage"),
+        arg("defaultPrimName"),
+        arg("upAxis"),
+        arg("linearUnits"),
+        arg("authoringMetadata") = nullptr,
+        R"(
+            Configure a stage so that the defining metadata is explicitly authored.
+
+            This is an overloaded member function, provided for convenience. It differs from the above function only in what arguments it accepts.
 
             Args:
                 stage: The stage to be configured.

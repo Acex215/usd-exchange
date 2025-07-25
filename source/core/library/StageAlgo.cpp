@@ -9,6 +9,7 @@
 #include <pxr/base/tf/stringUtils.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
+#include <pxr/usd/usdPhysics/metrics.h>
 #include <pxr/usd/usdUtils/authoring.h>
 
 using namespace pxr;
@@ -37,7 +38,7 @@ TF_DEFINE_PRIVATE_TOKENS(
 // clang-format on
 #endif
 
-bool validateStageMetrics(const TfToken& upAxis, const double linearUnits, std::string* reason)
+bool validateStageMetrics(const TfToken& upAxis, const double linearUnits, const double massUnits, std::string* reason)
 {
     // Validate the up axis
     if (upAxis != UsdGeomTokens->z && upAxis != UsdGeomTokens->y)
@@ -58,6 +59,13 @@ bool validateStageMetrics(const TfToken& upAxis, const double linearUnits, std::
         return false;
     }
 
+    // Validate the mass units
+    if (massUnits <= 0.0)
+    {
+        *reason = TfStringPrintf("Mass units value must be greater than zero, received %f", massUnits);
+        return false;
+    }
+
     return true;
 }
 
@@ -68,12 +76,20 @@ bool uncheckedConfigureStage(
     const std::string& defaultPrimName,
     const TfToken& upAxis,
     const double linearUnits,
+    const double massUnits,
     const std::optional<std::string_view>& authoringMetadata
 )
 {
     // Set stage metrics via the stage
     // The metadata will be authored on the root layer
     if (!UsdGeomSetStageMetersPerUnit(stage, linearUnits))
+    {
+        return false;
+    }
+
+    // Set stage mass units via the stage
+    // The metadata will be authored on the root layer
+    if (!UsdPhysicsSetStageKilogramsPerUnit(stage, massUnits))
     {
         return false;
     }
@@ -129,6 +145,19 @@ UsdStageRefPtr usdex::core::createStage(
     const SdfLayer::FileFormatArguments& fileFormatArgs
 )
 {
+    return createStage(identifier, defaultPrimName, upAxis, linearUnits, UsdPhysicsMassUnits::kilograms, authoringMetadata, fileFormatArgs);
+}
+
+UsdStageRefPtr usdex::core::createStage(
+    const std::string& identifier,
+    const std::string& defaultPrimName,
+    const TfToken& upAxis,
+    const double linearUnits,
+    const double massUnits,
+    const std::string& authoringMetadata,
+    const SdfLayer::FileFormatArguments& fileFormatArgs
+)
+{
     // Early out on an unsupported identifier
     if (identifier.empty() || !UsdStage::IsSupportedFile(identifier))
     {
@@ -149,7 +178,7 @@ UsdStageRefPtr usdex::core::createStage(
 
     // Early out on invalid stage metrics
     std::string reason;
-    if (!validateStageMetrics(upAxis, linearUnits, &reason))
+    if (!validateStageMetrics(upAxis, linearUnits, massUnits, &reason))
     {
         TF_WARN("Unable to create UsdStage at \"%s\" due to invalid stage metrics: %s", identifier.c_str(), reason.c_str());
         return nullptr;
@@ -159,7 +188,7 @@ UsdStageRefPtr usdex::core::createStage(
     UsdStageRefPtr stage = UsdStage::CreateInMemory(identifier);
 
     // Configure the stage
-    if (!uncheckedConfigureStage(stage, defaultPrimName, upAxis, linearUnits, authoringMetadata))
+    if (!uncheckedConfigureStage(stage, defaultPrimName, upAxis, linearUnits, massUnits, authoringMetadata))
     {
         return nullptr;
     }
@@ -194,6 +223,18 @@ bool usdex::core::configureStage(
     std::optional<std::string_view> authoringMetadata
 )
 {
+    return configureStage(stage, defaultPrimName, upAxis, linearUnits, UsdPhysicsMassUnits::kilograms, authoringMetadata);
+}
+
+bool usdex::core::configureStage(
+    UsdStagePtr stage,
+    const std::string& defaultPrimName,
+    const TfToken& upAxis,
+    const double linearUnits,
+    const double massUnits,
+    std::optional<std::string_view> authoringMetadata
+)
+{
     // Validate the default prim name
     if (!SdfPath::IsValidIdentifier(defaultPrimName))
     {
@@ -206,7 +247,7 @@ bool usdex::core::configureStage(
     }
 
     std::string reason;
-    if (!validateStageMetrics(upAxis, linearUnits, &reason))
+    if (!validateStageMetrics(upAxis, linearUnits, massUnits, &reason))
     {
         TF_WARN(
             "Failed to configure UsdStage at \"%s\" due to invalid stage metrics: %s",
@@ -216,7 +257,7 @@ bool usdex::core::configureStage(
         return false;
     }
 
-    return uncheckedConfigureStage(stage, defaultPrimName, upAxis, linearUnits, authoringMetadata);
+    return uncheckedConfigureStage(stage, defaultPrimName, upAxis, linearUnits, massUnits, authoringMetadata);
 }
 
 void usdex::core::saveStage(UsdStagePtr stage, std::optional<std::string_view> authoringMetadata, std::optional<std::string_view> comment)
