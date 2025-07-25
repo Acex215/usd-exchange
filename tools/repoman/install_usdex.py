@@ -324,7 +324,7 @@ def __install(
 
     if installTestModules and python_ver != "0":
         # omni.asset_validator uses some OpenUSD modules that we don't otherwise require in our runtime
-        extraPlugins.extend(["usdSkel", "usdPhysics"])
+        extraPlugins.extend(["usdSkel"])
 
     # allow for extra user supplied plugins
     for extra in extraPlugins:
@@ -393,6 +393,7 @@ def __install(
             ("pxr/Usd", "_usd"),
             ("pxr/UsdGeom", "_usdGeom"),
             ("pxr/UsdLux", "_usdLux"),
+            ("pxr/UsdPhysics", "_usdPhysics"),
             ("pxr/UsdShade", "_usdShade"),
             ("pxr/UsdUtils", "_usdUtils"),
             ("pxr/Vt", "_vt"),
@@ -528,7 +529,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         type=str,
         default=[],
         help="""
-        List additional OpenUSD plugins by name (e.g. 'usdPhysics' or 'usdMtlx') to install the necessary plugInfo.json and associated schema,
+        List additional OpenUSD plugins by name (e.g. 'usdSemantics' or 'usdMtlx') to install the necessary plugInfo.json and associated schema,
         libraries, and python modules.
         If unspecified, only the strictly required OpenUSD plugins will be installed.
         Python modules will be skipped if --python-version=0
