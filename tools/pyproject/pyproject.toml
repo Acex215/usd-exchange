@@ -12,10 +12,13 @@ Documentation = "https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sd
 Repository = "https://github.com/NVIDIA-Omniverse/usd-exchange"
 Changelog = "https://docs.omniverse.nvidia.com/usd/code-docs/usd-exchange-sdk/latest/docs/changes.html"
 
+[project.optional-dependencies]  # generated at build time
+
 [tool.poetry]
 authors = ["NVIDIA"]
 packages = [
     { include="usdex/core" },
+    { include="usdex/test" },
     { include="pxr" },
 ]
 include = [
