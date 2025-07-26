@@ -22,7 +22,7 @@ python -m venv usdex-env
 # Activate the virtual environment
 source usdex-env/bin/activate
 
-# Install the OpenUSD Exchange SDK
+# Install the OpenUSD Exchange modules
 pip install usd-exchange
 ```
 ````
@@ -37,7 +37,7 @@ python -m venv usdex-env
 # Activate the virtual environment
 usdex-env\Scripts\activate
 
-# Install the OpenUSD Exchange SDK
+# Install the OpenUSD Exchange modules
 pip install usd-exchange
 ```
 ````

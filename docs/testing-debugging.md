@@ -13,7 +13,7 @@ Once your data is converted to USD, it is recommended to test it for correctness
   While the Asset Validator was developed as a part of Omniverse, Kit is not required to use it. You can see example uses in the `OpenUSD Exchange Samples <https://github.com/NVIDIA-Omniverse/usd-exchange-samples>`__.
 ```
 
-If you are using Python's [unittest framework](https://docs.python.org/3/library/unittest.html) for your regression testing, consider trying the [`usdex.test` python module](./python-usdex-test.rst) in your test suite. It includes a few `unittest.TestCase` derived classes to simplify some common OpenUSD testing scenarios, including the Asset Validator mentioned above (e.g `self.assertIsValidUsd()`), as well as context managers for asserting OpenUSD and OpenUSD Exchange Diagnostic logs.
+If you are using Python's [unittest framework](https://docs.python.org/3/library/unittest.html) for your regression testing, consider trying the [`usdex.test` python module](./python-usdex-test.rst) in your test suite. It includes a few `unittest.TestCase` derived classes to simplify some common OpenUSD testing scenarios, including the Asset Validator mentioned above (e.g `self.assertIsValidUsd()`), as well as context managers for asserting OpenUSD and OpenUSD Exchange Diagnostic logs. See [Python Wheel Optional Test Dependencies](./devtools.md#python-wheel-optional-test-dependencies) for installation instructions.
 
 If you require C++ testing, consider using [doctest](https://github.com/doctest/doctest) and the [`usdex/test` headers](../api/namespace_usdex__test.rebreather_rst), which provide similar diagnostic log assertions for the doctest framework.
 
