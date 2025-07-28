@@ -45,6 +45,13 @@ class MaterialAlgoTest(usdex.test.TestCase):
         geometry = UsdGeom.Scope.Define(stage, stage.GetDefaultPrim().GetPath().AppendChild("Geometry")).GetPrim()  # common convention
         cube = UsdGeom.Cube.Define(stage, geometry.GetPath().AppendChild("Cube")).GetPrim()
         cube2 = UsdGeom.Cube.Define(stage, geometry.GetPath().AppendChild("Cube2")).GetPrim()
+        cubeXform = UsdGeom.Xform.Define(stage, geometry.GetPath().AppendChild("CubeXform")).GetPrim()
+        nestedCube = UsdGeom.Cube.Define(stage, cubeXform.GetPath().AppendChild("Cube")).GetPrim()
+        UsdGeom.Cube.Define(stage, cubeXform.GetPath().AppendChild("NoMaterialCube")).GetPrim()
+        nestedMaterials = UsdGeom.Scope.Define(stage, cubeXform.GetPath().AppendChild(UsdUtils.GetMaterialsScopeName())).GetPrim()
+        instancedCubeXform = UsdGeom.Xform.Define(stage, geometry.GetPath().AppendChild("InstancedCubeXform")).GetPrim()
+        instancedCubeXform.GetReferences().AddInternalReference(cubeXform.GetPath())
+        instancedCubeXform.SetInstanceable(True)
 
         material = usdex.core.createMaterial(materials, "Material")
         self.assertTrue(material)
@@ -71,6 +78,32 @@ class MaterialAlgoTest(usdex.test.TestCase):
         with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*are not valid, cannot bind material")]):
             result = usdex.core.bindMaterial(invalidTarget, invalidMaterial)
         self.assertFalse(result)
+
+        # Check that bindMaterial() prevents binding across an Instance boundary
+        # First create and bind a material to the referenced xform/cube (this should work properly)
+        nestedMaterial = usdex.core.createMaterial(nestedMaterials, "Material")
+        self.assertTrue(nestedMaterial)
+        result = usdex.core.bindMaterial(nestedCube, nestedMaterial)
+        self.assertTrue(result)
+        self.assertTrue(nestedCube.HasAPI(UsdShade.MaterialBindingAPI))
+        self.assertIsValidUsd(stage)
+        # Now, attempt to bind the material to the instanced cube
+        instancedCube = instancedCubeXform.GetPrim().GetChild("Cube")
+        self.assertTrue(instancedCube)
+        self.assertTrue(instancedCube.HasAPI(UsdShade.MaterialBindingAPI))
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "Cannot bind material due to an invalid location")]):
+            result = usdex.core.bindMaterial(instancedCube, material)
+        self.assertFalse(result)
+        self.assertTrue(instancedCube.HasAPI(UsdShade.MaterialBindingAPI))
+        # Last, check that the bind behavior is the same on a prim with no material assigned
+        instancedCube = instancedCubeXform.GetPrim().GetChild("NoMaterialCube")
+        self.assertTrue(instancedCube)
+        self.assertFalse(instancedCube.HasAPI(UsdShade.MaterialBindingAPI))
+        with usdex.test.ScopedDiagnosticChecker(self, [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, "Cannot bind material due to an invalid location")]):
+            result = usdex.core.bindMaterial(instancedCube, material)
+        self.assertFalse(result)
+        self.assertFalse(instancedCube.HasAPI(UsdShade.MaterialBindingAPI))
+        self.assertIsValidUsd(stage)
 
     def testComputeEffectiveSurfaceShader(self):
         stage = Usd.Stage.CreateInMemory()

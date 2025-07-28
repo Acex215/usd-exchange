@@ -1,5 +1,38 @@
 # 2.0.0-dev
 
+# 1.2.0
+
+## Core
+
+### Features
+
+- Added Python 3.12 support for USD 25.02
+
+### Fixes
+
+- Prevent `bindMaterial()` from allowing bindings across instance boundaries
+- All define PointBased functions now emit `TF_RUNTIME_ERROR` if the points array is empty
+
+## Dependencies
+
+### Runtime Deps
+
+- OpenUSD 25.02, 24.11, 24.08 (default), 24.05, 23.11
+- Omni Transcoding 1.0.0
+- Omni Asset Validator 0.16.2
+- pybind 2.11.1
+
+### Dev Tools
+
+- packman 7.31
+- repo_tools (all matching latest public)
+- doctest 2.4.5
+- cxxopts 2.2.0
+- Premake 5.0.0-beta4
+- GCC 11.4.0
+- MSVC 2019-16.11
+- Python 3.10.18 (default), 3.11.12, 3.12.11
+
 # 1.1.0
 
 OpenUSD Exchange SDK is now provided under the Apache License, Version 2.0
