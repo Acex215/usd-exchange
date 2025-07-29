@@ -21,7 +21,7 @@
 namespace usdex::core
 {
 
-//! @defgroup assetStructure Asset Structure
+//! @defgroup assetstructure Asset Structure
 //!
 //! Utility functions for creating Assets following NVIDIA's
 //! [Principles of Scalable Asset Structure](https://docs.omniverse.nvidia.com/usd/latest/learn-openusd/independent/asset-structure-principles.html).
@@ -31,6 +31,42 @@ namespace usdex::core
 //!
 //! This module aims to codify asset structures that have been proven scalable and have broad import compatibility across a wide range of OpenUSD
 //! enabled applications, while guiding and simplifying the development process for new OpenUSD Exporters.
+//!
+//! # Principles of Scalable Asset Structure #
+//!
+//! When developing an asset structure, the following principles can guide toward a scalable structure:
+//!
+//! - Legibility:
+//!   - Use descriptive names for layers, scopes, and prims. This might mean using a name like `LargeCardboardBox` or `ID-2023_5678`,
+//!     depending on the context.
+//!   - The tokens used in this module for files, directories, scopes, and layer names can make things clear and consistent.
+//! - Modularity:
+//!   - The structure should facilitate iterative improvement of reusable content.
+//!   - The functions in this module use relative paths to allow for asset relocation.
+//!   - The asset library layer concept allows for the reuse of content within an asset.
+//!   - Splitting content into different layers per domain (Geometry, Materials, Physics, etc) enables reuse and iteration across workflows.
+//! - Performance:
+//!   - The structure should accelerate content read and write speeds for users and processes.
+//!   - This could refer to an individual working within an asset or the ability to render millions of preview instances.
+//!   - This module creates a payload (allowing for deactivation) with extents hints so that the asset can be used in a larger scene.
+//!   - This module allows the use of text USDA files for lightweight human-readable layers and binary USDC files for heavy data.
+//! - Navigability:
+//!   - The structure should facilitate discovery of elements while retaining flexibility.
+//!   - The assets should be structured around multiple hierarchical paths (file, directory, prim paths, model hierarchy, etc.).
+//!   - This module offers functions to generate consistent asset structures.
+//!
+//! # Basic Structure #
+//!
+//! Almost all asset structures require the use of:
+//! - [Scopes](https://openusd.org/release/api/class_usd_geom_scope.html)
+//! - [References](https://openusd.org/release/glossary.html#usdglossary-references)
+//! - [Payloads](https://openusd.org/release/glossary.html#usdglossary-payload)
+//!
+//! While Scopes are easily defined using UsdGeom, it is easy to forget to check if the target location is editable.
+//! `usdex::core::defineScope` prevents this simple mistake.
+//!
+//! References and Payloads can be more complex. The `usdex::core::defineReference` and `usdex::core::definePayload` functions
+//! provide a simple interface to create them, ensuring to author a relative `AssetPath` whenever possible (for portability).
 //!
 //! # Atomic Models #
 //!
@@ -43,7 +79,7 @@ namespace usdex::core
 //! @code{.unparsed}
 //!
 //! +---------------------------+     +-----------------------------+
-//! | Asset Stage w/ Interface  |     | Asset Content Layer         |
+//! | Asset Layer w/ Interface  |     | Asset Content Layer         |
 //! +---------------------------+     +-----------------------------+
 //! | Flower                    | +---> Physics.usda                |
 //! |  {                        | |   |  {                          |
@@ -54,13 +90,13 @@ namespace usdex::core
 //! |   payloads[               | |   |   Scope Geometry            |
 //! |    ./Payload/Contents.usda| |   |    # physics attrs applied  |
 //! |   ]           |           | |   |    # to prims               |
-//! +---------------+-----------+ |   |   Scope Materials           |
+//! +---------------+-----------+ |   |   Scope Physics             |
 //!                 |             |   |    Material PhysicsMaterial |
 //!                 |             |   +-----------------------------+
 //!                 |             |
 //!                 |             |   +-----------------------------+
 //! +---------------v-----------+ |   | Asset Content Layer         |
-//! | Asset Payload Stage       | |   +-----------------------------+
+//! | Asset Payload Layer       | |   +-----------------------------+
 //! +---------------------------+ | +-> Materials.usda              |+------------------------+
 //! | Contents.usda             | | | |  {                          || Asset Library Layer    |
 //! |  {                        | | | |   defaultPrim=/Flower       |+------------------------+
@@ -99,39 +135,18 @@ namespace usdex::core
 //! ## Authoring an Atomic Model ##
 //!
 //! An example sequence for authoring the Flower atomic asset:
-//! 1. Create an asset stage using `usdex::core::createStage()`, setting the defaultPrim to `/Flower`
-//! 2. Create an asset payload stage using `usdex::core::createAssetPayload(assetStage)`
-//! 3. Add a geometry library using `usdex::core::addAssetLibrary(payloadStage, "Geometry")`
+//! 1. Create the primary layer for the asset using `usdex::core::createStage`, setting the defaultPrim to `/Flower`
+//! 2. Create a relative layer within a Payload subdirectory to hold the content of the asset using `usdex::core::createAssetPayload`
+//! 3. Add a geometry library using `usdex::core::addAssetLibrary(stage, "Geometry")`
 //!   - Add planter, stem, and petals meshes to the geometry library
-//! 4. Add a materials library using `usdex::core::addAssetLibrary(payloadStage, "Materials")`
+//! 4. Add a materials library using `usdex::core::addAssetLibrary(stage, "Materials")`
 //!   - Add clay, green stem, and pink petals materials to the materials library
-//! 5. Add a geometry content layer using `usdex::core::addAssetContent(payloadStage, "Geometry")`
+//! 5. Add a geometry content layer using `usdex::core::addAssetContent(stage, "Geometry")`
 //!   - Add planter, stem, and petals references that contain xformOps
-//! 6. Add a materials content layer using `usdex::core::addAssetContent(payloadStage, "Materials")`
+//! 6. Add a materials content layer using `usdex::core::addAssetContent(stage, "Materials")`
 //!   - Add clay, green stem, and pink petals references and bind them to the geometry
-//! 7. Add the asset interface to the asset stage using `usdex::core::addAssetInterface(assetStage, payloadStage)`
-//!
-//! # Principles of Scalable Asset Structure #
-//!
-//! When developing an asset structure, the following principles can guide toward a scalable structure:
-//!
-//! - Legibility:
-//!   - Use descriptive names for stages, scopes, and prims. This might mean using a name like `LargeCardboardBox` or `ID-2023_5678`,
-//!     depending on the context.
-//!   - The tokens used in this module for files, directories, scopes, and layer names can make things clear and consistent.
-//! - Modularity:
-//!   - The structure should facilitate iterative improvement of reusable content.
-//!   - The functions in this module use relative paths to allow for asset relocation.
-//!   - The asset library layer concept allows for the reuse of content within an asset.
-//! - Performance:
-//!   - The structure should accelerate content read and write speeds for users and processes.
-//!   - This could refer to an individual working within an asset or the ability to render millions of preview instances.
-//!   - This module creates a payload (allowing for deactivation) with extents hints so that the asset can be used in a larger scene.
-//!   - This module allows the use of text USDA files for lightweight layers and binary USDC files for complex library data.
-//! - Navigability:
-//!   - The structure should facilitate discovery of elements while retaining flexibility.
-//!   - The assets should be structured around multiple hierarchical paths (file, directory, prim paths, model hierarchy, etc.).
-//!   - This module offers functions to generate consistent asset structures.
+//! 7. Add the asset interface to the primary layer using `usdex::core::addAssetInterface`
+//!   - This creates a payload to the contents within the primary layer, configures asset information, and adds extents hints
 //!
 //! @note These asset structure functions are highly opinionated and implement best practices following NVIDIA's
 //! [Principles of Scalable Asset Structure](https://docs.omniverse.nvidia.com/usd/latest/learn-openusd/independent/asset-structure-principles.html).
@@ -146,24 +161,24 @@ namespace usdex::core
 //! @returns The Asset token
 USDEX_API const pxr::TfToken& getAssetToken();
 
-//! Get the token for the Contents stage
+//! Get the token for the Contents layer
 //!
-//! @returns The token for the Contents stage
+//! @returns The token for the Contents layer
 USDEX_API const pxr::TfToken& getContentsToken();
 
-//! Get the token for the Geometry stage and scope
+//! Get the token for the Geometry layer and scope
 //!
-//! @returns The token for the Geometry stage and scope
+//! @returns The token for the Geometry layer and scope
 USDEX_API const pxr::TfToken& getGeometryToken();
 
-//! Get the token for the Library stage
+//! Get the token for the Library layer
 //!
-//! @returns The token for the Library stage
+//! @returns The token for the Library layer
 USDEX_API const pxr::TfToken& getLibraryToken();
 
-//! Get the token for the Materials stage and scope
+//! Get the token for the Materials layer and scope
 //!
-//! @returns The token for the Materials stage and scope
+//! @returns The token for the Materials layer and scope
 USDEX_API const pxr::TfToken& getMaterialsToken();
 
 //! Get the token for the Payload directory
@@ -171,9 +186,9 @@ USDEX_API const pxr::TfToken& getMaterialsToken();
 //! @returns The token for the Payload directory
 USDEX_API const pxr::TfToken& getPayloadToken();
 
-//! Get the token for the Physics stage and scope
+//! Get the token for the Physics layer and scope
 //!
-//! @returns The token for the Physics stage and scope
+//! @returns The token for the Physics layer and scope
 USDEX_API const pxr::TfToken& getPhysicsToken();
 
 //! Get the token for the Textures directory
@@ -266,32 +281,35 @@ USDEX_API pxr::UsdPrim definePayload(pxr::UsdStagePtr stage, const pxr::SdfPath&
 //! @returns The newly created payload prim. Returns an invalid prim on error.
 USDEX_API pxr::UsdPrim definePayload(pxr::UsdPrim parent, const pxr::UsdPrim& source, std::optional<std::string_view> name = std::nullopt);
 
-//! Create a payload stage for an asset interface stage to reference.
+//! Create a relative layer within a `getPayloadToken()` subdirectory to hold the content of an asset
 //!
-//! The payload stage subLayers the different asset content stages (e.g., Geometry, Materials, etc.).
-//! This stage represents the root layer of the payload that the asset interface stage references.
-//! This function does not create the actual payload, that is done by the `usdex::core::addAssetInterface()` function.
+//! This layer represents the root layer of the Payload that the Asset Interface targets.
 //!
-//! @param stage The asset stage to create an asset payload stage from
+//! This entry point layer will subLayer the different Content Layers (e.g., Geometry, Materials, etc.) added via `addAssetContent()`.
+//!
+//! @note This function does not create an actual Payload, it is only creating a relative layer that should eventually
+//! be the target of a Payload (via `addAssetInterface()`).
+//!
+//! @param stage The stage's edit target identifier will dictate where the relative payload layer will be created
 //! @param format The file format extension (default: "usda")
 //! @param fileFormatArgs Additional file format-specific arguments to be supplied during stage creation.
-//! @returns The newly created asset payload stage
+//! @returns The newly created relative payload layer opened as a new stage. Returns an invalid stage on error.
 USDEX_API pxr::UsdStageRefPtr createAssetPayload(
     pxr::UsdStagePtr stage,
     const std::string& format = "usda",
     const pxr::SdfLayer::FileFormatArguments& fileFormatArgs = pxr::SdfLayer::FileFormatArguments()
 );
 
-//! Create a library layer from which the Asset Content stage can reference prims
+//! Create a Library Layer from which the Content Layers can reference prims
 //!
 //! This layer will contain a library of meshes, materials, prototypes for instances, or anything else that can be referenced by
-//! the asset content layers. It is not intended to be used as a standalone layer, the default prim will have a class specifier.
+//! the Content Layers. It is not intended to be used as a standalone layer. The default prim will have a `class` specifier.
 //!
-//! @param stage The asset payload stage
+//! @param stage The stage's edit target identifier will dictate where the Library Layer will be created
 //! @param name The name of the library (e.g., "Geometry", "Materials")
 //! @param format The file format extension (default: "usdc")
 //! @param fileFormatArgs Additional file format-specific arguments to be supplied during stage creation.
-//! @returns The newly created library stage, it will be named "nameLibrary.format"
+//! @returns The newly created relative layer opened as a new stage. It will be named "<name>Library.<format>"
 USDEX_API pxr::UsdStageRefPtr addAssetLibrary(
     pxr::UsdStagePtr stage,
     const std::string& name,
@@ -299,18 +317,21 @@ USDEX_API pxr::UsdStageRefPtr addAssetLibrary(
     const pxr::SdfLayer::FileFormatArguments& fileFormatArgs = pxr::SdfLayer::FileFormatArguments()
 );
 
-//! Create a content-specific stage to be added as a sublayer to the payload stage
+//! Create a specific Content Layer and add it as a sublayer to the stage's edit target
 //!
-//! This stage can define the hierarchical structure of the asset prims. It can reference prims in the asset library layers and author transform
-//! opinions on xformable prims. It can also contain the prim data if library layers are not being used.
+//! Any Prim data can be authored in the Content Layer, there are no specific restrictions or requirements.
 //!
-//! @param stage The asset payload stage to add the content-specific stage to
-//! @param name The name of the content-specific stage (e.g., "Geometry", "Materials")
+//! However, it is recommended to use a unique Content Layer for each domain (Geometry, Materials, Physics, etc.)
+//! and to ensure only domain-specific opinions are authored in that Content Layer. This provides a clear separation
+//! of concerns and allows for easier reuse of assets across domains as each layer can be enabled/disabled (muted) independently.
+//!
+//! @param stage The stage's edit target will determine where the Content Layer is created and will have its subLayers updated with the new content
+//! @param name The name of the Content Layer (e.g., "Geometry", "Materials", "Physics")
 //! @param format The file format extension (default: "usda")
 //! @param fileFormatArgs Additional file format-specific arguments to be supplied during stage creation.
-//! @param prependLayer Whether to prepend (or append) the layer to the sublayer list (default: true)
+//! @param prependLayer Whether to prepend (or append) the layer to the sublayer stack (default: true)
 //! @param createScope Whether to create a scope in the content stage (default: true)
-//! @returns The newly created asset content stage
+//! @returns The newly created Content Layer opened as a new stage. Returns an invalid stage on error.
 USDEX_API pxr::UsdStageRefPtr addAssetContent(
     pxr::UsdStagePtr stage,
     const std::string& name,
@@ -320,14 +341,16 @@ USDEX_API pxr::UsdStageRefPtr addAssetContent(
     bool createScope = true
 );
 
-//! Add an asset interface to a stage from a source stage
+//! Add an Asset Interface to a stage, which payloads a source stage's contents
 //!
-//! This function configures the stage with the source stage's metadata, copies the defaultPrim from the source stage, and
-//! annotates the asset interface with USD model metadata including component kind, asset name, and extents hint.
+//! This function creates a payload to the source stage's contents as the default prim on the stage.
 //!
-//! @param stage The stage to add the asset interface to
-//! @param source The stage that the interface will reference
-//! @returns True if the asset interface was added successfully, false otherwise
+//! It (re)configures the stage with the source stage's metadata, payloads the defaultPrim from the source stage, and annotates the Asset
+//! Interface with USD model metadata including component kind, asset name, and extents hint.
+//!
+//! @param stage The stage's edit target will become the Asset Interface
+//! @param source The stage that the Asset Interface will target as a Payload
+//! @returns True if the Asset Interface was added successfully, false otherwise
 USDEX_API bool addAssetInterface(pxr::UsdStagePtr stage, const pxr::UsdStagePtr source);
 
 //! @}

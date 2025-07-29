@@ -125,6 +125,23 @@ Properly defining `PhysicsJoints` relative to both bodies can be arduous. The `u
 
 Another complex aspect of UsdPhysics is specifying friction and other material properties via [PhysicsMaterialAPI](https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_physics_materials), which needs to be bound to the collision geometry similarly to how visual materials are bound to the render geometry. The `usdex_core` library provides [Physics Material](../api/group__physicsmaterials.rebreather_rst) functions to define, apply, and bind physics material properties like friction.
 
+## Asset Structure
+
+An asset is a named, versioned, and structured container of one or more resources which may include composable OpenUSD layers, textures, volumetric data, and more. There are many approaches to structuring assets, and no one structure is ideal for all use cases.
+
+NVIDIA's [Principles of Scalable Asset Structure](https://docs.omniverse.nvidia.com/usd/latest/learn-openusd/independent/asset-structure-principles.html) article proposes four key principles that should always be considered: **legibility**, **modularity**, **performance**, and **navigability**.
+
+It goes further, to discuss pros and cons of various production proven asset structures, and makes some explicit recommendations in the form of example assets towards the end of the article.
+
+The `usdex_core` library provides an [Asset Structure](../api/group__assetstructure.rebreather_rst) module which aims to codify authoring of asset structures that have been proven scalable and have broad import compatibility across a wide range of OpenUSD enabled applications, while guiding and simplifying the development process for new OpenUSD Exporters.
+
+In particular, we provide functions for:
+- Static `Tokens` (strings) which can be used for Layer or Scope names, to ensure consistency across assets
+- Defining relative References/Payloads whenever possible, and absolute References/Payloads only when necessary
+- Creating the Atomic Component structure proposed in the article
+  - Creating and organizing Content Layers and Library Layers in a consistent manner
+  - Configuring an Asset Interface Layer, which payload's the content for deferred loading, while still exposing key metadata to the consumer
+
 ## Diagnostic Logs
 
 OpenUSD's [Tf library](https://openusd.org/release/api/tf_page_front.html) provides various [diagnostic logging facilities](https://openusd.org/release/api/page_tf__diagnostic.html) which are useful for communicating errors, warnings, and status information to end users or system logs.
