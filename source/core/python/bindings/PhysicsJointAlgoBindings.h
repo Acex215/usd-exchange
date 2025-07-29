@@ -24,9 +24,7 @@ void bindPhysicsJointAlgo(module& m)
         m,
         "JointFrame",
         R"(
-            Stores the position and rotation used by a joint.
-
-            The ``JointFrame`` specifies the position and rotation in the coordinate system specified by ``space``.
+            Specifies a position and rotation in the coordinate system specified by ``space``
         )"
     )
         .def(pybind11::init<>())
@@ -35,10 +33,10 @@ void bindPhysicsJointAlgo(module& m)
         .def_readwrite("position", &JointFrame::position, "The position of the joint")
         .def_readwrite("orientation", &JointFrame::orientation, "The orientation of the joint");
 
-    pybind11::enum_<JointFrame::Space>(m.attr("JointFrame"), "Space", "Joint space types")
-        .value("Body0", JointFrame::Space::Body0, "The joint is defined in the local space of body0")
-        .value("Body1", JointFrame::Space::Body1, "The joint is defined in the local space of body1")
-        .value("World", JointFrame::Space::World, "The joint is defined in the world space");
+    pybind11::enum_<JointFrame::Space>(m.attr("JointFrame"), "Space", "Coordinate systems in which a joint can be defined")
+        .value("Body0", JointFrame::Space::Body0, "The joint is defined in the local space of ``body0``")
+        .value("Body1", JointFrame::Space::Body1, "The joint is defined in the local space of ``body1``")
+        .value("World", JointFrame::Space::World, "The joint is defined in world space");
 
     m.def(
         "definePhysicsFixedJoint",
@@ -265,7 +263,8 @@ void bindPhysicsJointAlgo(module& m)
               - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
               - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 
-            The ``lowerLimit`` and ``upperLimit`` ar specificed as distance along the ``axis`` in [linear units of the stage](https://openusd.org/release/api/group___usd_geom_linear_units__group.html).
+            The ``lowerLimit`` and ``upperLimit`` are specified as distance along the ``axis`` in
+            [linear units of the stage](https://openusd.org/release/api/group___usd_geom_linear_units__group.html).
 
             Parameters:
                 - **stage** - The stage on which to define the joint

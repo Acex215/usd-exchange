@@ -27,26 +27,29 @@ namespace usdex::core
 {
 //! @defgroup physicsjoints Physics Joint Prims
 //!
-//! This module creates PhysicsJoint and its derived classes.
+//! [PhysicsJoint](https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_joints) Prims define constraints which reduce the
+//! degrees of freedom between two bodies.
 //!
-//! See [UsdPhysics Joints](https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_joints) for details.
+//! The `PhysicsJoint` prims can be thought of as existing in two places at once: relative to each body that they constrain.
+//! Properly defining `PhysicsJoints` relative to both bodies can be arduous, especially given differences in source data specification across
+//! maximal coordinate (free-body) and reduced coordinate solvers.
+//!
+//! This module simplifies the authoring process and ensures `PhysicsJoints` are aligned to both bodies, regardless of the source data specification.
 //!
 //! @{
 
-//! Joint frame.
-//!
-//! The joint frame specifies the position and rotation in the coordinate system specified by 'space'.
+//! Specifies a position and rotation in the coordinate system specified by ``space``
 class JointFrame
 {
 public:
 
-    //! Joint space types
+    //! Coordinate systems in which a joint can be defined
     // clang-format off
     enum class Space
     {
-        Body0, //!< The joint is defined in the local space of body0
-        Body1, //!< The joint is defined in the local space of body1
-        World, //!< The joint is defined in the world space
+        Body0, //!< The joint is defined in the local space of `body0`
+        Body1, //!< The joint is defined in the local space of `body1`
+        World, //!< The joint is defined in world space
     };
     // clang-format on
 
@@ -206,7 +209,7 @@ USDEX_API pxr::UsdPhysicsRevoluteJoint definePhysicsRevoluteJoint(
 //!   - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
 //!   - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 //!
-//! The `lowerLimit` and `upperLimit` ar specificed as distance along the `axis` in
+//! The `lowerLimit` and `upperLimit` are specified as distance along the `axis` in
 //! [linear units of the stage](https://openusd.org/release/api/group___usd_geom_linear_units__group.html).
 //!
 //! @param stage The stage on which to define the joint

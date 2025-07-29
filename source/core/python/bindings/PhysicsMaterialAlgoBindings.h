@@ -144,20 +144,19 @@ void bindPhysicsMaterialAlgo(module& m)
         arg("prim"),
         arg("material"),
         R"(
-            Binds a physics material to a given rigidbody or collider prim, specifying the physics attributes of that prim.
+            Binds a physics material to a given rigid body or collision geometry.
 
             Validates both the prim and the material, applies the ``UsdShade.MaterialBindingAPI`` to the target prim,
-            and binds the material to the target prim.
+            and binds the material to the target prim with the "physics" purpose.
 
-            @note The material is bound with the "physics" used for physics material, and with the default "fallback strength"
-            meaning descendant prims can override with a different material. If alternate behavior is desired, use the ``UsdShade.MaterialBindingAPI`` directly.
+            Note:
+                The material is bound with the "physics" purpose, and with the default "fallback strength",
+                meaning descendant prims can override with a different material. If alternate behavior is desired,
+                use the ``UsdShade.MaterialBindingAPI`` directly.
 
-            @note We cannot bind materials to prims across different instance boundaries.
-            This ``usdex.core.bindPhysicsMaterial`` returns an error if ``prim`` and ``material`` are not placed in an editable location.
-
-            Parameters:
-                - **prim** - The prim that the material will affect
-                - **material** - The material to bind to the prim
+            Note:
+                We cannot bind materials to prims across different instance boundaries.
+                This function returns an error if ``prim`` and ``material`` are not placed in an editable location.
 
             Returns:
                 ``True`` if the material was successfully bound to the target prim, ``False`` otherwise.

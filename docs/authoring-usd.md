@@ -78,6 +78,8 @@ To learn about each of the "define" functions in more detail, see the specific d
 - [Lines and Curves](../api/group__curves.rebreather_rst)
 - [Cameras](../api/group__cameras.rebreather_rst)
 - [Lights](../api/group__lights.rebreather_rst)
+- [Physics Joints](../api/group__physicsjoints.rebreather_rst)
+- [Physics Materials](../api/group__physicsmaterials.rebreather_rst)
 - [Preview Materials and Shaders](../api/group__materials.rebreather_rst)
 - [RTX Materials and Shaders](../api/group__rtx__materials.rebreather_rst) (optionally included via `usdex_rtx`)
 
@@ -103,6 +105,25 @@ The [UsdGeomXformable](https://openusd.org/release/api/usd_geom_page_front.html#
 from which a resulting matrix can be computed.
 
 The flexibility of this system adds complexity to the code required for authoring and retrieving transform information. The `usdex_core` library provides the [3D Transformation](../api/group__xformable.rebreather_rst) functions to help with this.
+
+## Physics
+
+[UsdPhysics](https://openusd.org/release/api/usd_physics_page_front.html) defines the physics-related prim and property schemas that together form a physics simulation representation. It is primarily designed around rigid body simulators, which take as input a list of rigid bodies and a list of constraints.
+
+Many concepts in UsdPhysics are fairly straightforward and don't merit higher level authoring functions. For example:
+- To make any [UsdGeomXformable](https://openusd.org/release/api/usd_geom_page_front.html#UsdGeom_Xformable) prim a rigid body use `UsdPhysicsRigidBodyAPI::Apply(prim)`
+- To make any [UsdGeomGPrim](https://openusd.org/release/api/class_usd_geom_gprim.html) a collision object use `UsdPhysicsCollisionAPI::Apply(prim)`
+
+```{eval-rst}
+.. tip::
+  Use the `Asset Validator <./devtools.html#asset-validator>`_ to ensure the ``UsdPhysics`` schemas have been used correctly.
+```
+
+However, some other UsdPhysics concepts are more intricate to author correctly, especially given often divergent approaches in the source data specifications across maximal coordinate (free-body) and reduced coordinate solvers.
+
+Properly defining `PhysicsJoints` relative to both bodies can be arduous. The `usdex_core` library provides several [Physics Joints](../api/group__physicsjoints.rebreather_rst) functions to simplify the authoring process and ensure `PhysicsJoints` are aligned to both bodies, regardless of the source data specification.
+
+Another complex aspect of UsdPhysics is specifying friction and other material properties via [PhysicsMaterialAPI](https://openusd.org/release/api/usd_physics_page_front.html#usdPhysics_physics_materials), which needs to be bound to the collision geometry similarly to how visual materials are bound to the render geometry. The `usdex_core` library provides [Physics Material](../api/group__physicsmaterials.rebreather_rst) functions to define, apply, and bind physics material properties like friction.
 
 ## Diagnostic Logs
 
