@@ -14,29 +14,10 @@ if %errorlevel% neq 0 ( exit /b %errorlevel% )
 call "%VENV%\Scripts\activate.bat"
 if %errorlevel% neq 0 ( exit /b %errorlevel% )
 
-REM Install wheel packages
 for %%f in ("_build\packages\*.whl") do (
-    python.exe -m pip install "%%f"
+    python.exe -m pip install "%%f[test]"
     if %errorlevel% neq 0 ( exit /b %errorlevel% )
 )
-
-REM copy the test dependencies into the env
-set TEST_ROOT=%1
-echo Copy test deps from: %TEST_ROOT%
-for /f "delims=" %%i in ('python.exe -c "import site; print(site.getsitepackages()[-1])"') do set SITE_PACKAGES=%%i
-echo Copy test deps to: %SITE_PACKAGES%
-if not exist "%SITE_PACKAGES%\usdex\test" (
-    mkdir "%SITE_PACKAGES%\usdex\test"
-)
-xcopy /s /e /y /q "%TEST_ROOT%\python\usdex\test" "%SITE_PACKAGES%\usdex\test"
-if not exist "%SITE_PACKAGES%\omni\asset_validator" (
-    mkdir "%SITE_PACKAGES%\omni\asset_validator"
-)
-xcopy /s /e /y /q "%TEST_ROOT%\python\omni\asset_validator" "%SITE_PACKAGES%\omni\asset_validator"
-if not exist "%SITE_PACKAGES%\omni\capabilities" (
-    mkdir "%SITE_PACKAGES%\omni\capabilities"
-)
-xcopy /s /e /y /q "%TEST_ROOT%\python\omni\capabilities" "%SITE_PACKAGES%\omni\capabilities"
 
 REM Run the tests
 python.exe -m unittest discover -v -s source\core\tests\unittest

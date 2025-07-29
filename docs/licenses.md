@@ -8,8 +8,6 @@ The NVIDIA OpenUSD Exchange SDK is provided under the [Apache License, Version 2
 
 The NVIDIA OpenUSD Exchange SDK makes direct use of several 3rd Party Open Source Software (OSS). Each of these 3rd Party OSS may use other OSS internally.
 
-In addition, the NVIDIA OpenUSD Exchange SDK uses some NVIDIA proprietary technologies (see [Optional NVIDIA Dependencies](#optional-nvidia-dependencies)).
-
 Some of the runtime dependencies are compile-time optional, and some only apply to individual modules.
 
 Detailed below are the licenses of all runtime dependencies of each OpenUSD Exchange library & module. Each dependency listed links to the relevant [individual licenses](#individual-licenses).
@@ -118,20 +116,6 @@ Some design patterns used in OpenUSD Exchange SDK source code may resemble those
 - Cortex `(jump to license) <cortex LICENSE_>`_
 - Gaffer `(jump to license) <gaffer LICENSE_>`_
 ```
-
-## Optional NVIDIA Dependencies
-
-While the NVIDIA OpenUSD Exchange SDK is Open Source Software (OSS), it optionally depends on some NVIDIA proprietary technologies:
-- NVIDIA Omniverse Asset Validator (python module)
-
-These two dependencies are governed by the [NVIDIA Agreements | Enterprise Software | NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [NVIDIA Agreements | Enterprise Software | Product Specific Terms for Omniverse](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-omniverse).
-
-```{eval-rst}
-.. note::
-  They are optional add-ons for the NVIDIA OpenUSD Exchange SDK which can be trivially disabled.
-```
-
-To disable the NVIDIA Omniverse Asset Validator, simply avoid using the [usdex.test](./python-usdex-test.rst) python module in your runtime. The Asset Validator is not used at all in [usdex.core](./python-usdex-core.rst), so no source code changes are required.
 
 ## Individual Licenses
 

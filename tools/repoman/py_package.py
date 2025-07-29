@@ -10,7 +10,29 @@ import shutil
 from typing import Callable, Dict
 
 import omni.repo.man
+import packmanapi
 import toml
+
+
+def __resolve_oav_version() -> str:
+    tokens = {
+        "platform_target_abi": omni.repo.man.resolve_tokens("${platform_target_abi}"),
+        "platform_host": omni.repo.man.resolve_tokens("${platform}"),
+        "platform": omni.repo.man.resolve_tokens("${platform}"),
+        "config": omni.repo.man.resolve_tokens("${config}"),
+    }
+
+    try:
+        info = packmanapi.resolve_dependency(
+            "omni_asset_validator",
+            "deps/target-deps.packman.xml",
+            platform=tokens["platform_target_abi"],
+            remotes=["packman:cloudfront"],
+            tokens=tokens,
+        )
+        return info["remote_filename"].partition("@")[-1].partition("+")[0]
+    except Exception as e:
+        raise omni.repo.man.ExpectedError(f"Failed to resolve omni-asset-validator version: {e}")
 
 
 def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
@@ -31,6 +53,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         usdFlavor = omni.repo.man.resolve_tokens("${usd_flavor}")
         usdVer = omni.repo.man.resolve_tokens("${usd_ver}")
         usdIdentifier = f"{usdFlavor}{usdVer}".replace(".", "").replace("-", "")
+        oav_version = __resolve_oav_version()
         fullVersion = omni.repo.man.build_number.generate_build_number_from_file(repoVersionFile)
         realVersion, label = fullVersion.split("+")
         if os.environ.get("CI_COMMIT_TAG"):
@@ -43,6 +66,7 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         if os.path.exists(stagingDir):
             shutil.rmtree(stagingDir)
         shutil.copytree(f"{source}/python/usdex/core", f"{stagingDir}/usdex/core", ignore=ignore_callable)
+        shutil.copytree(f"{source}/python/usdex/test", f"{stagingDir}/usdex/test", ignore=ignore_callable)
         shutil.copytree(f"{source}/python/pxr", f"{stagingDir}/pxr", ignore=ignore_callable)
         if omni.repo.man.is_windows():
             # DLLS and plugInfo
@@ -58,7 +82,12 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
             data = toml.load(f)
         data["project"]["version"] = packageVersion
         # inject the specific USD flavor we are building against
-        data["project"]["optional-dependencies"] = {usdIdentifier: []}
+        data["project"]["optional-dependencies"].update(
+            {
+                usdIdentifier: [],
+                "test": [f"omniverse-asset-validator=={oav_version}"],
+            }
+        )
         with open(pyproject_target, "w") as f:
             toml.dump(data, f)
 
