@@ -110,6 +110,17 @@ __all__ = [
     "getColorSpaceToken",
     "sRgbToLinear",
     "linearToSrgb",
+    # physicsJoint
+    "JointFrame",
+    "definePhysicsFixedJoint",
+    "definePhysicsRevoluteJoint",
+    "definePhysicsPrismaticJoint",
+    "definePhysicsSphericalJoint",
+    "alignPhysicsJoint",
+    # physicsMaterial
+    "definePhysicsMaterial",
+    "addPhysicsToMaterial",
+    "bindPhysicsMaterial",
 ]
 
 import os

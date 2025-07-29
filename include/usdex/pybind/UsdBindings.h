@@ -40,6 +40,11 @@
 #include <pxr/usd/usdLux/rectLight.h>
 #include <pxr/usd/usdLux/shapingAPI.h>
 #include <pxr/usd/usdLux/sphereLight.h>
+#include <pxr/usd/usdPhysics/fixedJoint.h>
+#include <pxr/usd/usdPhysics/joint.h>
+#include <pxr/usd/usdPhysics/prismaticJoint.h>
+#include <pxr/usd/usdPhysics/revoluteJoint.h>
+#include <pxr/usd/usdPhysics/sphericalJoint.h>
 #include <pxr/usd/usdShade/material.h>
 #include <pxr/usd/usdShade/shader.h>
 
@@ -157,6 +162,16 @@ PYBOOST11_TYPE_CASTER(pxr::UsdShadeMaterial, _("pxr.UsdShade.Material"));
 PYBOOST11_TYPE_CASTER(pxr::UsdShadeShader, _("pxr.UsdShade.Shader"));
 //! pybind11 interoperability for `VtValue`
 PYBOOST11_TYPE_CASTER(pxr::VtValue, _("pxr.Vt.Value"));
+//! pybind11 interoperability for `UsdPhysicsFixedJoint`
+PYBOOST11_TYPE_CASTER(pxr::UsdPhysicsFixedJoint, _("pxr.UsdPhysics.FixedJoint"));
+//! pybind11 interoperability for `UsdPhysicsRevoluteJoint`
+PYBOOST11_TYPE_CASTER(pxr::UsdPhysicsRevoluteJoint, _("pxr.UsdPhysics.RevoluteJoint"));
+//! pybind11 interoperability for `UsdPhysicsPrismaticJoint`
+PYBOOST11_TYPE_CASTER(pxr::UsdPhysicsPrismaticJoint, _("pxr.UsdPhysics.PrismaticJoint"));
+//! pybind11 interoperability for `UsdPhysicsSphericalJoint`
+PYBOOST11_TYPE_CASTER(pxr::UsdPhysicsSphericalJoint, _("pxr.UsdPhysics.SphericalJoint"));
+//! pybind11 interoperability for `UsdPhysicsJoint`
+PYBOOST11_TYPE_CASTER(pxr::UsdPhysicsJoint, _("pxr.UsdPhysics.Joint"));
 
 //! @}
 
