@@ -47,7 +47,7 @@ class AssetStructureTestBase:
 
     def subDirTmpFile(self, subdirs: list = [], name: str = "", ext: str = "") -> str:
         # Helper function to create a temp file under the temp base dir within a subdir
-        tempDir = pathlib.Path(self.tmpBaseDir())
+        tempDir = pathlib.Path(self.tmpDir())
         for subdir in subdirs:
             tempDir = tempDir / subdir
         tempDir.mkdir(parents=True, exist_ok=True)
@@ -1118,7 +1118,7 @@ class DefineReferencePayloadBase(AssetStructureTestBase):
 
     def testSameLocalPath(self):
         # Test when a stage identifier is a relative path in the current working directory
-        with TemporaryDirectoryChange(self.tmpBaseDir()):
+        with TemporaryDirectoryChange(self.tmpDir()):
             sourceStageIdentifier = "source.usda"
             sourceStage = usdex.core.createStage(
                 sourceStageIdentifier,

@@ -199,6 +199,23 @@ class TestCase(unittest.TestCase):
         os.close(handle)
         return fileName
 
+    def tmpDir(self, name: str = "") -> str:
+        """
+        Create a temporary directory on the local filesystem
+
+        Args:
+            name: an optional directory name. If not provided the test name will be used
+
+        Returns:
+            The filesystem path
+        """
+        # Sanitize name string
+        name = re.sub(TestCase.validFileIdentifierRegex, "_", name or self._testMethodName)
+        path = os.path.join(self.tmpBaseDir(), name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        return path
+
     @staticmethod
     def isUsdOlderThan(version: str):
         """Determine if the provided version is older than the current USD runtime"""
