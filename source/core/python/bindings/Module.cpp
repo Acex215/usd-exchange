@@ -17,6 +17,8 @@ ARCH_PRAGMA_MAYBE_UNINITIALIZED
 #include "MaterialAlgoBindings.h"
 #include "MeshAlgoBindings.h"
 #include "NameAlgoBindings.h"
+#include "PhysicsJointAlgoBindings.h"
+#include "PhysicsMaterialAlgoBindings.h"
 #include "PointsAlgoBindings.h"
 #include "PrimvarDataBindings.h"
 #include "SettingsBindings.h"
@@ -48,6 +50,8 @@ PYBIND11_MODULE(_usdex_core, m)
     bindCameraAlgo(m);
     bindLightAlgo(m);
     bindMaterialAlgo(m);
+    bindPhysicsJointAlgo(m);
+    bindPhysicsMaterialAlgo(m);
 }
 
 } // namespace
