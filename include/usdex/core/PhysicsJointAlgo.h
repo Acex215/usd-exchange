@@ -128,6 +128,7 @@ USDEX_API pxr::UsdPhysicsFixedJoint definePhysicsFixedJoint(
 //! corresponding to `body0` and `body1` of the joint are automatically calculated.
 //!
 //! The `axis` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
+//!
 //!   - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
 //!   - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
 //!   - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
@@ -208,9 +209,10 @@ USDEX_API pxr::UsdPhysicsRevoluteJoint definePhysicsRevoluteJoint(
 //! corresponding to `body0` and `body1` of the joint are automatically calculated.
 //!
 //! The `axis` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-//!   - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-//!   - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-//!   - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
+//!
+//!   - To slide along the X-axis, specify (1, 0, 0). To slide in the opposite direction, specify (-1, 0, 0).
+//!   - To slide along the Y-axis, specify (0, 1, 0). To slide in the opposite direction, specify (0, -1, 0).
+//!   - To slide along the Z-axis, specify (0, 0, 1). To slide in the opposite direction, specify (0, 0, -1).
 //!   - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 //!
 //! The `lowerLimit` and `upperLimit` are specified as distance along the `axis` in
@@ -291,6 +293,7 @@ USDEX_API pxr::UsdPhysicsPrismaticJoint definePhysicsPrismaticJoint(
 //! corresponding to `body0` and `body1` of the joint are automatically calculated.
 //!
 //! The `axis` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
+//!
 //!   - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
 //!   - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
 //!   - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
@@ -373,11 +376,12 @@ USDEX_API pxr::UsdPhysicsSphericalJoint definePhysicsSphericalJoint(
 //! The Joint's local position & orientation relative to each Body will be authored
 //! to align to the specified position, orientation, and axis.
 //!
-//! The `axis` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-//!   - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-//!   - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-//!   - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
-//!   - Any other direction will be aligned to X-axis via a local rotation for both bodies.
+//! The `axis` specifies the primary axis for rotation or translation, based on the local joint orientation relative to each body.
+//!
+//!   - To rotate or translate about the X-axis, specify (1, 0, 0). To operate in the opposite direction, specify (-1, 0, 0).
+//!   - To rotate or translate about about the Y-axis, specify (0, 1, 0). To operate in the opposite direction, specify (0, -1, 0).
+//!   - To rotate or translate about about the Z-axis, specify (0, 0, 1). To operate in the opposite direction, specify (0, 0, -1).
+//!   - Any other direction will be aligned to X-axis via a local rotation or translation for both bodies.
 //!
 //! @param joint The joint to align
 //! @param frame The position and rotation of the joint in the specified coordinate system.
