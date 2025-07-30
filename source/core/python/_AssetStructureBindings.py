@@ -13,18 +13,23 @@ from ._usdex_core import defineScope, getContentsToken, getLayerAuthoringMetadat
 
 def createAssetPayload(stage: Usd.Stage, format: str = "usda", fileFormatArgs: Optional[dict] = None) -> Optional[Usd.Stage]:
     """
-    Create an asset payload stage from an asset stage.
+    Create a relative layer within a ``getPayloadToken()`` subdirectory to hold the content of an asset.
 
-    The asset payload stage subLayers the different asset content stages (e.g., Geometry, Materials, etc.).
-    This stage represents the root layer of the payload that the asset stage references through the "asset interface".
+    This layer represents the root layer of the Payload that the Asset Interface targets.
+
+    This entry point layer will subLayer the different Content Layers (e.g., Geometry, Materials, etc.) added via ``usdex.core.addAssetContent``.
+
+    Note:
+        This function does not create an actual Payload, it is only creating a relative layer that should eventually
+        be the target of a Payload (via ``usdex.core.addAssetInterface``).
 
     Args:
-        stage: The asset stage to create an asset payload stage from.
+        stage: The stage's edit target identifier will dictate where the relative payload layer will be created.
         format: The file format extension (default: "usda").
         fileFormatArgs: Additional file format-specific arguments to be supplied during stage creation.
 
     Returns:
-        The newly created asset payload stage or None
+        The newly created relative payload layer opened as a new stage. Returns an invalid stage on error.
     """
     # This function should mimic the behavior of the C++ function `usdex::core::createAssetPayload`.
     # It has been re-implemented here rather than bound to python using pybind11 due to issues with the transfer of ownership of the UsdStage object
@@ -70,19 +75,19 @@ def createAssetPayload(stage: Usd.Stage, format: str = "usda", fileFormatArgs: O
 
 def addAssetLibrary(stage: Usd.Stage, name: str, format: str = "usdc", fileFormatArgs: Optional[dict] = None) -> Optional[Usd.Stage]:
     """
-    Create a library layer from which the Asset Content stage can reference prims.
+    Create a Library Layer from which the Content Layers can reference prims.
 
     This layer will contain a library of meshes, materials, prototypes for instances, or anything else that can be referenced by
-    the asset content layers. It is not intended to be used as a standalone layer, the default prim will have a class specifier.
+    the Content Layers. It is not intended to be used as a standalone layer. The default prim will have a ``class`` specifier.
 
     Args:
-        stage: The asset payload stage.
-        name: The name of the library (e.g., "GeometryLibrary", "MaterialsLibrary").
+        stage: The stage's edit target identifier will dictate where the Library Layer will be created.
+        name: The name of the library (e.g., "Geometry", "Materials").
         format: The file format extension (default: "usdc").
         fileFormatArgs: Additional file format-specific arguments to be supplied during stage creation.
 
     Returns:
-        The newly created library stage, it will be named "nameLibrary.format" or None
+        The newly created relative layer opened as a new stage. It will be named "<name>Library.<format>"
     """
     # This function should mimic the behavior of the C++ function `usdex::core::addAssetLibrary`.
     # It has been re-implemented here rather than bound to python using pybind11 due to issues with the transfer of ownership of the UsdStage object
@@ -132,21 +137,24 @@ def addAssetContent(
     createScope: bool = True,
 ) -> Optional[Usd.Stage]:
     """
-    Create a content-specific stage to be added as a sublayer to the payload stage.
+    Create a specific Content Layer and add it as a sublayer to the stage's edit target.
 
-    This stage can define the hierarchical structure of the asset prims. It can reference prims in the asset library layers and author transform
-    opinions on xformable prims. It can also contain the prim data if library layers are not being used.
+    Any Prim data can be authored in the Content Layer, there are no specific restrictions or requirements.
+
+    However, it is recommended to use a unique Content Layer for each domain (Geometry, Materials, Physics, etc.)
+    and to ensure only domain-specific opinions are authored in that Content Layer. This provides a clear separation
+    of concerns and allows for easier reuse of assets across domains as each layer can be enabled/disabled (muted) independently.
 
     Args:
-        stage: The asset payload stage to add the content-specific stage to
-        name: The name of the content-specific stage (e.g., "Geometry", "Materials")
+        stage: The stage's edit target will determine where the Content Layer is created and will have its subLayers updated with the new content
+        name: The name of the Content Layer (e.g., "Geometry", "Materials", "Physics")
         format: The file format extension (default: "usda").
         fileFormatArgs: Additional file format-specific arguments to be supplied during stage creation.
-        prependLayer: Whether to prepend (or append) the layer to the sublayer list (default: True).
+        prependLayer: Whether to prepend (or append) the layer to the sublayer stack (default: True).
         createScope: Whether to create a scope in the content stage (default: True).
 
     Returns:
-        The newly created content stage or None
+        The newly created Content Layer opened as a new stage. Returns an invalid stage on error.
     """
     # This function should mimic the behavior of the C++ function `usdex::core::addAssetContent`.
     # It has been re-implemented here rather than bound to python using pybind11 due to issues with the transfer of ownership of the UsdStage object

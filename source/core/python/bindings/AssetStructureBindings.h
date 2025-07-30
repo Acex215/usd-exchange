@@ -86,17 +86,19 @@ void bindAssetStructure(module& m)
         arg("stage"),
         arg("source"),
         R"(
-            Add an asset interface to a stage from a source stage.
+            Add an Asset Interface to a stage, which payloads a source stage's contents.
 
-            This function configures the stage with the source stage's metadata, copies the defaultPrim from the source stage, and
-            annotates the asset interface with USD model metadata including component kind, asset name, and extents hint.
+            This function creates a payload to the source stage's contents as the default prim on the stage.
 
-            Parameters:
-                - **stage** - The stage to add the asset interface to
-                - **source** - The stage that the interface will reference
+            It (re)configures the stage with the source stage's metadata, payloads the defaultPrim from the source stage, and annotates the Asset
+            Interface with USD model metadata including component kind, asset name, and extents hint.
+
+            Args:
+                stage: The stage's edit target will become the Asset Interface
+                source: The stage that the Asset Interface will target as a Payload
 
             Returns:
-                True if the asset interface was added successfully, false otherwise.
+                True if the Asset Interface was added successfully, false otherwise.
 
         )"
     );
@@ -117,10 +119,10 @@ void bindAssetStructure(module& m)
         "getContentsToken",
         &getContentsToken,
         R"(
-            Get the token for the Contents stage.
+            Get the token for the Contents layer.
 
             Returns:
-                The token for the Contents stage.
+                The token for the Contents layer.
 
         )"
     );
@@ -129,10 +131,10 @@ void bindAssetStructure(module& m)
         "getGeometryToken",
         &getGeometryToken,
         R"(
-            Get the token for the Geometry stage and scope.
+            Get the token for the Geometry layer and scope.
 
             Returns:
-                The token for the Geometry stage and scope.
+                The token for the Geometry layer and scope.
 
         )"
     );
@@ -141,10 +143,10 @@ void bindAssetStructure(module& m)
         "getLibraryToken",
         &getLibraryToken,
         R"(
-            Get the token for the Library stage.
+            Get the token for the Library layer.
 
             Returns:
-                The token for the Library stage.
+                The token for the Library layer.
 
         )"
     );
@@ -153,10 +155,10 @@ void bindAssetStructure(module& m)
         "getMaterialsToken",
         &getMaterialsToken,
         R"(
-            Get the token for the Materials stage and scope.
+            Get the token for the Materials layer and scope.
 
             Returns:
-                The token for the Materials stage and scope.
+                The token for the Materials layer and scope.
 
         )"
     );
@@ -177,10 +179,10 @@ void bindAssetStructure(module& m)
         "getPhysicsToken",
         &getPhysicsToken,
         R"(
-            Get the token for the Physics stage and scope.
+            Get the token for the Physics layer and scope.
 
             Returns:
-                The token for the Physics stage and scope.
+                The token for the Physics layer and scope.
 
         )"
     );
@@ -212,8 +214,8 @@ void bindAssetStructure(module& m)
             an external reference with a valid relative path.
 
             For more information, see:
-            - https://openusd.org/release/glossary.html#usdglossary-references
-            - https://openusd.org/release/api/class_usd_references.html#details
+                - https://openusd.org/release/glossary.html#usdglossary-references
+                - https://openusd.org/release/api/class_usd_references.html#details
 
             Parameters:
                 - **stage** - The stage on which to define the reference
@@ -263,8 +265,8 @@ void bindAssetStructure(module& m)
             an external payload with a valid relative path.
 
             For more information, see:
-            - https://openusd.org/release/glossary.html#usdglossary-payload
-            - https://openusd.org/release/api/class_usd_payloads.html#details
+                - https://openusd.org/release/glossary.html#usdglossary-payload
+                - https://openusd.org/release/api/class_usd_payloads.html#details
 
             Parameters:
                 - **stage** - The stage on which to define the payload

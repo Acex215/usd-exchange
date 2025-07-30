@@ -19,7 +19,9 @@
 
 namespace usdex::core
 {
-//! @defgroup physicsmaterial Physics Material Properties for use with Simulation Engines
+//! @defgroup physicsmaterials Physics Material Properties for use with Simulation Engines
+//!
+//! Utility functions to define, apply, and bind physics material properties to collision geometry.
 //!
 //! When `UsdPhysicsMaterialAPI` is applied on a `UsdShadeMaterial` it specifies various physical properties which should be used during simulation of
 //! the bound geometry.
@@ -123,16 +125,16 @@ USDEX_API bool addPhysicsToMaterial(
     const std::optional<float> density = std::nullopt
 );
 
-//! Binds a physics material to a given rigidbody or collider prim, specifying the physics attributes of that prim.
+//! Binds a physics material to a given rigid body or collision geometry.
 //!
 //! Validates both the prim and the material, applies the `UsdShadeMaterialBindingAPI` to the target prim,
-//! and binds the material to the target prim.
+//! and binds the material to the target prim with the "physics" purpose.
 //!
 //! @note The material is bound with the "physics" purpose, and with the default "fallback strength",
 //! meaning descendant prims can override with a different material. If alternate behavior is desired, use the `UsdShadeMaterialBindingAPI` directly.
 //!
 //! @note We cannot bind materials to prims across different instance boundaries.
-//! This `usdex::core::bindPhysicsMaterial` returns an error if `prim` are not placed in an editable location.
+//! This function returns an error if `prim` are not placed in an editable location.
 //!
 //! @param prim The prim that the material will affect
 //! @param material The material to bind to the prim
