@@ -25,10 +25,15 @@ void bindPhysicsJointAlgo(module& m)
         "JointFrame",
         R"(
             Specifies a position and rotation in the coordinate system specified by ``space``
+
+            Note:
+                The ``position`` and ``orientation`` are stored as doubles to avoid precision loss when aligning the joint to each body.
+                This differs from the ``UsdPhysics.Joint`` schema, which stores them as floats. The final authored values on the
+                ``PhysicsJoint`` prim will be cast down to floats to align with the schema.
         )"
     )
         .def(pybind11::init<>())
-        .def(pybind11::init<JointFrame::Space, const GfVec3f&, const GfQuatf&>(), arg("space"), arg("position"), arg("orientation"))
+        .def(pybind11::init<JointFrame::Space, const GfVec3d&, const GfQuatd&>(), arg("space"), arg("position"), arg("orientation"))
         .def_readwrite("space", &JointFrame::space, "The space in which the joint is defined")
         .def_readwrite("position", &JointFrame::position, "The position of the joint")
         .def_readwrite("orientation", &JointFrame::orientation, "The orientation of the joint");

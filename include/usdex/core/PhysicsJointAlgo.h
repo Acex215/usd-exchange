@@ -39,6 +39,10 @@ namespace usdex::core
 //! @{
 
 //! Specifies a position and rotation in the coordinate system specified by ``space``
+//!
+//! @note The `position` and `orientation` are stored as doubles to avoid precision loss when aligning the joint to each body. This differs from the
+//! `UsdPhysicsJoint` schema, which stores them as floats. The final authored values on the `PhysicsJoint` prim will be cast down to floats to align
+//! with the schema.
 class JointFrame
 {
 public:
@@ -54,8 +58,8 @@ public:
     // clang-format on
 
     Space space; //!< The space in which the joint is defined
-    pxr::GfVec3f position; //!< The position of the joint
-    pxr::GfQuatf orientation; //!< The orientation of the joint
+    pxr::GfVec3d position; //!< The position of the joint
+    pxr::GfQuatd orientation; //!< The orientation of the joint
 };
 
 //! Creates a fixed joint connecting two rigid bodies.

@@ -69,6 +69,8 @@ namespace pybind11::detail
 
 //! pybind11 interoperability for `GfCamera`
 PYBOOST11_TYPE_CASTER(pxr::GfCamera, _("pxr.Gf.Camera"));
+//! pybind11 interoperability for `GfQuatd`
+PYBOOST11_TYPE_CASTER(pxr::GfQuatd, _("pxr.Gf.Quatd"));
 //! pybind11 interoperability for `GfQuatf`
 PYBOOST11_TYPE_CASTER(pxr::GfQuatf, _("pxr.Gf.Quatf"));
 //! pybind11 interoperability for `GfVec3d`
