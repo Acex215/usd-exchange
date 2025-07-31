@@ -24,11 +24,11 @@ using namespace pxr;
 namespace
 {
 // Calculates the rotation of a vector along the x-axis.
-GfQuatf alignVectorToXAxis(const GfVec3f& axis)
+GfQuatd alignVectorToXAxis(const GfVec3f& axis)
 {
     if (axis.GetLength() < std::numeric_limits<float>::epsilon())
     {
-        return GfQuatf::GetIdentity();
+        return GfQuatd::GetIdentity();
     }
 
     // If the vector is already aligned with the X-axis or directly opposite
@@ -36,13 +36,13 @@ GfQuatf alignVectorToXAxis(const GfVec3f& axis)
     if (std::abs(axis[0] - 1.0f) < std::numeric_limits<float>::epsilon())
     {
         // When axis is (1, 0, 0).
-        return GfQuatf::GetIdentity();
+        return GfQuatd::GetIdentity();
     }
     else if (std::abs(axis[0] + 1.0f) < std::numeric_limits<float>::epsilon())
     {
         // When axis is (-1, 0, 0).
         // If aligned with negative X-axis, rotate 180 degrees around Y-axis (or Z-axis)
-        return GfQuatf(0.0f, 0.0f, 1.0f, 0.0f); // Quaternion for 180 deg around Y-axis (w=0, x=0, y=sin(90), z=0)
+        return GfQuatd(0.0, 0.0, 1.0, 0.0); // Quaternion for 180 deg around Y-axis (w=0, x=0, y=sin(90), z=0)
     }
 
     // Calculate the rotation axis (cross product of XAxis and axis)
@@ -50,7 +50,7 @@ GfQuatf alignVectorToXAxis(const GfVec3f& axis)
     const GfVec3f rotationAxisNorm = rotationAxis.GetNormalized();
     if (rotationAxisNorm.GetLength() < std::numeric_limits<float>::epsilon())
     {
-        return GfQuatf::GetIdentity();
+        return GfQuatd::GetIdentity();
     }
 
     // Calculate the angle (dot product of axis and XAxis)
@@ -65,11 +65,11 @@ GfQuatf alignVectorToXAxis(const GfVec3f& axis)
     const double y = rotationAxisNorm[1] * std::sin(angle / 2.0);
     const double z = rotationAxisNorm[2] * std::sin(angle / 2.0);
 
-    return GfQuatf((float)w, (float)x, (float)y, (float)z);
+    return GfQuatd(w, x, y, z);
 }
 
 // Get the axis alignment and orientation for the given axis.
-void getAxisAlignment(const GfVec3f& axis, TfToken& axisToken, GfQuatf& orientation)
+void getAxisAlignment(const GfVec3f& axis, TfToken& axisToken, GfQuatd& orientation)
 {
     const GfVec3f _axis = axis.GetNormalized();
     axisToken = UsdPhysicsTokens->x;
@@ -98,21 +98,21 @@ void getAxisAlignment(const GfVec3f& axis, TfToken& axisToken, GfQuatf& orientat
     {
         // When _axis is (-1, 0, 0).
         axisToken = UsdPhysicsTokens->x;
-        const auto axisToX = GfQuatf(_axis[1], _axis[2], _axis[0], 0.0f);
+        const auto axisToX = GfQuatd(_axis[1], _axis[2], _axis[0], 0.0);
         orientation = orientation * axisToX;
     }
     else if (std::abs(_axis[1] + 1.0f) < std::numeric_limits<float>::epsilon())
     {
         // When _axis is (0, -1, 0).
         axisToken = UsdPhysicsTokens->y;
-        const auto axisToY = GfQuatf(_axis[0], _axis[1], _axis[2], 0.0f);
+        const auto axisToY = GfQuatd(_axis[0], _axis[1], _axis[2], 0.0);
         orientation = orientation * axisToY;
     }
     else if (std::abs(_axis[2] + 1.0f) < std::numeric_limits<float>::epsilon())
     {
         // When _axis is (0, 0, -1).
         axisToken = UsdPhysicsTokens->z;
-        const auto axisToZ = GfQuatf(_axis[1], _axis[2], _axis[0], 0.0f);
+        const auto axisToZ = GfQuatd(_axis[1], _axis[2], _axis[0], 0.0);
         orientation = orientation * axisToZ;
     }
     else
@@ -128,17 +128,17 @@ void getAxisAlignment(const GfVec3f& axis, TfToken& axisToken, GfQuatf& orientat
 // This function calculates the local position and rotation (orientation) of body0 and body1, which are the parameters of the physics joint.
 // Transforms the 'position' and 'orientation' given in the coordinate system of 'frameSpace' into local coordinates of 'targetSpace' (body0 or
 // body1).
-std::pair<GfVec3f, GfQuatf> computeLocalTransform(
+std::pair<GfVec3d, GfQuatd> computeLocalTransform(
     const GfMatrix4d& targetBodyTransform,
     const GfMatrix4d& otherBodyTransform,
     const usdex::core::JointFrame::Space& targetSpace,
     const usdex::core::JointFrame::Space& frameSpace,
-    const GfVec3f& position,
-    const GfQuatf& orientation
+    const GfVec3d& position,
+    const GfQuatd& orientation
 )
 {
-    GfVec3f worldPos = position;
-    GfQuatf worldRot = orientation;
+    GfVec3d worldPos = position;
+    GfQuatd worldRot = orientation;
 
     // If the transformation on body0 is for frameSpace = body0, it will be returned as local coordinates.
     // If the transformation on body1 is for frameSpace = body1, it will be returned as local coordinates.
@@ -151,15 +151,15 @@ std::pair<GfVec3f, GfQuatf> computeLocalTransform(
     // When transforming on body1, if frameSpace is body0, convert position and rotation to world coordinates.
     else if (frameSpace == usdex::core::JointFrame::Space::Body0 && targetSpace == usdex::core::JointFrame::Space::Body1)
     {
-        worldPos = GfVec3f(otherBodyTransform.Transform(GfVec3d(position)));
-        worldRot = GfQuatf(otherBodyTransform.RemoveScaleShear().ExtractRotation().GetQuat()) * orientation;
+        worldPos = otherBodyTransform.Transform(position);
+        worldRot = otherBodyTransform.RemoveScaleShear().ExtractRotation().GetQuat() * orientation;
     }
 
     // When transforming on body0, if frameSpace is body1, convert position and rotation to world coordinates.
     else if (frameSpace == usdex::core::JointFrame::Space::Body1 && targetSpace == usdex::core::JointFrame::Space::Body0)
     {
-        worldPos = GfVec3f(otherBodyTransform.Transform(GfVec3d(position)));
-        worldRot = GfQuatf(otherBodyTransform.RemoveScaleShear().ExtractRotation().GetQuat()) * orientation;
+        worldPos = otherBodyTransform.Transform(position);
+        worldRot = otherBodyTransform.RemoveScaleShear().ExtractRotation().GetQuat() * orientation;
     }
     // Otherwise, worldPos and worldRot contain the position and rotation in world coordinates, respectively.
 
@@ -167,8 +167,8 @@ std::pair<GfVec3f, GfQuatf> computeLocalTransform(
     // This matrix is used to convert to local coordinate position and rotation by multiplying with the inverse matrix.
     // USD physics does not allow unequal scales and shear components to be introduced in joint localRot.
     // Therefore, we first remove the scale and shear from the matrix.
-    GfVec3f localPos = GfVec3f(targetBodyTransform.GetInverse().Transform(GfVec3d(worldPos)));
-    GfQuatf localRot = GfQuatf(targetBodyTransform.RemoveScaleShear().ExtractRotation().GetInverse().GetQuat()) * worldRot;
+    GfVec3d localPos = targetBodyTransform.GetInverse().Transform(GfVec3d(worldPos));
+    GfQuatd localRot = targetBodyTransform.RemoveScaleShear().ExtractRotation().GetInverse().GetQuat() * worldRot;
     return { localPos, localRot };
 }
 
@@ -181,7 +181,7 @@ void setPhysicsJoint(
     std::optional<GfVec3f> axis = std::nullopt
 )
 {
-    GfQuatf _orientation = frame.orientation;
+    GfQuatd _orientation = frame.orientation;
 
     // Set the axis.
     if (axis.has_value())
@@ -228,8 +228,8 @@ void setPhysicsJoint(
             frame.position,
             _orientation
         );
-        joint.GetLocalPos0Attr().Set(localPos);
-        joint.GetLocalRot0Attr().Set(localRot);
+        joint.GetLocalPos0Attr().Set(GfVec3f(localPos));
+        joint.GetLocalRot0Attr().Set(GfQuatf(localRot));
     }
 
     if (body1)
@@ -243,8 +243,8 @@ void setPhysicsJoint(
             frame.position,
             _orientation
         );
-        joint.GetLocalPos1Attr().Set(localPos);
-        joint.GetLocalRot1Attr().Set(localRot);
+        joint.GetLocalPos1Attr().Set(GfVec3f(localPos));
+        joint.GetLocalRot1Attr().Set(GfQuatf(localRot));
     }
 }
 

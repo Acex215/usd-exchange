@@ -25,10 +25,15 @@ void bindPhysicsJointAlgo(module& m)
         "JointFrame",
         R"(
             Specifies a position and rotation in the coordinate system specified by ``space``
+
+            Note:
+                The ``position`` and ``orientation`` are stored as doubles to avoid precision loss when aligning the joint to each body.
+                This differs from the ``UsdPhysics.Joint`` schema, which stores them as floats. The final authored values on the
+                ``PhysicsJoint`` prim will be cast down to floats to align with the schema.
         )"
     )
         .def(pybind11::init<>())
-        .def(pybind11::init<JointFrame::Space, const GfVec3f&, const GfQuatf&>(), arg("space"), arg("position"), arg("orientation"))
+        .def(pybind11::init<JointFrame::Space, const GfVec3d&, const GfQuatd&>(), arg("space"), arg("position"), arg("orientation"))
         .def_readwrite("space", &JointFrame::space, "The space in which the joint is defined")
         .def_readwrite("position", &JointFrame::position, "The position of the joint")
         .def_readwrite("orientation", &JointFrame::orientation, "The orientation of the joint");
@@ -142,10 +147,11 @@ void bindPhysicsJointAlgo(module& m)
             corresponding to ``body0`` and ``body1`` of the joint are automatically calculated.
 
             The ``axis`` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-              - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-              - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-              - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
-              - Any other direction will be aligned to X-axis via a local rotation for both bodies.
+
+            - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
+            - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
+            - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
+            - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 
             Parameters:
                 - **stage** - The stage on which to define the joint
@@ -258,10 +264,11 @@ void bindPhysicsJointAlgo(module& m)
             corresponding to ``body0`` and ``body1`` of the joint are automatically calculated.
 
             The ``axis`` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-              - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-              - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-              - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
-              - Any other direction will be aligned to X-axis via a local rotation for both bodies.
+
+            - To slide along the X-axis, specify (1, 0, 0). To slide in the opposite direction, specify (-1, 0, 0).
+            - To slide along the Y-axis, specify (0, 1, 0). To slide in the opposite direction, specify (0, -1, 0).
+            - To slide along the Z-axis, specify (0, 0, 1). To slide in the opposite direction, specify (0, 0, -1).
+            - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 
             The ``lowerLimit`` and ``upperLimit`` are specified as distance along the ``axis`` in
             [linear units of the stage](https://openusd.org/release/api/group___usd_geom_linear_units__group.html).
@@ -377,10 +384,11 @@ void bindPhysicsJointAlgo(module& m)
             corresponding to ``body0`` and ``body1`` of the joint are automatically calculated.
 
             The ``axis`` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-              - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-              - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-              - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
-              - Any other direction will be aligned to X-axis via a local rotation for both bodies.
+
+            - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
+            - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
+            - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
+            - Any other direction will be aligned to X-axis via a local rotation for both bodies.
 
             For SphericalJoint, the axis specified here is used as the center, and the horizontal and vertical cone angles are limited by ``coneAngle0Limit`` and
             ``coneAngle1Limit``.
@@ -482,11 +490,12 @@ void bindPhysicsJointAlgo(module& m)
             The Joint's local position & orientation relative to each Body will be authored
             to align to the specified position, orientation, and axis.
 
-            The ``axis`` specifies the primary axis for rotation, based on the local joint orientation relative to each body.
-              - To rotate around the X-axis, specify (1, 0, 0). To rotate in the opposite direction, specify (-1, 0, 0).
-              - To rotate around the Y-axis, specify (0, 1, 0). To rotate in the opposite direction, specify (0, -1, 0).
-              - To rotate around the Z-axis, specify (0, 0, 1). To rotate in the opposite direction, specify (0, 0, -1).
-              - Any other direction will be aligned to X-axis via a local rotation for both bodies.
+            The ``axis`` specifies the primary axis for rotation or translation, based on the local joint orientation relative to each body.
+
+            - To rotate or translate about about the X-axis, specify (1, 0, 0). To operate in the opposite direction, specify (-1, 0, 0).
+            - To rotate or translate about about the Y-axis, specify (0, 1, 0). To operate in the opposite direction, specify (0, -1, 0).
+            - To rotate or translate about about the Z-axis, specify (0, 0, 1). To operate in the opposite direction, specify (0, 0, -1).
+            - Any other direction will be aligned to X-axis via a local rotation or translation for both bodies.
 
             Parameters:
                 - **joint** - The joint to align
