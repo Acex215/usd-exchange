@@ -110,25 +110,17 @@ class PhysicsJointAlgoTest(usdex.test.TestCase):
         self.assertTrue(joint.GetLocalPos1Attr().HasAuthoredValue())
         self.assertTrue(joint.GetLocalRot1Attr().HasAuthoredValue())
 
-        _localPos0 = Gf.Vec3f(joint.GetLocalPos0Attr().Get())
-        _localRot0 = Gf.Quatf(joint.GetLocalRot0Attr().Get())
-        _localPos1 = Gf.Vec3f(joint.GetLocalPos1Attr().Get())
-        _localRot1 = Gf.Quatf(joint.GetLocalRot1Attr().Get())
+        _localPos0: Gf.Vec3f = joint.GetLocalPos0Attr().Get()
+        _localRot0: Gf.Quatf = joint.GetLocalRot0Attr().Get()
+        _localPos1: Gf.Vec3f = joint.GetLocalPos1Attr().Get()
+        _localRot1: Gf.Quatf = joint.GetLocalRot1Attr().Get()
 
-        self.assertAlmostEqual(_localPos0[0], localPos0[0], places=4)
-        self.assertAlmostEqual(_localPos0[1], localPos0[1], places=4)
-        self.assertAlmostEqual(_localPos0[2], localPos0[2], places=4)
-        self.assertAlmostEqual(_localPos1[0], localPos1[0], places=4)
-        self.assertAlmostEqual(_localPos1[1], localPos1[1], places=4)
-        self.assertAlmostEqual(_localPos1[2], localPos1[2], places=4)
-        self.assertAlmostEqual(_localRot0.GetReal(), localRot0.GetReal(), places=4)
-        self.assertAlmostEqual(_localRot0.GetImaginary()[0], localRot0.GetImaginary()[0], places=4)
-        self.assertAlmostEqual(_localRot0.GetImaginary()[1], localRot0.GetImaginary()[1], places=4)
-        self.assertAlmostEqual(_localRot0.GetImaginary()[2], localRot0.GetImaginary()[2], places=4)
-        self.assertAlmostEqual(_localRot1.GetReal(), localRot1.GetReal(), places=4)
-        self.assertAlmostEqual(_localRot1.GetImaginary()[0], localRot1.GetImaginary()[0], places=4)
-        self.assertAlmostEqual(_localRot1.GetImaginary()[1], localRot1.GetImaginary()[1], places=4)
-        self.assertAlmostEqual(_localRot1.GetImaginary()[2], localRot1.GetImaginary()[2], places=4)
+        self.assertTrue(Gf.IsClose(_localPos0, localPos0, 1e-6))
+        self.assertTrue(Gf.IsClose(_localPos1, localPos1, 1e-6))
+        self.assertAlmostEqual(_localRot0.GetReal(), localRot0.GetReal(), places=6)
+        self.assertTrue(Gf.IsClose(_localRot0.GetImaginary(), localRot0.GetImaginary(), 1e-6))
+        self.assertAlmostEqual(_localRot1.GetReal(), localRot1.GetReal(), places=6)
+        self.assertTrue(Gf.IsClose(_localRot1.GetImaginary(), localRot1.GetImaginary(), 1e-6))
 
         prim = joint.GetPrim()
         if prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.PrismaticJoint) or prim.IsA(UsdPhysics.SphericalJoint):
@@ -652,7 +644,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
         joint = usdex.core.definePhysicsRevoluteJoint(xform_joints_prim, joint_name, car_body_prim, wheel0_prim, jointFrame, axis)
         self.assertTrue(joint)
 
-        localPos0 = Gf.Vec3f(-3.2500005, -3.499999, 5.566666)
+        localPos0 = Gf.Vec3f(-3.25, -3.5, 5.566666)
         localRot0 = Gf.Quatf.GetIdentity()
         localPos1 = Gf.Vec3f(0.0, 0.0, -0.25)
         localRot1 = Gf.Quatf.GetIdentity()
@@ -664,7 +656,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
         joint = usdex.core.definePhysicsRevoluteJoint(xform_joints_prim, joint_name, car_body_prim, wheel1_prim, jointFrame, axis)
         self.assertTrue(joint)
 
-        localPos0 = Gf.Vec3f(-3.2500005, -3.499999, -5.566666)
+        localPos0 = Gf.Vec3f(-3.25, -3.5, -5.566666)
         localRot0 = Gf.Quatf.GetIdentity()
         localPos1 = Gf.Vec3f(0.0, 0.0, 0.25)
         localRot1 = Gf.Quatf.GetIdentity()
@@ -676,7 +668,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
         joint = usdex.core.definePhysicsRevoluteJoint(xform_joints_prim, joint_name, car_body_prim, wheel2_prim, jointFrame, axis)
         self.assertTrue(joint)
 
-        localPos0 = Gf.Vec3f(3.3999996, -3.499999, 5.566666)
+        localPos0 = Gf.Vec3f(3.4, -3.5, 5.566666)
         localRot0 = Gf.Quatf.GetIdentity()
         localPos1 = Gf.Vec3f(0.0, 0.0, -0.25)
         localRot1 = Gf.Quatf.GetIdentity()
@@ -688,7 +680,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
         joint = usdex.core.definePhysicsRevoluteJoint(xform_joints_prim, joint_name, car_body_prim, wheel3_prim, jointFrame, axis)
         self.assertTrue(joint)
 
-        localPos0 = Gf.Vec3f(3.3999996, -3.499999, -5.566666)
+        localPos0 = Gf.Vec3f(3.4, -3.5, -5.566666)
         localRot0 = Gf.Quatf.GetIdentity()
         localPos1 = Gf.Vec3f(0.0, 0.0, 0.25)
         localRot1 = Gf.Quatf.GetIdentity()
@@ -920,9 +912,9 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
             )
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localRot0 = joint_orientation
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
-            localRot1 = joint_orientation
+            localRot0 = Gf.Quatf(joint_orientation)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
+            localRot1 = Gf.Quatf(joint_orientation)
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.x, joint_lower_limit, joint_upper_limit)
 
         # joint_axis = (-1, 0, 0)
@@ -956,7 +948,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
             localRot1 = localRot0
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.x, joint_lower_limit, joint_upper_limit)
 
         # ------------------------------------------------------------.
@@ -985,9 +977,9 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
             )
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localRot0 = joint_orientation
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
-            localRot1 = joint_orientation
+            localRot0 = Gf.Quatf(joint_orientation)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
+            localRot1 = Gf.Quatf(joint_orientation)
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.y, joint_lower_limit, joint_upper_limit)
 
         # joint_axis = (0, -1, 0)
@@ -1021,7 +1013,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
             localRot1 = localRot0
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.y, joint_lower_limit, joint_upper_limit)
 
         # ------------------------------------------------------------.
@@ -1061,7 +1053,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
                     localRot0 = Gf.Quatf(0.49999997, 0, 0.8660253, 0)
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
             localRot1 = localRot0
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.z, joint_lower_limit, joint_upper_limit)
 
@@ -1095,7 +1087,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
                     localRot0 = Gf.Quatf(0, -0.49999997, 0, 0.8660253)
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540, -5.501821)
             localRot1 = localRot0
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.z, joint_lower_limit, joint_upper_limit)
 
@@ -1148,7 +1140,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
                     localRot0 = Gf.Quatf(0.9063077, 0, 0, 0.42261826)
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540444, -5.501821)
             localRot1 = localRot0
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.x, joint_lower_limit, joint_upper_limit)
 
@@ -1191,7 +1183,7 @@ class PhysicsJointAlgoTest_RevoluteJoint(PhysicsJointAlgoTest, usdex.test.Define
                     localRot0 = Gf.Quatf(0.8848247, -0.19616091, 0.4126005, -0.09147133)
 
             localPos0 = Gf.Vec3f(0.0, 0.0, 5.5)
-            localPos1 = Gf.Vec3f(-0.0000011850983, 0.0055396585, -5.501821)
+            localPos1 = Gf.Vec3f(0.0, 0.005540444, -5.501821)
             localRot1 = localRot0
             self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.x, joint_lower_limit, joint_upper_limit)
 
@@ -1418,9 +1410,9 @@ class PhysicsJointAlgoTest_PrismaticJoint(PhysicsJointAlgoTest, usdex.test.Defin
         self.assertIsValidUsd(stage)
 
         # Check the joint parameters.
-        localPos0 = Gf.Vec3f(0, -0.0027712376, 5.5009108)
+        localPos0 = Gf.Vec3f(0, -0.002770222, 5.5009108)
         localRot0 = Gf.Quatf.GetIdentity()
-        localPos1 = Gf.Vec3f(0, 0.0027692067, -5.5009103)
+        localPos1 = Gf.Vec3f(0, 0.002770222, -5.5009108)
         localRot1 = Gf.Quatf.GetIdentity()
         self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.z, lower_limit, upper_limit)
 
@@ -1581,8 +1573,8 @@ class PhysicsJointAlgoTest_SphericalJoint(PhysicsJointAlgoTest, usdex.test.Defin
         self.assertIsValidUsd(stage)
 
         # Check the joint parameters.
-        localPos0 = Gf.Vec3f(0.000120104094, -0.0027252769, 5.5008116)
+        localPos0 = Gf.Vec3f(0.00012089346, -0.0027256596, 5.5008125)
         localRot0 = Gf.Quatf.GetIdentity()
-        localPos1 = Gf.Vec3f(0.00004336207, 0.0030494344, -5.500813)
-        localRot1 = Gf.Quatf.GetIdentity()
+        localPos1 = Gf.Vec3f(0.000044151413, 0.0030490516, -5.500812)
+        localRot1 = Gf.Quatf(1.0, Gf.Vec3f(0.000029394923, -0.000015000849, -0.0000019334022))
         self.assertIsPhysicsJoint(joint, localPos0, localRot0, localPos1, localRot1, UsdGeom.Tokens.z, None, None, coneAngle0Limit, coneAngle1Limit)
