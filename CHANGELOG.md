@@ -1,4 +1,4 @@
-# 2.0.0-rc1
+# 2.0.0-rc2
 
 ## Core
 
@@ -28,6 +28,7 @@
 - Added `kilogramsPerUnit` to the required Stage Metrics for `createStage` and `configureStage`
   - Call sites do not need to change, as it will be authored at a default value of 1 when `massUnits` is not specified
 - Added `getLayerAuthoringMetadata` to retrieve previously authored creator metadata
+- Added `getDiagnosticLevel` for mapping `TfDiagnosticType` to `usdex::core::DiagnosticsLevel`
 - Added `USDEX_VERSION_STRING` macro to `Version.h`
 - Added `buildVersion()` and changed behavior of `version()` (see Breaking Changes below)
 
@@ -56,7 +57,7 @@
 
 ### Features
 
-- Added pybind11 interoperability for `Gf.Quatf`, `UsdGeom.Scope`, `UsdGeom.Xformable`, `UsdPhysics.Joint`, `UsdPhysics.FixedJoint`, `UsdPhysics.RevoluteJoint`, `UsdPhysics.PrismaticJoint`, `UsdPhysics.SphericalJoint`
+- Added pybind11 interoperability for `Gf.Quatd`, `Gf.Quatf`, `UsdGeom.Scope`, `UsdGeom.Xformable`, `UsdPhysics.Joint`, `UsdPhysics.FixedJoint`, `UsdPhysics.RevoluteJoint`, `UsdPhysics.PrismaticJoint`, `UsdPhysics.SphericalJoint`
 
 ## RTX
 
@@ -75,7 +76,8 @@
 
 - `usdex.test` and `omni.asset_validator` can be used via the new `usd-exchange` wheel via the optional "test" extras
   - `pip install usd-exchange[test]`
-- Add `TestCase.tmpDir()` which is useful for structured asset testing
+- Added level filtering to `ScopedDiagnosticChecker`, which can be used to ignore status messages while still asserting warnings and errors
+- Added `TestCase.tmpDir()` which is useful for structured asset testing
 - The new `omni.asset_validator` module includes some optional `numpy` implementations which improve performance if `numpy` is available in the environment
 
 ### Fixes
@@ -120,7 +122,7 @@
 ### Runtime Deps
 
 - OpenUSD 25.05 (default) 25.02, 24.11, 24.08, 24.05
-- Omni Asset Validator 1.1.3
+- Omni Asset Validator 1.1.4
 - Python 3.12.11, 3.11.12, 3.10.18 (default)
 - pybind 2.11.1
 
