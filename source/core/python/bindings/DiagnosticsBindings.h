@@ -104,6 +104,21 @@ void bindDiagnostics(module& m)
     );
 
     m.def(
+        "getDiagnosticLevel",
+        &getDiagnosticLevel,
+        arg("code"),
+        R"(
+            Get the ``DiagnosticsLevel`` for a given ``TfDiagnosticType``.
+
+            Args:
+                code: The ``TfDiagnosticType`` to get the ``DiagnosticsLevel`` for.
+
+            Returns:
+                The ``DiagnosticsLevel`` for the ``TfDiagnosticType``.
+        )"
+    );
+
+    m.def(
         "setDiagnosticsOutputStream",
         &setDiagnosticsOutputStream,
         arg("value"),

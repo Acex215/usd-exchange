@@ -29,6 +29,12 @@ class ScopedDiagnosticChecker:
 
         Any `Tf.ErrorMarks` will be diagnosed before any general `Tf.Diagnostics`. The supplied list of expected values should account for this.
 
+    Args:
+
+        testCase: The `unittest.TestCase` instance to use for assertions.
+        expected: A list of tuples containing the expected diagnostic type and commentary pattern.
+        level: The minimum severity of diagnostics to check for. Defaults to `usdex.core.DiagnosticsLevel.eStatus`.
+
     Example:
 
         .. code-block:: python
@@ -44,8 +50,14 @@ class ScopedDiagnosticChecker:
                         Tf.Warn("This message ends in foo")
     """
 
-    def __init__(self, testCase, expected: List[Tuple[Tf.DiagnosticType, str]]) -> None:
+    def __init__(
+        self,
+        testCase,
+        expected: List[Tuple[Tf.DiagnosticType, str]],
+        level: usdex.core.DiagnosticsLevel = usdex.core.DiagnosticsLevel.eStatus,
+    ) -> None:
         self.testCase = testCase
+        self.level = level
         self.expected = expected
         self.__originalOutputStream = usdex.core.getDiagnosticsOutputStream() if usdex.core.isDiagnosticsDelegateActive() else False
 
@@ -57,6 +69,7 @@ class ScopedDiagnosticChecker:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         diagnostics = self.delegate.TakeUncoalescedDiagnostics()
+        diagnostics = [d for d in diagnostics if int(usdex.core.getDiagnosticLevel(d.diagnosticCode)) <= int(self.level)]
 
         if len(self.expected) == 0:
             self.testCase.assertTrue(self.errorMark.IsClean() and len(diagnostics) == 0)

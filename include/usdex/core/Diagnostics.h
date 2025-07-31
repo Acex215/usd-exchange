@@ -9,6 +9,7 @@
 
 #include "usdex/core/Api.h"
 
+#include <pxr/base/tf/diagnosticLite.h>
 #include <pxr/base/tf/diagnosticMgr.h>
 
 namespace usdex::core
@@ -88,6 +89,12 @@ USDEX_API void setDiagnosticsLevel(DiagnosticsLevel value);
 //!
 //! @returns The current `DiagnosticsLevel` for the `Delegate`.
 USDEX_API DiagnosticsLevel getDiagnosticsLevel();
+
+//! Get the `DiagnosticsLevel` for a given `TfDiagnosticType`.
+//!
+//! @param code The `TfDiagnosticType` to get the `DiagnosticsLevel` for.
+//! @returns The `DiagnosticsLevel` for the `TfDiagnosticType`.
+USDEX_API DiagnosticsLevel getDiagnosticLevel(pxr::TfDiagnosticType code);
 
 //! Set the `DiagnosticsOutputStream` for the `Delegate` to redirect `TfDiagnostics` to different streams.
 //!

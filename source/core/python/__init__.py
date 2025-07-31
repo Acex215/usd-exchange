@@ -22,6 +22,7 @@ __all__ = [
     "deactivateDiagnosticsDelegate",
     "setDiagnosticsLevel",
     "getDiagnosticsLevel",
+    "getDiagnosticLevel",
     "setDiagnosticsOutputStream",
     "getDiagnosticsOutputStream",
     # layers

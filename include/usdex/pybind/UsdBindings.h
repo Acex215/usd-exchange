@@ -20,6 +20,7 @@
 
 #include <pxr/base/gf/camera.h>
 #include <pxr/base/gf/transform.h>
+#include <pxr/base/tf/diagnosticBase.h>
 #include <pxr/usd/sdf/assetPath.h>
 #include <pxr/usd/sdf/layer.h>
 #include <pxr/usd/sdf/path.h>
@@ -81,6 +82,8 @@ PYBOOST11_TYPE_CASTER(pxr::GfVec3i, _("pxr.Gf.Vec3i"));
 PYBOOST11_TYPE_CASTER(pxr::GfMatrix4d, _("pxr.Gf.Matrix4d"));
 //! pybind11 interoperability for `GfTransform`
 PYBOOST11_TYPE_CASTER(pxr::GfTransform, _("pxr.Gf.Transform"));
+//! pybind11 interoperability for `TfDiagnosticType`
+PYBOOST11_TYPE_CASTER(pxr::TfDiagnosticType, _("pxr.Tf.DiagnosticType"));
 //! pybind11 interoperability for `SdfAssetPath`
 PYBOOST11_TYPE_CASTER(pxr::SdfAssetPath, _("pxr.Sdf.AssetPath"));
 //! pybind11 interoperability for `SdfLayerHandle`
