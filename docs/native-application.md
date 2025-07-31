@@ -220,6 +220,7 @@ USD_LIBS = \
  -lusd_usd \
  -lusd_usdGeom \
  -lusd_usdLux \
+ -lusd_usdPhysics \
  -lusd_usdShade \
  -lusd_usdUtils \
  -lusd_vt \
@@ -334,6 +335,7 @@ TBB_USE_DEBUG=1
 `Linker > Input > Additional Dependencies` (All configurations)
 ```text
 usdex_core.lib
+usd_ar.lib
 usd_arch.lib
 usd_gf.lib
 usd_kind.lib
@@ -344,9 +346,11 @@ usd_tf.lib
 usd_usd.lib
 usd_usdGeom.lib
 usd_usdLux.lib
+usd_usdPhysics.lib
+usd_usdShade.lib
 usd_usdUtils.lib
 usd_vt.lib
-usd_ar.lib
+usd_work.lib
 ```
 
 For USD 24.11 and newer:
