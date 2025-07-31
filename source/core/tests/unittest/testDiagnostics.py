@@ -326,3 +326,41 @@ Stderr:
         self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_FATAL_CODING_ERROR_TYPE), usdex.core.DiagnosticsLevel.eFatal)
         self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_FATAL_ERROR_TYPE), usdex.core.DiagnosticsLevel.eFatal)
         self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_APPLICATION_EXIT_TYPE), usdex.core.DiagnosticsLevel.eFatal)
+
+    def testScopedDiagnosticLevelFiltering(self):
+        # setting level to eError filters out status and warnings
+        with usdex.test.ScopedDiagnosticChecker(self, [], level=usdex.core.DiagnosticsLevel.eError):
+            Tf.Status("Status is emitted but not asserted")
+            Tf.Warn("Warning is emitted and asserted")
+
+        # setting level to eWarning filters out status
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [(Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*emitted and asserted")],
+            level=usdex.core.DiagnosticsLevel.eWarning,
+        ):
+            Tf.Status("Status is emitted but not asserted")
+            Tf.Warn("Warning is emitted and asserted")
+
+        # setting level to eStatus does not filter anything
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_STATUS_TYPE, ".*emitted and asserted"),
+                (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*emitted and asserted"),
+            ],
+            level=usdex.core.DiagnosticsLevel.eStatus,
+        ):
+            Tf.Status("Status is emitted and asserted")
+            Tf.Warn("Warning is emitted and asserted")
+
+        # no level specified defaults to eStatus
+        with usdex.test.ScopedDiagnosticChecker(
+            self,
+            [
+                (Tf.TF_DIAGNOSTIC_STATUS_TYPE, ".*emitted and asserted"),
+                (Tf.TF_DIAGNOSTIC_WARNING_TYPE, ".*emitted and asserted"),
+            ],
+        ):
+            Tf.Status("Status is emitted and asserted")
+            Tf.Warn("Warning is emitted and asserted")
