@@ -200,6 +200,28 @@ usdex::core::DiagnosticsLevel usdex::core::getDiagnosticsLevel()
     return ::DiagnosticsDelegate::acquire()->getLevel();
 }
 
+usdex::core::DiagnosticsLevel usdex::core::getDiagnosticLevel(TfDiagnosticType code)
+{
+    switch (code)
+    {
+        case TF_DIAGNOSTIC_STATUS_TYPE:
+            return usdex::core::DiagnosticsLevel::eStatus;
+        case TF_DIAGNOSTIC_WARNING_TYPE:
+            return usdex::core::DiagnosticsLevel::eWarning;
+        case TF_DIAGNOSTIC_CODING_ERROR_TYPE:
+        case TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE:
+        case TF_DIAGNOSTIC_NONFATAL_ERROR_TYPE:
+            return usdex::core::DiagnosticsLevel::eError;
+        case TF_DIAGNOSTIC_FATAL_CODING_ERROR_TYPE:
+        case TF_DIAGNOSTIC_FATAL_ERROR_TYPE:
+        case TF_APPLICATION_EXIT_TYPE:
+            return usdex::core::DiagnosticsLevel::eFatal;
+        default:
+            // TF_DIAGNOSTIC_INVALID_TYPE is not a valid diagnostic level so we fallback to status
+            return usdex::core::DiagnosticsLevel::eStatus;
+    }
+}
+
 void usdex::core::setDiagnosticsOutputStream(usdex::core::DiagnosticsOutputStream value)
 {
     ::DiagnosticsDelegate::acquire()->setOutputStream(value);

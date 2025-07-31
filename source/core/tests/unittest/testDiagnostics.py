@@ -11,6 +11,7 @@ from typing import List
 
 import usdex.core
 import usdex.test
+from pxr import Tf
 
 
 class DiagnosticsTest(usdex.test.TestCase):
@@ -315,3 +316,13 @@ Stderr:
             ],
             expectSuccess=False,
         )
+
+    def testDiagnosticTypeToLevel(self):
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_STATUS_TYPE), usdex.core.DiagnosticsLevel.eStatus)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_WARNING_TYPE), usdex.core.DiagnosticsLevel.eWarning)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_CODING_ERROR_TYPE), usdex.core.DiagnosticsLevel.eError)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_RUNTIME_ERROR_TYPE), usdex.core.DiagnosticsLevel.eError)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_NONFATAL_ERROR_TYPE), usdex.core.DiagnosticsLevel.eError)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_FATAL_CODING_ERROR_TYPE), usdex.core.DiagnosticsLevel.eFatal)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_DIAGNOSTIC_FATAL_ERROR_TYPE), usdex.core.DiagnosticsLevel.eFatal)
+        self.assertEqual(usdex.core.getDiagnosticLevel(Tf.TF_APPLICATION_EXIT_TYPE), usdex.core.DiagnosticsLevel.eFatal)
