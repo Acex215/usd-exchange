@@ -32,6 +32,7 @@
             │   ├── libusd_trace.so
             │   ├── libusd_usdGeom.so
             │   ├── libusd_usdLux.so
+            │   ├── libusd_usdPhysics.so
             │   ├── libusd_usdShade.so
             │   ├── libusd_usd.so
             │   ├── libusd_usdUtils.so
@@ -109,6 +110,7 @@
             │   ├── usd_usd.dll
             │   ├── usd_usdGeom.dll
             │   ├── usd_usdLux.dll
+            │   ├── usd_usdPhysics.dll
             │   ├── usd_usdShade.dll
             │   ├── usd_usdUtils.dll
             │   ├── usd_vt.dll
