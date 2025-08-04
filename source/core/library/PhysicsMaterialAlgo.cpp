@@ -53,7 +53,7 @@ UsdShadeMaterial usdex::core::definePhysicsMaterial(
 }
 
 UsdShadeMaterial usdex::core::definePhysicsMaterial(
-    UsdPrim& parent,
+    UsdPrim parent,
     const std::string& name,
     const float dynamicFriction,
     const std::optional<float> staticFriction,
@@ -75,7 +75,7 @@ UsdShadeMaterial usdex::core::definePhysicsMaterial(
 }
 
 UsdShadeMaterial usdex::core::definePhysicsMaterial(
-    UsdPrim& prim,
+    UsdPrim prim,
     const float dynamicFriction,
     const std::optional<float> staticFriction,
     const std::optional<float> restitution,
