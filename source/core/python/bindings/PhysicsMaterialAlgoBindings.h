@@ -54,7 +54,7 @@ void bindPhysicsMaterialAlgo(module& m)
 
     m.def(
         "definePhysicsMaterial",
-        overload_cast<UsdPrim&, const std::string&, const float, const std::optional<float>, const std::optional<float>, const std::optional<float>>(
+        overload_cast<UsdPrim, const std::string&, const float, const std::optional<float>, const std::optional<float>, const std::optional<float>>(
             &definePhysicsMaterial
         ),
         arg("parent"),
@@ -83,8 +83,7 @@ void bindPhysicsMaterialAlgo(module& m)
 
     m.def(
         "definePhysicsMaterial",
-        overload_cast<UsdPrim&, const float, const std::optional<float>, const std::optional<float>, const std::optional<float>>(
-            &definePhysicsMaterial
+        overload_cast<UsdPrim, const float, const std::optional<float>, const std::optional<float>, const std::optional<float>>(&definePhysicsMaterial
         ),
         arg("prim"),
         arg("dynamicFriction"),

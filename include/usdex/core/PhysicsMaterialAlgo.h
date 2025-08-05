@@ -76,7 +76,7 @@ USDEX_API pxr::UsdShadeMaterial definePhysicsMaterial(
 //!
 //! @returns UsdShadeMaterial schema wrapping the defined UsdPrim
 USDEX_API pxr::UsdShadeMaterial definePhysicsMaterial(
-    pxr::UsdPrim& parent,
+    pxr::UsdPrim parent,
     const std::string& name,
     const float dynamicFriction,
     const std::optional<float> staticFriction = std::nullopt,
@@ -96,7 +96,7 @@ USDEX_API pxr::UsdShadeMaterial definePhysicsMaterial(
 //!
 //! @returns UsdShadeMaterial schema wrapping the defined UsdPrim
 USDEX_API pxr::UsdShadeMaterial definePhysicsMaterial(
-    pxr::UsdPrim& prim,
+    pxr::UsdPrim prim,
     const float dynamicFriction,
     const std::optional<float> staticFriction = std::nullopt,
     const std::optional<float> restitution = std::nullopt,
