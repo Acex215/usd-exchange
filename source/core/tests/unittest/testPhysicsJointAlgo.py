@@ -99,7 +99,7 @@ class PhysicsJointAlgoTest(usdex.test.TestCase):
         localRot0: Gf.Quatf,
         localPos1: Gf.Vec3f,
         localRot1: Gf.Quatf,
-        axis: Gf.Vec3f = None,
+        axis: str = None,
         lower_limit: float = None,
         upper_limit: float = None,
         coneAngle0Limit: float = None,
@@ -124,33 +124,33 @@ class PhysicsJointAlgoTest(usdex.test.TestCase):
 
         prim = joint.GetPrim()
         if prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.PrismaticJoint) or prim.IsA(UsdPhysics.SphericalJoint):
-            if axis:
+            if axis is not None:
                 self.assertTrue(joint.GetAxisAttr().HasAuthoredValue())
                 self.assertEqual(joint.GetAxisAttr().Get(), axis)
             else:
                 self.assertFalse(joint.GetAxisAttr().HasAuthoredValue())
 
         if prim.IsA(UsdPhysics.RevoluteJoint) or prim.IsA(UsdPhysics.PrismaticJoint):
-            if lower_limit:
+            if lower_limit is not None:
                 self.assertTrue(joint.GetLowerLimitAttr().HasAuthoredValue())
                 self.assertAlmostEqual(joint.GetLowerLimitAttr().Get(), lower_limit, places=4)
             else:
                 self.assertFalse(joint.GetLowerLimitAttr().HasAuthoredValue())
 
-            if upper_limit:
+            if upper_limit is not None:
                 self.assertTrue(joint.GetUpperLimitAttr().HasAuthoredValue())
                 self.assertAlmostEqual(joint.GetUpperLimitAttr().Get(), upper_limit, places=4)
             else:
                 self.assertFalse(joint.GetUpperLimitAttr().HasAuthoredValue())
 
         if prim.IsA(UsdPhysics.SphericalJoint):
-            if coneAngle0Limit:
+            if coneAngle0Limit is not None:
                 self.assertTrue(joint.GetConeAngle0LimitAttr().HasAuthoredValue())
                 self.assertAlmostEqual(joint.GetConeAngle0LimitAttr().Get(), coneAngle0Limit, places=4)
             else:
                 self.assertFalse(joint.GetConeAngle0LimitAttr().HasAuthoredValue())
 
-            if coneAngle1Limit:
+            if coneAngle1Limit is not None:
                 self.assertTrue(joint.GetConeAngle1LimitAttr().HasAuthoredValue())
                 self.assertAlmostEqual(joint.GetConeAngle1LimitAttr().Get(), coneAngle1Limit, places=4)
             else:
