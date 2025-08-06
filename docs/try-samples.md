@@ -8,43 +8,15 @@ You can execute the samples to try them out, learn from their source code, and m
 
 The OpenUSD Exchange Samples are available on [GitHub](https://github.com/NVIDIA-Omniverse/usd-exchange-samples). You can clone the repository or download the source as a zip file.
 
-## Run the Python Samples
+The [Samples README](https://github.com/NVIDIA-Omniverse/usd-exchange-samples/blob/main/README.md) provides detailed descriptions and documentation about the individual samples.
 
-Each sample provides equivalent C++ and Python implementations.
+Each sample provides equivalent C++ and Python implementations. Before they can be used, you must first [build the Samples](#build-the-samples).
 
-If you installed a python virtual environment as suggested in [Getting Started](./getting-started.md#installation), you can simply invoke each python sample directly.
 
-For command line argument help, use `--help`
+## Build the Samples
 
-``````{card}
+To try the Samples you will need to build them from source. The included build scripts make it easy.
 
-`````{tab-set}
-
-````{tab-item} Linux
-:sync: linux
-
-```bash
-./python.sh source/createStage/createStage.py --help
-```
-````
-
-````{tab-item} Windows
-:sync: windows
-
-```powershell
-.\python.bat source/createStage/createStage.py --help
-```
-````
-
-`````
-
-See the [OpenUSD Exchange Samples README](https://github.com/NVIDIA-Omniverse/usd-exchange-samples) for more detailed descriptions and documentation about the individual samples.
-
-If you prefer to experiment in C++, see below for detailed instructions on [building the Samples](#build-the-c-samples).
-
-## Build the C++ Samples
-
-To try the C++ Samples you will need to build them from source. The included build scripts make it easy.
 ``````{card}
 
 `````{tab-set}
@@ -81,8 +53,7 @@ This project requires Microsoft Visual Studio 2019 or newer.
 
 ## Run the C++ Samples
 
-Once you have built the samples, you can run their executables to try them. All of the compiled samples are executed with a `run` script with the
-program name as the first argument. There are many samples under the `source` folder, like `createStage`, `createLights`, `createTransforms`, etc.
+Once you have built the samples, you can run their executables to try them. All of the compiled samples are executed with a `run` script with the program name as the first argument. There are many samples under the `source` folder, like `createStage`, `createLights`, `createTransforms`, etc.
 
 ``````{card}
 `````{tab-set}
@@ -96,16 +67,6 @@ For command line argument help, use `--help`
 ```bash
 ./run.sh createStage --help
 ```
-
-If you didn't install your own virtual environment, you can use the `python.sh` script (e.g. `./python.sh source/createStage/createStage.py`) to execute each program with a pre-configured environment.
-
-For command line argument help, use `--help`
-```bash
-./python.sh source/createStage/createStage.py --help
-```
-
-Use the `--help` flag for each of the sample executables to learn more about the optional arguments that they accept. (e.g. `./run.sh createStage --help`)
-
 ````
 
 ````{tab-item} Windows
@@ -114,26 +75,48 @@ Use the `--help` flag for each of the sample executables to learn more about the
 Use the `run.bat` script (e.g. `.\run.bat createStage`) to execute each program with a pre-configured environment.
 
 For command line argument help, use `--help`
-
-```bash
+```batch
 .\run.bat createStage --help
 ```
-
-If you didn't install your own virtual environment, you can use the `python.bat` script (e.g. `.\python.bat source\createStage\createStage.py`) to execute each program with a pre-configured environment.
-
-For command line argument help, use `--help`
-
-```bash
-.\python.bat source\createStage\createStage.py --help
-```
-
-Use the `--help` flag for each of the sample executables to learn more about the optional arguments that they accept. (e.g. `.\run.bat createStage --help`)
 ````
-
 `````
 ``````
 
-See the [OpenUSD Exchange Samples README](https://github.com/NVIDIA-Omniverse/usd-exchange-samples) for more detailed descriptions and documentation about the individual samples.
+## Run the Python Samples
+
+After [building the Samples](#build-the-samples), you can run the individual python samples.
+
+```{important}
+Even if you installed a python virtual environment as suggested in [Getting Started](./getting-started.md#installation), you still need to build the samples and use the `python.sh|bat` scripts at the root of the Samples repository.
+
+In the future, the python samples may be adapted to work with the wheels directly.
+```
+
+``````{card}
+
+`````{tab-set}
+
+````{tab-item} Linux
+:sync: linux
+
+Use the `python.sh` script to execute each program with a pre-configured environment.
+
+```bash
+./python.sh source/createStage/createStage.py
+```
+````
+
+````{tab-item} Windows
+:sync: windows
+
+Use the `python.bat` script to execute each program with a pre-configured environment.
+
+```powershell
+.\python.bat source/createStage/createStage.py
+```
+````
+
+`````
 
 ## Experiment
 
