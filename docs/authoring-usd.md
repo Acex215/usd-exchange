@@ -16,7 +16,7 @@ While you can author data directly via OpenUSD's [Sdf library](https://openusd.o
 
 In either approach, your Layers should contain particular metadata to ensure they will load correctly across diverse 3D ecosystems. It is very common to forget (or misconfigure) this metadata. We provide [SdfLayer authoring](../api/group__layers.rebreather_rst) and [UsdStage Configuration](../api/group__stage__metadata.rebreather_rst) functions to assist & prevent common mistakes.
 
-When authoring [UsdPrims](https://openusd.org/release/api/class_usd_prim.html) to a Stage, you will need to specify an [SdfPath](https://openusd.org/release/api/class_sdf_path.html) that identifies a unique location for the Prim. The nature of OpenUSD's [composition algorithm](https://openusd.org/release/glossary.html#composition) (know as "LIVRPS") makes it fairly complex to determine whether your chosen location is valid for authoring. We provide [UsdStage Prim Hierarchy](../api/group__stage__hierarchy.rebreather_rst) functions to assist.
+When authoring [UsdPrims](https://openusd.org/release/api/class_usd_prim.html) to a Stage, you will need to specify an [SdfPath](https://openusd.org/release/api/class_sdf_path.html) that identifies a unique location for the Prim. The nature of OpenUSD's [composition algorithm](https://openusd.org/release/glossary.html#composition) (know as "LIVERPS") makes it fairly complex to determine whether your chosen location is valid for authoring. We provide [UsdStage Prim Hierarchy](../api/group__stage__hierarchy.rebreather_rst) functions to assist.
 
 ### Binary vs Text Layers
 

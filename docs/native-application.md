@@ -17,9 +17,9 @@ This walkthrough will use these tokens:
 
 ## Install the SDK
 
- Assembling the minimal requirements for the OpenUSD Exchange SDK can be complicated, so there is an [install_usdex](devtools.md#install_usdex) script that developers run to gather everything into one `_install` folder. This folder can then be copied into the project structure of the developer's application.
+Assembling the minimal requirements for the OpenUSD Exchange SDK can be complicated, so there is an [install_usdex](devtools.md#install_usdex) script that developers run to gather everything into one `_install` folder. This folder can then be copied into the project structure of the developer's application.
 
-Running these commands *from the Sample's root folder* will generate the `_install` folder for both debug and release configurations and deep copy them to wherever the sample project is located.  Note that if running the install script from the Exchange Samples, it is necessary to build them first:
+Running these commands from either the [Samples](./try-samples.md) root folder, or the `usd-exchange` repository itself, will generate the `_install` folder for both debug and release configurations and deep copy them to your project root.
 
 ```{eval-rst}
 .. tab-set::
@@ -29,9 +29,12 @@ Running these commands *from the Sample's root folder* will generate the `_insta
 
         .. code-block:: bash
 
-          ./repo.sh build
+          # only fetch first when running from usd-exchange-samples
+          ./repo.sh build --fetch-only
+
           ./repo.sh install_usdex --config release --install-python-libs
           ./repo.sh install_usdex --config debug --install-python-libs
+
           cp -Lr _install $project_root/usdex
 
     .. tab-item:: Windows
@@ -39,10 +42,18 @@ Running these commands *from the Sample's root folder* will generate the `_insta
 
         .. code-block:: batch
 
-          repo.bat build
-          repo.bat install_usdex --config release --install-python-libs
-          repo.bat install_usdex --config debug --install-python-libs
+          # only fetch first when running from usd-exchange-samples
+          .\repo.bat build --fetch-only
+
+          .\repo.bat install_usdex --config release --install-python-libs
+          .\repo.bat install_usdex --config debug --install-python-libs
+
           robocopy /s _install $project_root\usdex > NUL
+```
+
+```{eval-rst}
+.. note::
+  The ``install_usdex`` script may be run from either the Exchange Samples or the Exchange SDK root directory, it is provided with both repositories.  If ``repo.bat|sh install_usdex`` is run from within the usd-exchange repository root, there is no need to run ``repo.bat|sh build`` first. The version of OpenUSD Exchange that is downloaded will match the top line of the USD Exchange repository's CHANGELOG.md if no ``--version`` argument is provided.
 ```
 
 This tree describes the proposed file layout for the project:
@@ -62,11 +73,6 @@ $project_root
         └───python
             ├───pxr
             └───usdex
-```
-
-```{eval-rst}
-.. note::
-  The ``install_usdex`` script may be run from either the Exchange Samples or the Exchange SDK root directory, it is provided with both repositories.  If ``repo.bat|sh install_usdex`` is run from within the usd-exchange repository root, there is no need to run ``repo.bat|sh build`` first. The version of OpenUSD Exchange that is downloaded will match the top line of the USD Exchange repository's [CHANGELOG.md](../CHANGELOG.md) if no ``--version`` argument is provided.
 ```
 
 This `_install` folder will be copied into `$project_root/usdex` for this walkthrough.  Note that the `target-deps` folder contains soft links on Linux and junctions on Windows, so any time it is copied, it requires deep copy commands or options.
@@ -325,7 +331,7 @@ NOMINMAX
 TBB_SUPPRESS_DEPRECATED_MESSAGES
 ```
 
-Note: the debug configuration will need to specify to use debug TBB
+The debug configuration will also need to use explicitly enable the debug build of TBB:
 ```text
 TBB_USE_DEBUG=1
 ```

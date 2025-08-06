@@ -1,6 +1,6 @@
 # Getting Started
 
-The OpenUSD Exchange SDK is available as Python wheels on [PyPI](https://pypi.org/project/usd-exchange/) and [PyPI NVIDIA](https://pypi.nvidia.com/), making it easy to get started without having to build.
+The OpenUSD Exchange SDK is available as Python wheels on [PyPI](https://pypi.org/project/usd-exchange/) and [PyPI NVIDIA](https://pypi.nvidia.com/usd-exchange/), making it easy to get started without having to build.
 
 Many USD authoring workflows can be accomplished entirely in Python with the wheels, offering significant simplification in deployment and dependency management.
 

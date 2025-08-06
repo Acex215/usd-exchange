@@ -15,9 +15,28 @@ Each sample provides equivalent C++ and Python implementations.
 If you installed a python virtual environment as suggested in [Getting Started](./getting-started.md#installation), you can simply invoke each python sample directly.
 
 For command line argument help, use `--help`
+
+``````{card}
+
+`````{tab-set}
+
+````{tab-item} Linux
+:sync: linux
+
 ```bash
-python source/createStage/createStage.py --help
+./python.sh source/createStage/createStage.py --help
 ```
+````
+
+````{tab-item} Windows
+:sync: windows
+
+```powershell
+.\python.bat source/createStage/createStage.py --help
+```
+````
+
+`````
 
 See the [OpenUSD Exchange Samples README](https://github.com/NVIDIA-Omniverse/usd-exchange-samples) for more detailed descriptions and documentation about the individual samples.
 

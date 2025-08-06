@@ -229,6 +229,7 @@ name = "OpenUSD Exchange SDK"
 copyright_start = 2022
 config = "release"
 enable_dark_theme_switcher = true
+copybutton_enabled = true
 sphinx_conf_py_extra = """
 autodoc_member_order = 'bysource'
 extensions += ["autodocsumm"] # enables :autosummary: flag in automodule directives
