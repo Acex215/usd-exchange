@@ -57,8 +57,10 @@ def setup_repo_tool(parser: argparse.ArgumentParser, config: Dict) -> Callable:
         fullVersion = omni.repo.man.build_number.generate_build_number_from_file(repoVersionFile)
         realVersion, label = fullVersion.split("+")
         if os.environ.get("CI_COMMIT_TAG"):
-            packageVersion = f"{realVersion}+{usdIdentifier}"
+            # use the version without the USD flavor as public PyPi servers only support simple versioning
+            packageVersion = realVersion
         else:
+            # use the version with the USD flavor as private PyPi servers support extra identifiers
             packageVersion = f"{realVersion}+{usdIdentifier}.{label.lower()}"
 
         # copy artifacts so they can be packaged by with a reasonable name
