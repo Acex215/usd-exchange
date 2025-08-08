@@ -51,6 +51,10 @@ Unfortunately, the Omniverse Asset Validator is not yet available for pure C++ t
 
 If you would like to use the [`usdex.test` python module](./python-usdex-test.rst) that comes with the `usd-exchange` wheels, you will need to opt-in to the optional `test` dependencies as well. This pulls an additional wheel for the [Omniverse Asset Validator](#asset-validator).
 
+```{important}
+  Each OpenUSD Exchange SDK release supports many OpenUSD versions and python versions. When using wheels, the python version is automatically determined based on the interpreter. However, the version of OpenUSD is currently locked in the python wheels. If you need to control OpenUSD version use the [install_usdex CLI](./devtools.md#python-test-helpers) instead of the python wheels.
+```
+
 ``````{card}
 `````{tab-set}
 ````{tab-item} Linux

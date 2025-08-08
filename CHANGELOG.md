@@ -1,4 +1,16 @@
-# 2.1.0-dev
+# 2.0.1-rc1
+
+## Core
+
+### Fixes
+
+- The new `usd-exchange` Python Wheel which is published to PyPi is locked to our default USD 25.05
+  - `pip install usd-exchange==2.0.1` strictly uses USD 25.05
+  - If other USD flavors are required, please continue to use the `install_usdex` CLI tool or build from source
+  - Rather than depend on the public `usd-core` wheel, we directly include the subset of OpenUSD libraries required to use `usdex.core`
+    - `usd-core` is not ABI compatible with our minspec (manylinux_2_35 with modern CXX ABI)
+    - In the future, if the public `usd-core` package becomes more compatible, we may add it as a dependency instead of packaging the OpenUSD libs
+    - In the future, if wheel variants become possible on PyPi we may provide all supported flavors of `usd-exchange` as wheels
 
 # 2.0.0
 
