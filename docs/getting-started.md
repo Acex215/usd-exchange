@@ -4,6 +4,10 @@ The OpenUSD Exchange SDK is available as Python wheels on [PyPI](https://pypi.or
 
 Many USD authoring workflows can be accomplished entirely in Python with the wheels, offering significant simplification in deployment and dependency management.
 
+```{important}
+  Each OpenUSD Exchange SDK release supports many OpenUSD versions and python versions. When using wheels, the python version is automatically determined based on the interpreter. However, the version of OpenUSD is currently locked in the python wheels. If you need to control OpenUSD version use the [install_usdex CLI](./devtools.md#install_usdex) instead of the python wheels.
+```
+
 ## Installation
 
 The recommended way to install the OpenUSD Exchange SDK for Python development is using a virtual environment:

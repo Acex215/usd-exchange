@@ -78,7 +78,7 @@ For production environments, pin specific versions:
 
 ```bash
 # requirements.txt
-usd-exchange==2.0.0+usd2505
+usd-exchange==2.0.0
 ```
 
 ```bash
@@ -86,9 +86,8 @@ usd-exchange==2.0.0+usd2505
 pip install -r requirements.txt
 ```
 
-```{eval-rst}
-.. note::
-  Each OpenUSD Exchange SDK release supports many OpenUSD versions and python versions. The python version is automatically determined based on the interpreter. You can choose the version of OpenUSD by changing the ``+usdYYMM`` part of the version to download the appropriate wheel with matching modules & native libraries.
+```{important}
+  Each OpenUSD Exchange SDK release supports many OpenUSD versions and python versions. When using wheels, the python version is automatically determined based on the interpreter. However, the version of OpenUSD is currently locked in the python wheels. If you need to control OpenUSD version use the [install_usdex CLI](./devtools.md#install_usdex) instead of the python wheels.
 ```
 
 ### Container Deployment with Wheels

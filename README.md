@@ -14,6 +14,8 @@ To start using OpenUSD Exchange SDK see the [Getting Started](docs/getting-start
 
 We provide precompiled binaries of the OpenUSD Exchange SDK, as well as all dependencies required to compile, link, and run a program that uses the OpenUSD Exchange libraries and modules. Additionally, OpenUSD Exchange SDK is open source and is licensed for modification & re-distribution (see our [License Notices](docs/licenses.md)).
 
+To download a pre-packaged python wheel of OpenUSD Exchange SDK using the default OpenUSD flavor, see the [Getting Started](docs/getting-started.md) guide.
+
 To download the precompiled OpenUSD Exchange SDK binaries and all the necessary dependencies:
   - Download or clone the [OpenUSD Exchange SDK repository](https://github.com/NVIDIA-Omniverse/usd-exchange)
   - Navigate to your local `usd-exchange` directory
