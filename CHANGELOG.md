@@ -1,4 +1,4 @@
-# 2.0.0-rc5
+# 2.0.0
 
 ## Core
 
@@ -122,7 +122,7 @@
 ### Runtime Deps
 
 - OpenUSD 25.05 (default) 25.02, 24.11, 24.08, 24.05
-- Omni Asset Validator 1.1.5
+- Omni Asset Validator 1.1.6
 - Python 3.12.11, 3.11.12, 3.10.18 (default)
 - pybind 2.11.1
 
