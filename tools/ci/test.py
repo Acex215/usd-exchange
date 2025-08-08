@@ -15,6 +15,7 @@ def main(arguments: argparse.Namespace):
     usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
     python_ver = omni.repo.man.resolve_tokens("${python_ver}")
     abi = omni.repo.man.resolve_tokens("${abi}")
+    default_usd_flavor, default_usd_ver, _, _ = arguments.merged_tool_config["repo"]["default_flavor"].split("_")
 
     omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
@@ -55,7 +56,8 @@ def main(arguments: argparse.Namespace):
     suites = ["--suite", "cpp"]
     if python_ver != "0":
         suites.append("main")
-        if arguments.build_config == "release":
+        # test the python wheel only for the default USD flavor
+        if arguments.build_config == "release" and usd_flavor == default_usd_flavor and usd_ver == default_usd_ver:
             suites.append("whl")
     test.extend(suites)
 

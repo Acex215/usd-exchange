@@ -16,6 +16,7 @@ def main(arguments: argparse.Namespace):
     usd_ver = omni.repo.man.resolve_tokens("${usd_ver}")
     python_ver = omni.repo.man.resolve_tokens("${python_ver}")
     abi = omni.repo.man.resolve_tokens("${abi}")
+    default_usd_flavor, default_usd_ver, _, default_python_ver = arguments.merged_tool_config["repo"]["default_flavor"].split("_")
 
     omni.repo.man.logger.info(f"Using usd_flavor={usd_flavor}, usd_ver={usd_ver}, python_ver={python_ver}, abi={abi}")
 
@@ -53,9 +54,25 @@ def main(arguments: argparse.Namespace):
     build = [omni.repo.man.resolve_tokens(x) for x in build]
     omni.repo.ci.launch(build)
 
-    # build the docs for the default flavor in release mode only
-    if arguments.merged_tool_config["repo"]["default_flavor"] == omni.repo.man.resolve_tokens("${usd_flavor}_${usd_ver}_py_${python_ver}"):
-        if arguments.build_config == "release":
+    # some parts should only build for the default flavor in release mode
+    if arguments.build_config == "release":
+        # generate the python wheel only for the default USD flavor, but for all python versions and platforms
+        if usd_flavor == default_usd_flavor and usd_ver == default_usd_ver and python_ver != "0":
+            omni.repo.ci.launch(
+                [
+                    repo,
+                    "--set-token",
+                    f"usd_flavor:{usd_flavor}",
+                    "--set-token",
+                    f"usd_ver:{usd_ver}",
+                    "--set-token",
+                    f"python_ver:{python_ver}",
+                    f"--abi={abi}",
+                    "py_package",
+                ]
+            )
+        # build the docs only for the default USD flavor & python version but for all platforms
+        if usd_flavor == default_usd_flavor and usd_ver == default_usd_ver and python_ver == default_python_ver:
             omni.repo.ci.launch([repo, "docs"])
             # package the docs for linux only as we don't want overlapping packages once all flavors are assembled
             if omni.repo.man.is_linux():
@@ -79,22 +96,6 @@ def main(arguments: argparse.Namespace):
             arguments.build_config,
         ]
     )
-
-    if arguments.build_config == "release" and python_ver != "0":
-        # generate the python wheel
-        omni.repo.ci.launch(
-            [
-                repo,
-                "--set-token",
-                f"usd_flavor:{usd_flavor}",
-                "--set-token",
-                f"usd_ver:{usd_ver}",
-                "--set-token",
-                f"python_ver:{python_ver}",
-                f"--abi={abi}",
-                "py_package",
-            ]
-        )
 
     # clean the build so it can't influence the tests,
     # but retain the packages and the sidecar binaries
